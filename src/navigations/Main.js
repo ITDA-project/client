@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { ThemeContext } from 'styled-components/native';
 import { createStackNavigator} from '@react-navigation/stack';
-import {MainPage,Chat,Notifications,Search,MyPage,AllPosts,Profile} from '../screens';
+import {MainPage,Chat,Notifications,Search,MyPage,AllPosts,Profile,EditProfile} from '../screens';
 import Home from './Home';
 
 const Stack=createStackNavigator();
@@ -16,6 +16,7 @@ const Main = () =>{
             <Stack.Screen name="AllPosts" component={AllPosts}/>
             <Stack.Screen name="MyPage" component={MyPage}/>
             <Stack.Screen name="Profile" component={Profile}/>
+            <Stack.Screen name="EditProfile" component={EditProfile}/>
         </Stack.Navigator>
     );
 };
