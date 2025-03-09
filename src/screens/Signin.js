@@ -44,6 +44,7 @@ const Signin = ({ navigation }) => {
         onPress={() => console.log("카카오")} //백이랑 연결할 때 함수 만들기
         icon={require("../../assets/kakao.png")}
         containerStyle={{
+          width: "100%",
           flexDirection: "row",
           backgroundColor: "#FFDE00",
           marginTop: 0,
@@ -64,6 +65,7 @@ const Signin = ({ navigation }) => {
         onPress={() => console.log("네이버")} //백이랑 연결할 때 함수 만들기
         icon={require("../../assets/naver.png")}
         containerStyle={{
+          width: "100%",
           flexDirection: "row",
           backgroundColor: "#00C73C",
           marginTop: 0,
@@ -84,6 +86,7 @@ const Signin = ({ navigation }) => {
         onPress={() => navigation.navigate("이메일로 시작하기")}
         icon={require("../../assets/mail.png")}
         containerStyle={{
+          width: "100%",
           flexDirection: "row",
           backgroundColor: "#E3F0FF",
           marginTop: 0,

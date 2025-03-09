@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 import PropTypes from "prop-types";
 
 const Container = styled.View`
+  flex: 1;
   background-color: ${({ theme }) => theme.colors.mainBlue};
   padding: 12px 16px;
   margin: 10px 0;
@@ -11,9 +12,8 @@ const Container = styled.View`
   align-items: center;
   border-radius: 5px;
   height: 50px;
-  width: 100%;
+
   opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
-  flex: 1;
 `;
 const Title = styled.Text`
   font-size: 20px;

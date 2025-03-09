@@ -107,6 +107,9 @@ const SigninWithEmail = ({ navigation }) => {
           title="로그인"
           onPress={_handleSigninBtnPress}
           disabled={!email || !password}
+          containerStyle={{
+            width: "100%",
+          }}
         />
         <ErrorMessage message={errorMessage} />
       </Container>
