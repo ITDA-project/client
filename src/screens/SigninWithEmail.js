@@ -74,6 +74,9 @@ const SigninWithEmail = ({ navigation }) => {
           returnKeyType="next"
           value={email}
           onChangeText={_handleEmailChange}
+          containerStyle={{
+            width: "100%",
+          }}
         />
         <Input
           label="비밀번호"
@@ -81,6 +84,9 @@ const SigninWithEmail = ({ navigation }) => {
           value={password}
           onChangeText={_handlePasswordChange}
           isPassword={true}
+          containerStyle={{
+            width: "100%",
+          }}
         />
         <Button
           title="비밀번호를 잊으셨나요?"

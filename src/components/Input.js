@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 
 const Container = styled.View`
   flex-direction: column;
-  width: 100%;
   margin: 10px 0;
 `;
 const Label = styled.Text`
@@ -41,12 +40,13 @@ const Input = forwardRef(
       maxLength,
       isPassword,
       disabled,
+      containerStyle,
     },
     ref
   ) => {
     const [isFocused, setIsFocused] = useState(false);
     return (
-      <Container>
+      <Container style={containerStyle}>
         <Label isFocused={isFocused}>{label}</Label>
         <StyledInput
           ref={ref}
@@ -79,6 +79,7 @@ Input.propTypes = {
   maxLength: PropTypes.number,
   isPassword: PropTypes.bool,
   disabled: PropTypes.bool,
+  containerStyle: PropTypes.object,
 };
 
 export default Input;
