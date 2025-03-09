@@ -19,12 +19,11 @@ import profileIconActive from '../../assets/icons/profileIcon_.png';
 
 const Tab=createBottomTabNavigator();
 
-const Home=()=>{
+const Home=()=>{ 
     
     const theme=useContext(ThemeContext);
 
     return(
-       
         <Tab.Navigator initialRouteName="MainPage" screenOptions={{
             tabBarShowLabel: false, headerShown: false,
           }}>
