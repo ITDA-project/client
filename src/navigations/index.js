@@ -1,11 +1,15 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import Auth from "./Auth";
+import { createStackNavigator } from "@react-navigation/stack";
+import Home from "./Home";
+import Main from "./Main";
+
+const Stack = createStackNavigator(); 
 
 const Navigation = () => {
   return (
     <NavigationContainer>
-      <Auth />
+      <Main/>
     </NavigationContainer>
   );
 };
