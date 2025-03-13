@@ -2,11 +2,8 @@ import React, { useContext } from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import styled from "styled-components/native";
 import { MaterialIcons ,Feather} from "@expo/vector-icons";
-import { ThemeContext } from "styled-components/native";
-import Button from "../components/Button";
 import Header from "../components/Header";
 import Review from "../components/Review";
-
 // 스타일
 
 const Container = styled.View`
@@ -64,13 +61,6 @@ const StarText = styled.Text`
   margin-left: 5px;
 `;
 
-const EditButton = styled.View`
-  margin-top: 10px;
-  margin-bottom: 10px;
-  justify-content: center;
-  align-items: center;
-`;
-
 
 const SectionTitle = styled.Text`
   font-size: 18px;
@@ -104,7 +94,7 @@ const Placeholder = styled.Text`
 
 const ReviewContainer = styled.ScrollView`
   margin-top: 20px;
-  height: 300px;
+  height: 500px;
   margin-left: 5px;
 `;
 
@@ -112,19 +102,6 @@ const ReviewScrollContainer = styled.ScrollView`
   max-height: 400px;
 `;
 
-
-const ButtonContainer = styled.View`
-  position: absolute;
-  bottom: 30px;
-  left: 0;
-  right: 0;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 20px;
-  background-color: white;
-  gap: 15px;
-`;
 
 const Divider = styled.View`
   height: 1px;
@@ -149,21 +126,19 @@ dummyUser.totalStar = dummyUser.reviews.length > 0
   ? (dummyUser.reviews.reduce((acc, review) => acc + review.star, 0) / dummyUser.reviews.length).toFixed(1) 
   : "0.0";
 
-const Profile = ({ navigation, route }) => {
-    const theme = useContext(ThemeContext);
+const PublicProfile = ({ route }) => {
+   
     const user = route?.params?.user || dummyUser; //더미데이터 사용용
     
     
     return (
-    
-      
-      <Container>  
+    <Container>  
       <ScrollView style={{ flex: 1, backgroundColor: "#fff", paddingHorizontal: 5 }}>
-      
-      <Header title="프로필" />
+        {/* 헤더 */}
+        <Header title="프로필" />
       
   
-       
+        {/* 프로필 정보 */}
         <ProfileContainer>
           <ProfileImageContainer>
             {user.image ? (
@@ -181,12 +156,8 @@ const Profile = ({ navigation, route }) => {
           </UserInfo>
         </ProfileContainer>
         
-        
-        <EditButton>
-          <Button title="사진 / 경력 수정" onPress={() => navigation.navigate("EditProfile")} primary width={340} heigth={35} />
-        </EditButton>
   
-       
+        {/* 경력 */}
         <CareerContainer>
           <SectionTitle>경력</SectionTitle>
           <SectionContent>
@@ -196,6 +167,7 @@ const Profile = ({ navigation, route }) => {
         
         <Divider/>
 
+        {/* 리뷰 */}
         <ReviewContainer>
           <SectionTitle>리뷰</SectionTitle>
           <ReviewScrollContainer>
@@ -208,16 +180,12 @@ const Profile = ({ navigation, route }) => {
         </ReviewContainer>
       </ScrollView>
         
- 
-      <ButtonContainer>
-        <Button title="로그아웃" onPress={() => console.log("로그아웃")} primary />
-        <Button title="회원탈퇴" onPress={() => console.log("회원탈퇴")} secondary />
-      </ButtonContainer>
-      
+        
+     
     </Container>
     );
   };
   
 
-export default Profile;
+export default PublicProfile;
 
