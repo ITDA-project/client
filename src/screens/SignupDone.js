@@ -10,7 +10,6 @@ const Container = styled.View`
   align-items: center;
   background-color: ${({ theme }) => theme.colors.white};
   padding: 0 30px;
-  padding-top: ${({ insets: { top } }) => top}px;
   padding-bottom: ${({ insets: { bottom } }) => bottom + 50}px;
 `;
 const FooterContainer = styled.View`
