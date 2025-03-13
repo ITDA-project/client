@@ -59,7 +59,7 @@ const GenderLabel = styled.Text`
   color: ${({ theme }) => theme.colors.black};
 `;
 
-const Signup = () => {
+const Signup = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
 
@@ -262,7 +262,7 @@ const Signup = () => {
 
         <Button
           title="가입"
-          onPress={() => console.log("가입")}
+          onPress={() => navigation.navigate("회원가입 완료")}
           disabled={disabled}
           containerStyle={{
             width: "100%",
