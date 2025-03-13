@@ -1,10 +1,10 @@
 import React,{useState,useContext} from "react";
-import styled from "styled-components/native";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet,Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import {ThemeContext} from 'styled-components/native';
-
+import Button from "../components/Button";
+import Header from "../components/Header";
 
   const AllPosts = ({ route }) => {
     const theme=useContext(ThemeContext);
@@ -16,61 +16,28 @@ import {ThemeContext} from 'styled-components/native';
         
         sortContainer: {flexDirection: "row",marginTop:10, marginBottom: 10,marginLeft:230,},
         sortButton: { height:25, width:60, borderRadius: 20, backgroundColor: "#E9E9E9", marginRight: 5, justifyContent:'center',alignItems:'center',},
-         
+        sortText: {fontSize: 14, color: "#8C8C8C",}, 
         selectedSort: {backgroundColor: theme.colors.tabBlue, },
-        sortText: {
-          fontSize: 14,
-          color: "#8C8C8C",
-        },
-        selectedText: {
-          color: theme.colors.mainBlue,
+        selectedText: {color: theme.colors.mainBlue,},
+        
+        postItem: {paddingBottom:15, paddingVertical: 15,borderBottomWidth: 1,borderBottomColor: "#eee",},
+        postTitle: {fontSize: 18,fontWeight: "bold",},
+        postInfo: {flexDirection: "row", justifyContent: "space-between",marginTop: 5,},
+        postDate: {color: "#666",},
 
-        },
-        postItem: {
-        paddingBottom:15,
-          paddingVertical: 15,
-          borderBottomWidth: 1,
-          borderBottomColor: "#eee",
-        },
-        postTitle: {
-          fontSize: 18,
-          fontWeight: "bold",
-        },
-        postInfo: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginTop: 5,
-        },
-        postDate: {
-          color: "#666",
-        },
-        likesContainer: {
-          flexDirection: "row",
-          alignItems: "center",
-        },
-        likesText: {
-          marginLeft: 5,
-          color: "#666",
-        },
-        writeButton: {
-        height:45,
-        width: 95,
+        likesContainer: {flexDirection: "row", alignItems: "center",},
+        likesText: {marginLeft: 5,color: "#666",},
+
+        ButtonContainer: {
         position: "absolute",
         bottom: 30,
-        right: 20,
-        backgroundColor: theme.colors.mainBlue,
+        right: 5,
         paddingHorizontal: 20,
         paddingVertical: 10,
-        borderRadius: 10,
         justifyContent:'center',
         alignItems:'center',
         },
-        writeButtonText: {
-          color: theme.colors.white,
-          fontSize: 16,
-          fontWeight: "bold",
-          textAlign:'center',
-        },
+        
       });
 
     const navigation = useNavigation();
@@ -80,21 +47,17 @@ import {ThemeContext} from 'styled-components/native';
     // 정렬된 데이터 생성
     const sortedMeetings = [...meetings].sort((a, b) => {
       if (selectedSort === "latest") {
-        return new Date(b.date) - new Date(a.date); // 최신순 (날짜 내림차순)
+        return new Date(b.created_at) - new Date(a.created_at); // 최신순 (날짜 내림차순)
       } else {
         return b.likes - a.likes; // 인기순 (좋아요 내림차순)
       }
     });
+    
   
     return (
     <View style={styles.container}>
         {/* 헤더 */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() =>navigation.goBack()} hitSlop={{ top: 20, bottom: 20, left: 30, right: 30 }} > {/*❌뒤로가기 수정 필요(터치범위 인식 잘 안됨)*/ }
-            <Feather name="arrow-left" size={24} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>전체글</Text>
-        </View>
+        <Header title="전체글"/>
   
         {/* 정렬 버튼 */}
         <View style={styles.sortContainer}>
@@ -119,7 +82,7 @@ import {ThemeContext} from 'styled-components/native';
             <View style={styles.postItem}>
               <Text style={styles.postTitle}>{item.title}</Text>
               <View style={styles.postInfo}>
-                <Text style={styles.postDate}>{item.date}</Text>
+                <Text style={styles.postDate}>{item.created_at}</Text>
                 <View style={styles.likesContainer}>
                   <Feather name="heart" size={16} color="#ccc" />
                   <Text style={styles.likesText}>{item.likes}</Text>
@@ -130,12 +93,9 @@ import {ThemeContext} from 'styled-components/native';
         />
   
         {/* 글쓰기 버튼 */}
-        <TouchableOpacity 
-          style={styles.writeButton} 
-          onPress={() => navigation.navigate("WritePost")}
-        >
-          <Text style={styles.writeButtonText}>글쓰기</Text>
-        </TouchableOpacity>
+        <View style={styles.ButtonContainer}>
+          <Button title="글쓰기" onPress={() => console.log("글쓰기")} primary />
+        </View>
     </View>
     );
   };
