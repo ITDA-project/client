@@ -1,36 +1,161 @@
-import React from "react";
-import { View, Text, TextInput, Button } from "react-native";
-import styled from "styled-components/native";
+import React, { useState, useContext, useEffect } from "react";
+import { Button, ErrorMessage } from "../components";
+import Input from "../components/Input";
+import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { validateEmail, removeWhitespace } from "../utils";
 
-const Container = styled(View)`
+const Container = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
   background-color: ${({ theme }) => theme.colors.white};
+  padding: 0 30px;
+  padding-top: ${({ insets: { top } }) => top}px;
+  padding-bottom: ${({ insets: { bottom } }) => bottom + 50}px;
+`;
+const FooterContainer = styled.View`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: 50px;
+  align-items: center;
+  width: 100%;
 `;
 
-const Input = styled(TextInput)`
-  width: 80%;
-  height: 50px;
-  border: 1px solid ${({ theme }) => theme.colors.grey};
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 10px;
-`;
+const SigninWithEmail = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  const theme = useContext(ThemeContext);
 
-const SigninWithEmail = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [disabled, setDisabled] = useState(true);
+
+  useEffect(() => {
+    setDisabled(!(email && password && !errorMessage));
+  }, [email, password, errorMessage]);
+
+  const _handleEmailChange = (email) => {
+    const changeEmail = removeWhitespace(email);
+    setEmail(changeEmail);
+
+    setErrorMessage(
+      validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요"
+    );
+  };
+
+  const _handlePasswordChange = (password) => {
+    const changePassword = removeWhitespace(password);
+    setPassword(changePassword);
+
+    setErrorMessage(changePassword != "" ? "" : "비밀번호를 입력해주세요");
+  };
+
+  const _handleSigninBtnPress = async () => {
+    //백이랑 연결하고 나서 회원정보가 일치하지 않는다는 에러 메세지 추가할 것
+    console.log("로그인버튼 누름");
+    navigate("main");
+  };
+
   return (
-    <Container>
-      <Logo width={130} height={30} />
-      <Text>로그인</Text>
-      <Input placeholder="이메일" />
-      <Input placeholder="비밀번호" secureTextEntry />
-      <Button
-        title="로그인"
-        onPress={() => console.log("로그인 버튼 클릭됨")}
-      />
-    </Container>
+    <KeyboardAwareScrollView
+      extraScrollHeight={20}
+      contentContainerStyle={{ flex: 1 }}
+    >
+      <Container insets={insets}>
+        <Logo style={{ marginBottom: 50 }} />
+        <Input
+          label="이메일"
+          placeholder="example@email.com"
+          returnKeyType="next"
+          value={email}
+          onChangeText={_handleEmailChange}
+          containerStyle={{
+            width: "100%",
+          }}
+        />
+        <Input
+          label="비밀번호"
+          returnKeyType="done"
+          value={password}
+          onChangeText={_handlePasswordChange}
+          isPassword={true}
+          containerStyle={{
+            width: "100%",
+          }}
+        />
+        <Button
+          title="비밀번호를 잊으셨나요?"
+          onPress={() => navigation.navigate("비밀번호 찾기")}
+          containerStyle={{
+            alignItems: "flex-end",
+            height: 20,
+            marginTop: 0,
+            marginBottom: 30,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            backgroundColor: "transparent",
+          }}
+          textStyle={{
+            color: theme.colors.mainBlue,
+            fontSize: 15,
+            fontFamily: theme.fonts.regular,
+            textDecorationLine: "underline",
+          }}
+        />
+        <Button
+          title="로그인"
+          onPress={_handleSigninBtnPress}
+          disabled={!email || !password}
+          containerStyle={{
+            width: "100%",
+          }}
+        />
+        <ErrorMessage message={errorMessage} />
+      </Container>
+      <FooterContainer>
+        <Button
+          title="아직 회원이 아니시라면?"
+          onPress={() => navigation.navigate("회원가입")}
+          containerStyle={{
+            height: 25,
+            marginTop: 0,
+            marginBottom: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            backgroundColor: "transparent",
+          }}
+          textStyle={{
+            color: theme.colors.grey,
+            fontSize: 15,
+            fontFamily: theme.fonts.regular,
+          }}
+        />
+        <Button
+          title="이메일로 회원가입"
+          onPress={() => navigation.navigate("회원가입")}
+          containerStyle={{
+            height: 25,
+            marginTop: 0,
+            marginBottom: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            backgroundColor: "transparent",
+          }}
+          textStyle={{
+            color: theme.colors.black,
+            fontSize: 16,
+            fontFamily: theme.fonts.bold,
+          }}
+        />
+      </FooterContainer>
+    </KeyboardAwareScrollView>
   );
 };
 

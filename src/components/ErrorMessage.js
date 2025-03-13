@@ -9,6 +9,8 @@ const StyledText = styled.Text`
   margin-bottom: 10px;
   line-height: 20px;
   color: ${({ theme }) => theme.colors.red};
+  font-size: 15px;
+  font-family: ${({ theme }) => theme.fonts.regular};
 `;
 
 const ErrorMessage = ({ message }) => {
