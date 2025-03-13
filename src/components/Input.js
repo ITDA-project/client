@@ -4,11 +4,10 @@ import PropTypes from "prop-types";
 
 const Container = styled.View`
   flex-direction: column;
-  margin: 10px 0;
+  margin: 5px 0;
 `;
 const Label = styled.Text`
   font-size: 15px;
-  font-weight: 600;
   margin-bottom: 6px;
   color: ${({ theme }) => theme.colors.grey};
   font-family: ${({ theme }) => theme.fonts.regular};

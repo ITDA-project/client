@@ -1,32 +1,51 @@
-import React from "react";
+import React, { useEffect, useCallback, useState } from "react";
+import { AppRegistry, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "styled-components";
 import theme from "./theme";
 import Navigation from "./navigations";
+import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import { useFonts } from "expo-font";
-import AppLoading from "expo-app-loading";
 
-const loadFonts = () => {
-  return Font.loadAsync({
-    NanumSquare_acB: require("../assets/fonts/NanumSquare_acB.ttf"),
-    NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
-  });
-};
+SplashScreen.preventAutoHideAsync();
 
 const App = () => {
-  const [fontsLoaded] = useFonts({
-    NanumSquare_acB: require("../assets/fonts/NanumSquare_acB.ttf"),
-    NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
-  });
+  const [appIsReady, setAppIsReady] = useState(false);
 
-  if (!fontsLoaded) {
-    return <AppLoading />;
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await Font.loadAsync({
+          NanumSquare_acB: require("../assets/fonts/NanumSquare_acB.ttf"),
+          NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
+        });
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
   }
+
   return (
     <ThemeProvider theme={theme}>
-      <StatusBar style="auto" />
-      <Navigation />
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <StatusBar style="auto" />
+        <Navigation />
+      </View>
     </ThemeProvider>
   );
 };
