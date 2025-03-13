@@ -30,7 +30,7 @@ const MainPage = () => {
   
     categoryContainer: {
         marginTop: 30, // 검색창과 카테고리 간의 간격
-        marginBottom: 30, // 카테고리와 모임 목록 간의 간격
+        marginBottom: 20, // 카테고리과 모임 목록 간의 간격
         flexDirection: 'row',
         justifyContent: 'space-between', // 아이콘 사이에 공간을 자동으로 분배
         paddingHorizontal: 10,
@@ -78,48 +78,43 @@ const categories=[
     { id: '6', name: '게임', image:require("../../assets/icons/categoriGame.png") },  
   ];
 // 더미 데이터
-const latestMeetings = [
-  { id: '1', title: '함께 뜨개질해요!', date: '2025.02.17', likes: 7 },
-  { id: '2', title: '퇴근 후 한강 러닝 크루 모집', date: '2025.02.11', likes: 5 },
-  { id: '3', title: '볼링 동호회 회원 모집', date: '2025.01.25', likes: 13 },
-  { id: '4', title: '테니스 동호회 회원 모집', date: '2025.01.20', likes: 15 },
-  { id: '5', title: '주말에 배드민턴 쳐요', date: '2025.01.20', likes: 10 },
-
+const meetings = [
+  { id: '1', title: '함께 뜨개질해요!', created_at: '2025.02.17', likes: 7 },
+  { id: '2', title: '퇴근 후 한강 러닝 크루 모집', created_at: '2025.02.11', likes: 5 },
+  { id: '3', title: '볼링 동호회 회원 모집', created_at: '2025.01.25', likes: 13 },
+  { id: '4', title: '테니스 동호회 회원 모집', created_at: '2025.01.20', likes: 15 },
+  { id: '5', title: '주말에 배드민턴 쳐요', created_at: '2025.01.20', likes: 10 },
+  { id: '6', title: '돈까스 맛집 탐방', created_at: '2025.01.20', likes: 20 },
+  { id: "7", title: "소믈리에 와인 모임", created_at: "2025.02.12", likes: 15 },
+  { id: "8", title: "주말 캠핑 동호회", created_at: "2025.01.28", likes: 10 },
+  { id: "9", title: "주말 요가 클래스", created_at: "2025.01.30", likes: 13 },
+  { id: "10", title: "프랑스어 스터디", created_at: "2025.02.01", likes: 6 },
 ];
 
-const popularMeetings = [
-  { id: '6', title: '돈까스 맛집 탐방', date: '2025.01.20', likes: 20 },
-  { id: "7", title: "소믈리에 와인 모임", date: "2025.02.12", likes: 15 },
-  { id: "8", title: "주말 캠핑 동호회", date: "2025.01.28", likes: 10 },
-  { id: "9", title: "주말 요가 클래스", date: "2025.01.30", likes: 13 },
-  { id: "10", title: "프랑스어 스터디", date: "2025.02.01", likes: 6 },
-];
-
-
+const latestMeetings=[...meetings].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+const popularMeetings=[...meetings].sort((a, b) => b.likes - a.likes);
 
 // 게시글 목록 컴포넌트
 const PostList = ({ data }) => (
-  <FlatList
-    data={data}
-    keyExtractor={(item) => item.id}
-    renderItem={({ item }) => (
-      <TouchableOpacity style={styles.listItem}>
+  <View>
+    {data.slice(0, 3).map((item) => (
+      <TouchableOpacity key={item.id} style={styles.listItem}>
         <Text style={styles.listTitle}>{item.title}</Text>
         <View style={styles.listInfo}>
-          <Text style={styles.listDate}>{item.date}</Text>
+          <Text style={styles.listDate}>{item.created_at}</Text>
           <View style={styles.likesContainer}>
             <Feather name="heart" size={16} color="#888" />
             <Text style={styles.likesText}>{item.likes}</Text>
           </View>
         </View>
       </TouchableOpacity>
-    )}
-  />
+    ))}
+  </View>
 );
 
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
         <LogoContainer>
             <Logo width={130} height={30} />
         </LogoContainer>
@@ -144,19 +139,19 @@ const PostList = ({ data }) => (
   )}
         />
 
-      {/* 최신 모임 */}
+      {/* 최신 모임 섹션 */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>최신 모임</Text>
-        <TouchableOpacity onPress={()=>navigation.navigate("AllPosts",{meetings: latestMeetings || []})}>
+        <TouchableOpacity onPress={() => navigation.navigate("AllPosts", { meetings: latestMeetings })}>
           <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
         </TouchableOpacity>
       </View>
-      <PostList data={latestMeetings.slice(0,3)} />
-      
-      {/* 주간 인기 소모임 */}
+      <PostList data={latestMeetings} />
+
+      {/* 주간 인기 소모임 섹션 */}
       <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
-      <PostList data={[...popularMeetings].sort((a, b) => b.likes - a.likes).slice(0, 3)} /> 
-    </View>
+      <PostList data={popularMeetings} />
+    </ScrollView>
   );
 };
 
