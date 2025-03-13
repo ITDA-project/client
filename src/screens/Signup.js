@@ -5,6 +5,7 @@ import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils";
+
 const Container = styled.View`
   flex: 1;
   justify-content: center;
@@ -103,6 +104,7 @@ const Signup = () => {
 
     // 한글 제거 (정규식)
     changeEmail = changeEmail.replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, "");
+
     setEmail(changeEmail);
 
     setEmailErrorMessage(

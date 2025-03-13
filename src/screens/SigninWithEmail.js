@@ -64,7 +64,11 @@ const SigninWithEmail = ({ navigation }) => {
   }, []);
 
   const _handleEmailChange = (email) => {
-    const changeEmail = removeWhitespace(email);
+    let changeEmail = removeWhitespace(email);
+
+    // 한글 제거 (정규식)
+    changeEmail = changeEmail.replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, "");
+
     setEmail(changeEmail);
 
     setErrorMessage(
