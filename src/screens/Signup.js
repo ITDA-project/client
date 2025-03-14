@@ -180,13 +180,13 @@ const Signup = ({ navigation }) => {
               marginTop: 32,
               paddingTop: 0,
               paddingBottom: 0,
-              paddingLeft: 0,
-              paddingRight: 8,
             }}
             textStyle={{
+              width: 52,
               color: theme.colors.white,
               fontSize: 15,
               fontFamily: theme.fonts.bold,
+              marginLeft: 0,
             }}
           />
         </EmailContainer>
@@ -269,6 +269,7 @@ const Signup = ({ navigation }) => {
           containerStyle={{
             width: "100%",
           }}
+          textStyle={{ marginLeft: 0 }}
         />
       </Container>
     </KeyboardAwareScrollView>
