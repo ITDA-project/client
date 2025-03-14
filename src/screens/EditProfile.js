@@ -46,7 +46,8 @@ const CameraIconContainer = styled.View`
 const Label = styled.Text`
   align-self: flex-start;
   font-size: 16px;
-  color: #777;
+  font-family: ${({theme}) => theme.fonts.bold};
+  color: #656565;
   margin-bottom: 10px;
 `;
 
@@ -111,7 +112,10 @@ const EditProfile = ({ navigation, route }) => {
 
       {/* 저장 버튼 */}
       <ButtonContainer>
-        <Button title="저장" onPress={handleSave} primary/>
+        <Button title="저장" onPress={handleSave} 
+        containerStyle={{ height: 40,width:100}} 
+        textStyle={{ fontSize: 16,marginLeft:0}}
+        style={{height: 40,width:100}}/>
       </ButtonContainer>
       
     </Container>

@@ -44,7 +44,7 @@ const UserInfo = styled.View`
 
 const UserName = styled.Text`
   font-size: 20px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
   margin-right: 15px;
   color: ${({ theme }) => theme.colors.mainBlue};
 `;
@@ -57,15 +57,16 @@ const StarContainer = styled.View`
 const StarText = styled.Text`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.mainBlue};
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.extraBold};
   margin-left: 5px;
 `;
 
 
 const SectionTitle = styled.Text`
   font-size: 18px;
-  font-weight: bold;
-  color: #656565
+  font-family: ${({theme}) => theme.fonts.bold};
+  color: #656565;
+  margin-bottom: 5px;
 `;
 
 const SectionContent = styled.View`
@@ -80,15 +81,17 @@ const CareerContainer = styled.View`
 `;
 
 const CareerText = styled.Text`
-  margin-top:10px;
+  margin-top:5px;
   font-size: 15px;
+  font-family: ${({theme}) => theme.fonts.regular};
   color: ${({theme})=>theme.colors.black};
 `;
+
 
 const Placeholder = styled.Text`
   font-size: 16px;
   color: ${({theme})=>theme.colors.grey};
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
   text-align: center;
 `;
 

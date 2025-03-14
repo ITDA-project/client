@@ -20,7 +20,7 @@ const Header = styled.View`
 
 const HeaderTitle = styled.Text`
   font-size: 18px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
 `;
 
 const MyPageSection = styled.View`
@@ -61,7 +61,7 @@ const UserRow = styled.View`
 
 const UserName = styled.Text`
   font-size: 20px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
   color: ${(props) => props.theme.colors.mainBlue};
 `;
 
@@ -75,7 +75,7 @@ const StarText = styled.Text`
   font-size: 14px;
   color: ${(props) => props.theme.colors.mainBlue};
   margin-left: 5px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.extraBold};
 `;
 
 const Section = styled.View`
@@ -86,9 +86,9 @@ const Section = styled.View`
 
 const SectionTitle = styled.Text`
   font-size: 18px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
   margin-bottom: 10px;
-  color:${(props) => props.theme.colors.grey};
+  color:#656565;
 `;
 
 const MeetingItem = styled.TouchableOpacity`
@@ -97,12 +97,13 @@ const MeetingItem = styled.TouchableOpacity`
 
 const MeetingTitle = styled.Text`
   font-size: 16px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.extraBold};
 `;
 
 const MeetingDate = styled.Text`
   font-size: 14px;
   color:${(props) => props.theme.colors.grey};
+  font-family: ${({theme}) => theme.fonts.regular};
   margin-top: 4px;
 `;
 

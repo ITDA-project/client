@@ -47,7 +47,7 @@ const UserInfo = styled.View`
 
 const UserName = styled.Text`
   font-size: 20px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
   margin-right: 15px;
   color: ${({ theme }) => theme.colors.mainBlue};
 `;
@@ -60,7 +60,7 @@ const StarContainer = styled.View`
 const StarText = styled.Text`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.mainBlue};
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.extraBold};
   margin-left: 5px;
 `;
 
@@ -74,8 +74,9 @@ const EditButton = styled.View`
 
 const SectionTitle = styled.Text`
   font-size: 18px;
-  font-weight: bold;
-  color: #656565
+  font-family: ${({theme}) => theme.fonts.bold};
+  color: #656565;
+  margin-bottom: 5px;
 `;
 
 const SectionContent = styled.View`
@@ -90,15 +91,16 @@ const CareerContainer = styled.View`
 `;
 
 const CareerText = styled.Text`
-  margin-top:10px;
+  margin-top:5px;
   font-size: 15px;
+  font-family: ${({theme}) => theme.fonts.regular};
   color: ${({theme})=>theme.colors.black};
 `;
 
 const Placeholder = styled.Text`
   font-size: 16px;
   color: ${({theme})=>theme.colors.grey};
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
   text-align: center;
 `;
 
@@ -109,7 +111,8 @@ const ReviewContainer = styled.ScrollView`
 `;
 
 const ReviewScrollContainer = styled.ScrollView`
-  max-height: 400px;
+  max-height: 300px;
+  
 `;
 
 
@@ -136,7 +139,7 @@ const dummyUser = {
   career: `안녕하세요~ 홍길동입니다\n저는 2024년도에 독서 모임장으로 활동하며 어쩌구저쩌구\n외라라리라랄라라란 살라살라\n이상입니다! 감사합니다! 차하하`,
   reviews: [
     { star: 4.5, text: "책임감 있게 모임을 이끌어줬어요!", created_at: "2025.02.28" },
-    { star: 5.0, text: "모두가 참여할 수 있는 재밌는 모임을 만들어 주셨어요 👍", created_at: "2025.02.28" },
+    { star: 5.0, text: "모두가 참여할 수 있는 재밌는 모임을 만들어 주셨어요 ", created_at: "2025.02.28" },
     { star: 4.0, text: "정말 유익한 시간이었습니다.", created_at: "2025.02.27" },
     { star: 4.8, text: "참여자들과 원활한 소통이 인상적이었어요.", created_at: "2025.02.26" },
     { star: 5.0, text: "친절하고 배려심 넘치는 진행이었어요.", created_at: "2025.02.25" },
@@ -183,7 +186,12 @@ const Profile = ({ navigation, route }) => {
         
         
         <EditButton>
-          <Button title="사진 / 경력 수정" onPress={() => navigation.navigate("EditProfile")} primary width={340} heigth={35} />
+          <Button 
+          title="사진 / 경력 수정" 
+          onPress={() => navigation.navigate("EditProfile")}
+          containerStyle={{ height: 40,width:340}} 
+          textStyle={{ fontSize: 16}}
+          style={{height: 40,width:340}}/>
         </EditButton>
   
        
@@ -210,8 +218,18 @@ const Profile = ({ navigation, route }) => {
         
  
       <ButtonContainer>
-        <Button title="로그아웃" onPress={() => console.log("로그아웃")} primary />
-        <Button title="회원탈퇴" onPress={() => console.log("회원탈퇴")} secondary />
+        <Button 
+        title="로그아웃" 
+        onPress={() => console.log("로그아웃")} 
+        containerStyle={{ height: 40 ,width:95}} 
+        textStyle={{ fontSize: 16,marginLeft:0}}
+        style={{height: 40,width:95}}/>
+        <Button 
+        title="회원탈퇴" 
+        onPress={() => console.log("회원탈퇴")} 
+        containerStyle={{ backgroundColor:theme.colors.lightBlue,height: 40,width:95}} 
+        textStyle={{ color: theme.colors.black,fontSize: 16,marginLeft:0}}
+        style={{height: 40,width:95}}/> 
       </ButtonContainer>
       
     </Container>
