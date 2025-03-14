@@ -11,22 +11,21 @@ import Header from "../components/Header";
 
     const styles = StyleSheet.create({
         container: {flex: 1, backgroundColor: "#fff",paddingHorizontal: 20, },
-        header: {flexDirection: "row",alignItems: "center",justifyContent:'space-between',marginTop:40,paddingVertical: 15,position:'relative',},
-        headerTitle: {fontSize: 18,fontWeight: "bold", textAlign:'center',position:'absolute',left:0,right:0,},
+        
         
         sortContainer: {flexDirection: "row",marginTop:10, marginBottom: 10,marginLeft:230,},
         sortButton: { height:25, width:60, borderRadius: 20, backgroundColor: "#E9E9E9", marginRight: 5, justifyContent:'center',alignItems:'center',},
-        sortText: {fontSize: 14, color: "#8C8C8C",}, 
+        sortText: {fontSize: 14, color: "#8C8C8C",fontFamily: theme.fonts.regular}, 
         selectedSort: {backgroundColor: theme.colors.tabBlue, },
         selectedText: {color: theme.colors.mainBlue,},
         
         postItem: {paddingBottom:15, paddingVertical: 15,borderBottomWidth: 1,borderBottomColor: "#eee",},
-        postTitle: {fontSize: 18,fontWeight: "bold",},
+        postTitle: {fontSize: 18,fontFamily: theme.fonts.extraBold,},
         postInfo: {flexDirection: "row", justifyContent: "space-between",marginTop: 5,},
-        postDate: {color: "#666",},
+        postDate: {color: theme.colors.grey,fontFamily: theme.fonts.regular, marginTop: 3},
 
         likesContainer: {flexDirection: "row", alignItems: "center",},
-        likesText: {marginLeft: 5,color: "#666",},
+        likesText: {marginLeft: 5,color: "#979C9E",fontFamily: theme.fonts.bold},
 
         ButtonContainer: {
         position: "absolute",
@@ -79,7 +78,7 @@ import Header from "../components/Header";
           data={sortedMeetings}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <View style={styles.postItem}>
+            <TouchableOpacity style={styles.postItem} onPress={()=>console.log("게시글 상세보기")}>
               <Text style={styles.postTitle}>{item.title}</Text>
               <View style={styles.postInfo}>
                 <Text style={styles.postDate}>{item.created_at}</Text>
@@ -88,13 +87,17 @@ import Header from "../components/Header";
                   <Text style={styles.likesText}>{item.likes}</Text>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
   
         {/* 글쓰기 버튼 */}
         <View style={styles.ButtonContainer}>
-          <Button title="글쓰기" onPress={() => console.log("글쓰기")} primary />
+          <Button title="글쓰기" 
+          onPress={() => console.log("글쓰기")}
+          containerStyle={{ height: 40,width:95}} 
+          textStyle={{ fontSize: 16,marginLeft:0}}
+          style={{height: 40,width:95}} />
         </View>
     </View>
     );
