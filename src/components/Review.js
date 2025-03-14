@@ -3,7 +3,7 @@ import styled from "styled-components/native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 const Container = styled.View`
-  margin-top: 10px;
+  margin-top: 8px;
   margin-bottom: 10px;
   flex-direction: column;
 `;
@@ -16,19 +16,22 @@ const StarContainer = styled.View`
 const StarText = styled.Text`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.mainBlue};
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.extraBold};
   margin-left: 5px;
 `;
 
 const Content = styled.Text`
   font-size: 14px;
+  font-family: ${({theme}) => theme.fonts.regular};
   color: ${({ theme }) => theme.colors.black};
+  margin-top: 5px;
 `;
 
 const DateText = styled.Text`
   font-size: 12px;
-  color: #999;
-  margin-top: 3px;
+  font-family: ${({theme}) => theme.fonts.regular};
+  color: ${({theme})=>theme.colors.grey};
+  margin-top: 4px;
 `;
 
 const Review = ({ star, text, created_at }) => {

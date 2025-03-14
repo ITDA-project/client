@@ -15,10 +15,10 @@ const HeaderContainer = styled(View)`
 
 const HeaderTitle = styled(Text)`
   font-size: 18px;
-  font-weight: bold;
+  font-family: ${({theme}) => theme.fonts.bold};
   text-align: center;
-  flex: 1;
- 
+  flex:1;
+
 `;
 
 const Header = ({title}) => {
@@ -30,6 +30,7 @@ const Header = ({title}) => {
           <Feather name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
         <HeaderTitle>{title}</HeaderTitle>
+        <View style={{width:24}}/>
       </HeaderContainer>
     );
   };

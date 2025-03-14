@@ -1,34 +1,53 @@
 import React from "react";
-import { TouchableOpacity, Text } from "react-native";
+import { TouchableOpacity, Image } from "react-native";
 import styled from "styled-components/native";
+import PropTypes from "prop-types";
 
-//primary:파란색 버튼, secondary:연한파란색 버튼
-const StyledButton = styled(TouchableOpacity)`
-  padding: 10px 20px;
-  border-radius: 8px;
+const Container = styled.View`
+  background-color: ${({ theme }) => theme.colors.mainBlue};
+  padding: 12px 16px;
+  margin: 10px 0;
   justify-content: center;
   align-items: center;
-  background-color: ${({ primary, secondary, theme }) =>
-    primary ? theme.colors.mainBlue : secondary ? "#E0ECF8" : "#ccc"};
-   width: ${({ width }) => (width ? `${width}px` : "95px")}; 
-   height: ${({ height }) => (height ? `${height}px` : "40px")}; 
+  border-radius: 5px;
+  height: 50px;
+  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
+`;
+const Title = styled.Text`
+  font-size: 20px;
+  font-family: ${({ theme }) => theme.fonts.bold};
+  color: ${({ theme }) => theme.colors.white};
+  margin-left: 10px;
 `;
 
-const ButtonText = styled(Text)`
-  font-size: 15px;
-  font-weight: bold;
-  color: ${({ primary, secondary, theme }) =>
-    primary ? theme.colors.white : secondary ? theme.colors.mainBlue : theme.colors.black};
-`;
-
-const Button = ({ title, onPress, primary, secondary,width,heigth }) => {
+const Button = ({
+  title,
+  onPress,
+  containerStyle,
+  textStyle,
+  disabled,
+  icon,
+}) => {
   return (
-    <StyledButton onPress={onPress} primary={primary} secondary={secondary} width={width} heigth={heigth}>
-      <ButtonText primary={primary} secondary={secondary}>{title}</ButtonText>
-    </StyledButton>
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={{ flexDirection: "row" }}
+    >
+      <Container style={containerStyle} disabled={disabled}>
+        {icon && <Image source={icon} style={{ width: 20, height: 20 }} />}
+        <Title style={textStyle}>{title}</Title>
+      </Container>
+    </TouchableOpacity>
   );
 };
 
+Button.propTypes = {
+  title: PropTypes.string.isRequired,
+  onPress: PropTypes.func.isRequired,
+  containerStyle: PropTypes.object,
+  textStyle: PropTypes.object,
+  disabled: PropTypes.bool,
+};
+
 export default Button;
-
-
