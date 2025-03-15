@@ -21,6 +21,7 @@ const App = () => {
           NanumSquare_acB: require("../assets/fonts/NanumSquare_acB.ttf"),
           NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
           NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
+
         });
       } catch (e) {
         console.warn(e);
