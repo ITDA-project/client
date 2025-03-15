@@ -30,6 +30,7 @@ const Header = ({title}) => {
           <Feather name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
         <HeaderTitle>{title}</HeaderTitle>
+        <View style={{width:24}}/>
       </HeaderContainer>
     );
   };
