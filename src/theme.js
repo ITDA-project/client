@@ -9,19 +9,12 @@ const theme = {
     lightBlue: "#DBECF4", //말풍선 배경2, 완료되지 않은 상태버튼
   },
 
-  //쓸 지 안 쓸 진 모르겠지만 일단
-  fontSizes: {
-    header: "16px",
-    somoimTitle: "25px",
-    somoimText: "16px",
-    somoimOption: "15px",
-    date: "15px",
-    // 추후 추가
+  fonts: {
+    regular: "NanumSquare_acR",
+    bold: "NanumSquare_acB",
+    extraBold: "NanumSquare_acEB"
   },
-
-  weights: {
-    //
-  },
+  
 };
 
 export default theme;
