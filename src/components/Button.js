@@ -3,6 +3,7 @@ import { TouchableOpacity, Image } from "react-native";
 import styled from "styled-components/native";
 import PropTypes from "prop-types";
 
+
 const Container = styled.View`
   background-color: ${({ theme }) => theme.colors.mainBlue};
   padding: 12px 16px;

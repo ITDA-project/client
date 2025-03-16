@@ -1,3 +1,4 @@
+
 import React, { useEffect, useCallback, useState } from "react";
 import { AppRegistry, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -18,6 +19,7 @@ const App = () => {
       try {
         await Font.loadAsync({
           NanumSquare_acB: require("../assets/fonts/NanumSquare_acB.ttf"),
+          NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
           NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
         });
       } catch (e) {
