@@ -10,8 +10,10 @@ const Navigation = () => {
   return (
     <NavigationContainer>
       <Main/>
+
     </NavigationContainer>
   );
 };
 
 export default Navigation;
+
