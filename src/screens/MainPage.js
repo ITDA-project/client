@@ -22,7 +22,7 @@ const MainPage = () => {
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-    title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
+    title: { fontSize: 30, fontFamily: theme.fonts.bold, textAlign: 'center', marginBottom: 20 },
   
     searchContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderRadius: 10, paddingHorizontal: 10, borderColor: theme.colors.mainBlue},
     searchInput: { flex: 1, height: 50 },
@@ -47,6 +47,8 @@ const MainPage = () => {
         marginTop: 10,
         width: '100%',
         marginLeft:0,
+        color: theme.colors.grey,
+        fontFamily: theme.fonts.bold,
       },
 
       sectionHeader: {
@@ -55,16 +57,16 @@ const MainPage = () => {
         alignItems: 'center',      // 수직 중앙 정렬
        
       },
-    sectionTitle: { fontSize: 20, fontWeight: 'bold', marginTop: 20, marginBottom: 10, color:"#A1A1A1" },
+    sectionTitle: { fontSize: 20, fontFamily: theme.fonts.bold, marginTop: 20, marginBottom: 10, color:"#656565" },
     
-    viewAllButton: { fontSize: 16, marginLeft:'auto',fontWeight: 'bold' },
+    viewAllButton: { fontSize: 16, marginLeft:'auto',fontFamily: theme.fonts.bold},
 
     listItem: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#ddd' },
-    listTitle: { fontSize: 16, fontWeight: 'bold', color:theme.grey},
-    listInfo: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 },
-    listDate: { color: '#888' },
+    listTitle: { fontSize: 16, fontFamily: theme.fonts.extraBold, color:theme.grey},
+    listInfo: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+    listDate: { color: '#888',fontFamily: theme.fonts.regular },
     likesContainer: { flexDirection: 'row', alignItems: 'center', marginLeft:'auto',justifyContent:'center'},
-    likesText: { marginLeft: 5, color: '#888' },
+    likesText: { marginLeft: 5, color: "#979C9E", fontFamily: theme.fonts.bold },
 
   });
 
@@ -103,7 +105,7 @@ const PostList = ({ data }) => (
         <View style={styles.listInfo}>
           <Text style={styles.listDate}>{item.created_at}</Text>
           <View style={styles.likesContainer}>
-            <Feather name="heart" size={16} color="#888" />
+            <Feather name="heart" size={16} color="#979C9E" />
             <Text style={styles.likesText}>{item.likes}</Text>
           </View>
         </View>

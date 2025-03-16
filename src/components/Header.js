@@ -19,6 +19,7 @@ const HeaderTitle = styled(Text)`
   text-align: center;
   flex:1;
 
+
 `;
 
 const Header = ({title}) => {
