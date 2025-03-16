@@ -16,6 +16,7 @@ import Header from "../components/Header";
         sortContainer: {flexDirection: "row",marginTop:10, marginBottom: 10,marginLeft:230,},
         sortButton: { height:25, width:60, borderRadius: 20, backgroundColor: "#E9E9E9", marginRight: 5, justifyContent:'center',alignItems:'center',},
         sortText: {fontSize: 14, color: "#8C8C8C",fontFamily: theme.fonts.regular}, 
+
         selectedSort: {backgroundColor: theme.colors.tabBlue, },
         selectedText: {color: theme.colors.mainBlue,},
         
@@ -30,7 +31,7 @@ import Header from "../components/Header";
         ButtonContainer: {
         position: "absolute",
         bottom: 30,
-        right: 20,
+        right: 5,
         paddingHorizontal: 20,
         paddingVertical: 10,
         justifyContent:'center',
@@ -75,6 +76,7 @@ import Header from "../components/Header";
   
         {/* 게시글 리스트 */}
         <FlatList
+          showsVerticalScrollIndicator={false}
           data={sortedMeetings}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
@@ -98,6 +100,7 @@ import Header from "../components/Header";
           containerStyle={{ height: 40,width:95}} 
           textStyle={{ fontSize: 16,marginLeft:0}}
           style={{height: 40,width:95}} />
+
         </View>
     </View>
     );
