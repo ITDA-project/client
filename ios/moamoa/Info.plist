@@ -29,12 +29,25 @@
         <array>
           <string>moamoa</string>
           <string>com.csj1430.moamoa</string>
+        </array>
+      </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
           <string>kakao560d36cf1c622ef8182eeb5053a10355</string>
         </array>
       </dict>
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>KAKAO_APP_KEY</key>
+    <string>560d36cf1c622ef8182eeb5053a10355</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>kakaokompassauth</string>
+      <string>storykompassauth</string>
+      <string>kakaolink</string>
+    </array>
     <key>LSMinimumSystemVersion</key>
     <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>

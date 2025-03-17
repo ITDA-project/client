@@ -27,6 +27,17 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"]
+    "plugins": [
+      "expo-font",
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "560d36cf1c622ef8182eeb5053a10355",
+          "kakaoAppKeyScheme": "kakao560d36cf1c622ef8182eeb5053a10355",
+          "overrideKakaoSDKVersion": "2.8.6",
+          "kotlinVersion": "1.5.10"
+        }
+      ]
+    ]
   }
 }

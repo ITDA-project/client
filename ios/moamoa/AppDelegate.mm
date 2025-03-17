@@ -1,11 +1,8 @@
-//첫줄 추가
-#import <KakaoSDKCommon/KakaoSDKCommon.h>
-#import <KakaoLogin/KakaoLogin.h>
-
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
+#import <RNKakaoLogins.h>
 
 @implementation AppDelegate
 
@@ -16,9 +13,6 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
-
-  // ✅ Kakao SDK 초기화
-  [KakaoSDKCommon initSDKWithAppKey:@"560d36cf1c622ef8182eeb5053a10355"];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -39,6 +33,9 @@
 
 // Linking API
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+      if([RNKakaoLogins isKakaoTalkLoginUrl:url]) {
+  return [RNKakaoLogins handleOpenUrl: url];
+}
   return [super application:application openURL:url options:options] || [RCTLinkingManager application:application openURL:url options:options];
 }
 

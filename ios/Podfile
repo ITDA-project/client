@@ -1,3 +1,5 @@
+
+
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
 
@@ -15,7 +17,12 @@ prepare_react_native_project!
 
 target 'moamoa' do
   use_expo_modules!
-  pod 'KakaoSDKCommon', '~> 2.8'
+
+
+  #추가
+  pod 'KakaoSDKCommon', $KakaoSDKVersion
+  pod 'KakaoSDKAuth', $KakaoSDKVersion
+  pod 'KakaoSDKUser', $KakaoSDKVersion
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
@@ -65,3 +72,4 @@ target 'moamoa' do
     end
   end
 end
+$KakaoSDKVersion="2.8.6"

@@ -1,18 +1,17 @@
 import React, { useContext, useState } from "react";
-import { Image, ActivityIndicator } from "react-native";
+import { Image, ActivityIndicator, Pressable } from "react-native";
 import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import qs from "qs";
 import axios from "axios";
-import * as AuthSession from "expo-auth-session";
+import { API_URL, KAKAO_NATIVE_APP_KEY } from "@env";
+import KakaoLogins from "@react-native-seoul/kakao-login";
 
-// ✅ 카카오 REST API 키 (JavaScript 키 아님!)
-const REST_API_KEY = "임시삭제";
-
-// ✅ 백엔드 로그인 콜백 API 주소
-const BACKEND_API_URL = "https://moamoa-api.com/auth/kakao";
+console.log(API_URL);
+console.log(KAKAO_NATIVE_APP_KEY);
+console.log(KakaoLogins);
 
 // ✅ styled-components
 const Container = styled.View`
@@ -45,24 +44,30 @@ const Signin = ({ navigation }) => {
 
   const [loading, setLoading] = useState(false);
 
-  // ✅ 카카오 로그인 처리 함수
-  const kakaoLogin = async () => {
-    const redirectUri =
-      "https://8977-222-110-109-180.ngrok-free.app/kakao/callback";
+  const loginWithKakao = async () => {
+    try {
+      setLoading(true);
 
-    console.log("✅ redirectUri:", redirectUri);
+      const token = await KakaoLogins.login();
+      const profile = await KakaoLogins.getProfile();
 
-    const result = await AuthSession.startAsync({
-      authUrl: `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${REST_API_KEY}&redirect_uri=${redirectUri}`,
-    });
+      console.log("카카오 토큰:", token);
+      console.log("카카오 프로필:", profile);
 
-    if (result.type === "success") {
-      const code = result.params.code;
-      console.log("✅ 인가 코드:", code);
+      // ✅ 백엔드로 액세스 토큰과 프로필 전달
+      const backendRes = await axios.post(`${API_URL}/auth/kakao`, {
+        accessToken: token.accessToken,
+        profile,
+      });
 
-      requestToken(code, redirectUri);
-    } else {
-      console.log("❌ 로그인 실패 또는 취소:", result);
+      console.log("백엔드 응답:", backendRes.data);
+
+      // ✅ 로그인 성공 처리
+      navigation.navigate("Main");
+    } catch (error) {
+      console.error("카카오 로그인 에러:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -125,7 +130,7 @@ const Signin = ({ navigation }) => {
       {/* ✅ 카카오 로그인 버튼 */}
       <Button
         title="카카오로 시작하기"
-        onPress={kakaoLogin}
+        onPress={loginWithKakao}
         icon={require("../../assets/kakao.png")}
         containerStyle={{
           width: "100%",
