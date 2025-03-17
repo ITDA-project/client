@@ -47,6 +47,7 @@
       <string>kakaokompassauth</string>
       <string>storykompassauth</string>
       <string>kakaolink</string>
+        <string>kakaotalk</string> <!-- 이거 추가! -->
     </array>
     <key>LSMinimumSystemVersion</key>
     <string>12.0</string>
