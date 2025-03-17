@@ -2,5 +2,5 @@
 - ✨feat : 새로운 기능 추가
 - 🐞bugfix : 버그 수정
 - ♻️refactor : 리팩토링
-- 🚀deploy : 배포
+- 🎨style : 스타일
 - 📃docs : 문서 수정
