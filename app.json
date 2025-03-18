@@ -43,6 +43,9 @@
       "eas": {
         "projectId": "11a20d45-57da-4d78-aae2-cd74a3af2c13"
       }
+    },
+    "experimental": {
+      "bridgeless": false
     }
   }
 }

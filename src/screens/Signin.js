@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Image, ActivityIndicator } from "react-native";
+import { Image, ActivityIndicator, Alert } from "react-native";
 import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";

@@ -8,6 +8,7 @@ import FindPw from "../screens/FindPw";
 import SignupDone from "../screens/SignupDone";
 import DeleteAccount from "../screens/DeleteAccount"; // 나중에 여기서 빠질수도
 import { MaterialIcons } from "@expo/vector-icons";
+import Test from "../screens/test";
 
 const Stack = createStackNavigator();
 
@@ -16,6 +17,7 @@ const Auth = () => {
 
   return (
     <Stack.Navigator>
+      <Stack.Screen name="테스트" component={Test} />
       <Stack.Screen
         name="로그인"
         component={Signin}
