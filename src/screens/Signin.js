@@ -4,6 +4,7 @@ import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import NaverLogin from '@react-native-seoul/naver-login';
 
 const Container = styled.View`
   flex: 1;
@@ -31,6 +32,43 @@ const Signin = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
 
+
+  const consumerKey = "gavMwxDV6SrYay596v3X";
+  const consumerSecret = "Mtt9o9Vsp5";
+  const appName = "moamoa";
+  
+
+  // 네이버 로그인 초기화
+  
+React.useEffect(() => {
+  console.log(NaverLogin);
+  if (NaverLogin) {
+    NaverLogin.initialize({
+      appName,
+      consumerKey,
+      consumerSecret,
+      
+    });
+  } else {
+    console.log("NaverLogin is not loaded properly");
+  }
+}, []);
+
+  const _handleNaverLogin = async () => {
+    try {
+      const { successResponse, failureResponse } = await NaverLogin.login();
+      if (successResponse) {
+        setLoginSuccess(true);
+        console.log("로그인 성공", successResponse);
+      } else {
+        setLoginSuccess(false);
+        console.log("로그인 실패", failureResponse);
+      }
+    } catch (error) {
+      console.error("네이버 로그인 오류", error);
+      setLoginSuccess(false);
+    }
+  };
   return (
     <Container insets={insets}>
       <Logo style={{ marginBottom: 50 }} />
@@ -62,7 +100,7 @@ const Signin = ({ navigation }) => {
       />
       <Button
         title="네이버로 시작하기"
-        onPress={() => console.log("네이버")} //백이랑 연결할 때 함수 만들기
+        onPress={_handleNaverLogin} //백이랑 연결할 때 함수 만들기
         icon={require("../../assets/naver.png")}
         containerStyle={{
           width: "100%",
