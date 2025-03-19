@@ -4,17 +4,11 @@ import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import qs from "qs";
-import axios from "axios";
-import * as AuthSession from "expo-auth-session";
+import {
+  login,
+  getProfile as getKakaoProfile,
+} from "@react-native-seoul/kakao-login";
 
-// ✅ 카카오 REST API 키 (JavaScript 키 아님!)
-const REST_API_KEY = "임시삭제";
-
-// ✅ 백엔드 로그인 콜백 API 주소
-const BACKEND_API_URL = "https://moamoa-api.com/auth/kakao";
-
-// ✅ styled-components
 const Container = styled.View`
   flex: 1;
   justify-content: center;
@@ -44,61 +38,52 @@ const Signin = ({ navigation }) => {
   const theme = useContext(ThemeContext);
 
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState("");
 
-  // ✅ 카카오 로그인 처리 함수
-  const kakaoLogin = async () => {
-    const redirectUri =
-      "https://8977-222-110-109-180.ngrok-free.app/kakao/callback";
-
-    console.log("✅ redirectUri:", redirectUri);
-
-    const result = await AuthSession.startAsync({
-      authUrl: `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${REST_API_KEY}&redirect_uri=${redirectUri}`,
-    });
-
-    if (result.type === "success") {
-      const code = result.params.code;
-      console.log("✅ 인가 코드:", code);
-
-      requestToken(code, redirectUri);
-    } else {
-      console.log("❌ 로그인 실패 또는 취소:", result);
-    }
-  };
-
-  // ✅ 토큰 요청 및 백엔드 전달 함수
-  const requestToken = async (code, redirectUri) => {
-    setLoading(true);
-
-    const tokenUrl = "https://kauth.kakao.com/oauth/token";
-
-    const payload = qs.stringify({
-      grant_type: "authorization_code",
-      client_id: REST_API_KEY,
-      redirect_uri: redirectUri,
-      code,
-    });
-
+  const signInWithKakao = async () => {
     try {
-      // ✅ 카카오 토큰 요청
-      const res = await axios.post(tokenUrl, payload, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      setLoading(true);
+
+      // 1. 카카오 로그인
+      const token = await login();
+
+      const loginData = {
+        accessToken: token.accessToken,
+        idToken: token.idToken,
+        refreshToken: token.refreshToken,
+      };
+
+      console.log("백엔드로 보낼 로그인 데이터", loginData);
+
+      // 2. 카카오 프로필 가져오기
+      const profile = await getKakaoProfile();
+
+      // 3. 필요한 정보 추출
+      const userData = {
+        name: profile.name,
+        email: profile.email,
+        gender: profile.gender,
+        phoneNumber: profile.phoneNumber,
+      };
+
+      console.log("백엔드로 보낼 데이터", userData);
+
+      // 4. 백엔드로 전달 (예시: fetch 사용)
+      const response = await fetch("http://<백엔드-URL>/auth/kakao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
       });
 
-      const { access_token } = res.data;
-      console.log("✅ 카카오 액세스 토큰:", access_token);
+      const responseData = await response.json();
+      console.log("백엔드 응답", responseData);
 
-      // ✅ 백엔드에 토큰 전달
-      const backendRes = await axios.post(BACKEND_API_URL, {
-        access_token,
-      });
-
-      console.log("✅ 백엔드 응답:", backendRes.data);
-
-      // ✅ 로그인 성공 시 화면 이동
-      navigation.navigate("Main"); // 네비게이션 스택에 따라 경로 수정
-    } catch (error) {
-      console.error("❌ 토큰 요청 실패:", error);
+      // 5. 필요하면 토큰 저장 등 후처리
+      setResult(JSON.stringify(responseData));
+    } catch (err) {
+      console.error("카카오 로그인 실패", err);
     } finally {
       setLoading(false);
     }
@@ -122,10 +107,9 @@ const Signin = ({ navigation }) => {
         <Image source={require("../../assets/line.png")} />
       </DividerContainer>
 
-      {/* ✅ 카카오 로그인 버튼 */}
       <Button
         title="카카오로 시작하기"
-        onPress={kakaoLogin}
+        onPress={signInWithKakao}
         icon={require("../../assets/kakao.png")}
         containerStyle={{
           width: "100%",
@@ -141,7 +125,6 @@ const Signin = ({ navigation }) => {
         }}
       />
 
-      {/* ✅ 네이버 로그인 (추후 연동) */}
       <Button
         title="네이버로 시작하기"
         onPress={() => console.log("네이버 로그인 준비 중!")}
@@ -160,7 +143,6 @@ const Signin = ({ navigation }) => {
         }}
       />
 
-      {/* ✅ 이메일 회원가입 */}
       <Button
         title="이메일로 시작하기"
         onPress={() => navigation.navigate("이메일로 시작하기")}
