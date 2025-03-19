@@ -42,19 +42,50 @@ const Signin = ({ navigation }) => {
 
   const signInWithKakao = async () => {
     try {
-      const token = await login();
-      setResult(JSON.stringify(token));
-    } catch (err) {
-      console.error("login err", err);
-    }
-  };
+      setLoading(true);
 
-  const getProfile = async () => {
-    try {
+      // 1. 카카오 로그인
+      const token = await login();
+
+      const loginData = {
+        accessToken: token.accessToken,
+        idToken: token.idToken,
+        refreshToken: token.refreshToken,
+      };
+
+      console.log("백엔드로 보낼 로그인 데이터", loginData);
+
+      // 2. 카카오 프로필 가져오기
       const profile = await getKakaoProfile();
-      setResult(JSON.stringify(profile));
+
+      // 3. 필요한 정보 추출
+      const userData = {
+        name: profile.name,
+        email: profile.email,
+        gender: profile.gender,
+        phoneNumber: profile.phoneNumber,
+      };
+
+      console.log("백엔드로 보낼 데이터", userData);
+
+      // 4. 백엔드로 전달 (예시: fetch 사용)
+      const response = await fetch("http://<백엔드-URL>/auth/kakao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const responseData = await response.json();
+      console.log("백엔드 응답", responseData);
+
+      // 5. 필요하면 토큰 저장 등 후처리
+      setResult(JSON.stringify(responseData));
     } catch (err) {
-      console.error("getProfile error", err);
+      console.error("카카오 로그인 실패", err);
+    } finally {
+      setLoading(false);
     }
   };
 
