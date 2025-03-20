@@ -40,9 +40,6 @@ const Input = forwardRef(
       isPassword,
       disabled,
       containerStyle,
-      textStyle,
-      multiline = false,
-      numberOfLines = 1,
     },
     ref
   ) => {
@@ -65,10 +62,6 @@ const Input = forwardRef(
           onFocus={() => setIsFocused(true)}
           secureTextEntry={isPassword}
           editable={!disabled}
-          style={textStyle}
-          multiline={multiline}
-          numberOfLines={numberOfLines}
-          textAlignVertical={multiline ? "top" : "center"}
         />
       </Container>
     );
@@ -86,9 +79,6 @@ Input.propTypes = {
   isPassword: PropTypes.bool,
   disabled: PropTypes.bool,
   containerStyle: PropTypes.object,
-  textStyle: PropTypes.object,
-  multiline: PropTypes.bool,
-  numberOfLines: PropTypes.number,
 };
 
 export default Input;
