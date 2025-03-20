@@ -14,14 +14,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.csj1430.moamoa",
-      "newArchEnabled": true
+      "bundleIdentifier": "com.csj1430.moamoa"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1A4568",
-        "newArchEnabled": true
+        "backgroundColor": "#1A4568"
       },
       "package": "com.csj1430.moamoa"
     },
