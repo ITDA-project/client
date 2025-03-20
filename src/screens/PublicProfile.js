@@ -137,9 +137,7 @@ const PublicProfile = ({ route }) => {
     return (
     <Container>  
       <ScrollView style={{ flex: 1, backgroundColor: "#fff", paddingHorizontal: 5 }}>
-        {/* 헤더 */}
-        <Header title="프로필" />
-      
+        
   
         {/* 프로필 정보 */}
         <ProfileContainer>

@@ -3,7 +3,7 @@ import styled from "styled-components/native";
 import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-
+import axios from "axios";
 
 
 // 스타일 정의
@@ -13,20 +13,11 @@ const Container = styled.View`
   padding: 20px;
 `;
 
-const Header = styled.View`
-  align-items: center;
-  margin-top: 40px;
-`;
-
-const HeaderTitle = styled.Text`
-  font-size: 18px;
-  font-family: ${({theme}) => theme.fonts.bold};
-`;
 
 const MyPageSection = styled.View`
   flex-direction: row;
   align-items: center;
-  margin-top: 30px;
+  margin-top: 50px;
   padding-bottom: 10px;
   border-bottom-width: 1px;
   border-bottom-color: #ddd;
@@ -125,10 +116,7 @@ const MyPage = () => {
   // 백엔드에서 데이터 가져오는 함수 (현재는 가짜 데이터 사용)
   const fetchProfileData = async () => {
     try {
-      // 여기에 실제 API 요청 코드 추가 (예: fetch 또는 axios 사용)
-      // const response = await fetch("https://your-api.com/profile");
-      // const data = await response.json();
-
+      
       // 더미 데이터 (백엔드 연결 시 삭제)
       const data = {
         user: {
@@ -182,6 +170,19 @@ const MyPage = () => {
     }
   };
 
+  /*
+  const fetchProfileData = async () => {
+  try {
+    const response = await axios.get("https://your-api.com/profile");
+    setUser(response.data.user);
+    setMeetings(response.data.meetings);
+  } catch (error) {
+    console.error("데이터 불러오기 실패:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+  */
   useEffect(() => {
     fetchProfileData();
   }, []);
@@ -196,9 +197,6 @@ const MyPage = () => {
 
   return (
     <Container>
-      <Header>
-        <HeaderTitle>마이페이지</HeaderTitle>
-      </Header>
 
 
       {/* 프로필 영역 */}
@@ -219,7 +217,7 @@ const MyPage = () => {
             </StarContainer>
           </UserRow>
         </UserInfo>
-        <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+        <TouchableOpacity onPress={() => navigation.navigate("프로필")}>
           <Feather name="chevron-right" size={24} color="#999" />
         </TouchableOpacity>
       </MyPageSection>
