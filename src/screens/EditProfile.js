@@ -5,7 +5,6 @@ import * as ImagePicker from "expo-image-picker";
 import {Feather} from "@expo/vector-icons";
 import Button from "../components/Button";
 import Input from "../components/Input"
-import Header from "../components/Header";
 
 const Container = styled.View`
   flex: 1;
@@ -89,8 +88,6 @@ const EditProfile = ({ navigation, route }) => {
 
   return (
     <Container>
-        {/* 헤더 */}
-        <Header title="사진/경력 수정"/>
           
       {/* 프로필 사진 */}
       <ProfileImageContainer onPress={pickImage}>

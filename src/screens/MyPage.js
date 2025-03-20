@@ -26,7 +26,7 @@ const HeaderTitle = styled.Text`
 const MyPageSection = styled.View`
   flex-direction: row;
   align-items: center;
-  margin-top: 30px;
+  margin-top: 50px;
   padding-bottom: 10px;
   border-bottom-width: 1px;
   border-bottom-color: #ddd;
@@ -196,11 +196,7 @@ const MyPage = () => {
 
   return (
     <Container>
-      <Header>
-        <HeaderTitle>마이페이지</HeaderTitle>
-      </Header>
-
-
+    
       {/* 프로필 영역 */}
       <MyPageSection>
         <ProfileImageContainer>
@@ -219,7 +215,7 @@ const MyPage = () => {
             </StarContainer>
           </UserRow>
         </UserInfo>
-        <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+        <TouchableOpacity onPress={() => navigation.navigate("프로필")}>
           <Feather name="chevron-right" size={24} color="#999" />
         </TouchableOpacity>
       </MyPageSection>
