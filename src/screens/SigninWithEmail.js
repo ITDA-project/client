@@ -133,6 +133,7 @@ const SigninWithEmail = ({ navigation }) => {
           title="비밀번호를 잊으셨나요?"
           onPress={() => navigation.navigate("비밀번호 찾기")}
           containerStyle={{ alignItems: "flex-end" }}
+          textStyle={{ marginLeft: 0 }}
         />
         <Button
           title="로그인"
@@ -142,6 +143,7 @@ const SigninWithEmail = ({ navigation }) => {
             width: "100%",
             marginTop: 50,
           }}
+          textStyle={{ marginLeft: 0 }}
         />
         <ErrorMessage message={errorMessage} />
       </Container>
@@ -163,6 +165,7 @@ const SigninWithEmail = ({ navigation }) => {
               color: theme.colors.grey,
               fontSize: 15,
               fontFamily: theme.fonts.regular,
+              marginLeft: 0,
             }}
           />
           <Button
@@ -180,6 +183,7 @@ const SigninWithEmail = ({ navigation }) => {
               color: theme.colors.black,
               fontSize: 16,
               fontFamily: theme.fonts.bold,
+              marginLeft: 0,
             }}
           />
         </FooterContainer>

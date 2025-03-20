@@ -123,13 +123,12 @@ const FindPw = () => {
               marginTop: 32,
               paddingTop: 0,
               paddingBottom: 0,
-              paddingLeft: 0,
-              paddingRight: 8,
             }}
             textStyle={{
               color: theme.colors.white,
               fontSize: 15,
               fontFamily: theme.fonts.bold,
+              marginLeft: 0,
             }}
           />
         </EmailContainer>
@@ -183,6 +182,7 @@ const FindPw = () => {
             width: "100%",
             marginTop: 60,
           }}
+          textStyle={{ marginLeft: 0 }}
         />
       </Container>
     </KeyboardAwareScrollView>
