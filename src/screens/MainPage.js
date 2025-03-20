@@ -115,51 +115,47 @@ const PostList = ({ data }) => (
 );
 
 
-return (
-  <View style={styles.container}>
-    {/* ✅ 고정된 상단 UI */}
-    <LogoContainer>
-      <Logo width={130} height={30} />
-    </LogoContainer>
+  return (
+    <ScrollView style={styles.container}>
+        <LogoContainer>
+            <Logo width={130} height={30} />
+        </LogoContainer>
+      
+      {/* 검색창 */}
+      <View style={styles.searchContainer}>
+        <TextInput style={styles.searchInput} placeholder="검색" />
+        <Feather name="search" size={26} color="#888" style={styles.searchIcon} />
+      </View>
 
-    {/* 검색창 */}
-    <View style={styles.searchContainer}>
-      <TextInput style={styles.searchInput} placeholder="검색" />
-      <Feather name="search" size={26} color="#888" style={styles.searchIcon} />
-    </View>
+        {/* 카테고리 (Flaticon 기반 아이콘 적용) */}
+        <FlatList data={categories}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryContainer}
+          renderItem={({ item }) => (
+          <TouchableOpacity style={styles.categoryItem}>
+            <Image source={item.image} style={{width:35,height:35}} resizeMode='contain'/>
+            <Text style={styles.categoryText}>{item.name}</Text>
+          </TouchableOpacity>
+  )}
+        />
 
-    {/* 카테고리 고정 */}
-    <FlatList
-      data={categories}
-      keyExtractor={(item) => item.id}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.categoryContainer}
-      renderItem={({ item }) => (
-        <TouchableOpacity style={styles.categoryItem}>
-          <Image source={item.image} style={{ width: 35, height: 35 }} resizeMode="contain" />
-          <Text style={styles.categoryText}>{item.name}</Text>
-        </TouchableOpacity>
-      )}
-    />
-
-    {/* ✅ 아래 내용만 스크롤 가능 */}
-    <ScrollView showsVerticalScrollIndicator={false}>
-      {/* 최신 모임 */}
+      {/* 최신 모임 섹션 */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>최신 모임</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings })}>
+        <TouchableOpacity onPress={() => navigation.navigate("AllPosts", { meetings: latestMeetings })}>
           <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
         </TouchableOpacity>
       </View>
       <PostList data={latestMeetings} />
 
-      {/* 주간 인기 소모임 */}
+      {/* 주간 인기 소모임 섹션 */}
       <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
       <PostList data={popularMeetings} />
     </ScrollView>
-  </View>
-);
+  );
 };
+
 
 export default MainPage;

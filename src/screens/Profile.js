@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 import { MaterialIcons ,Feather} from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
+import Header from "../components/Header";
 import Review from "../components/Review";
 
 // 스타일
@@ -162,6 +163,9 @@ const Profile = ({ navigation, route }) => {
       <Container>  
       <ScrollView style={{ flex: 1, backgroundColor: "#fff", paddingHorizontal: 5 }}>
       
+      <Header title="프로필" />
+      
+  
        
         <ProfileContainer>
           <ProfileImageContainer>

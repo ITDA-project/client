@@ -3,14 +3,12 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet,Image } from "react-
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import {ThemeContext} from 'styled-components/native';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "../components/Button";
-
+import Header from "../components/Header";
 
   const AllPosts = ({ route }) => {
     const theme=useContext(ThemeContext);
-    const insets=useSafeAreaInsets();
-    
+
     const styles = StyleSheet.create({
         container: {flex: 1, backgroundColor: "#fff",paddingHorizontal: 20, },
         
@@ -57,7 +55,9 @@ import Button from "../components/Button";
     
   
     return (
-    <View style={[styles.container, {paddingBottom: insets.bottom }]}>
+    <View style={styles.container}>
+        {/* 헤더 */}
+        <Header title="전체글"/>
   
         {/* 정렬 버튼 */}
         <View style={styles.sortContainer}>
