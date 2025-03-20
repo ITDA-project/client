@@ -6,8 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "scheme": "moamoa",
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -28,5 +27,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": ["expo-font"]
+  },
+  "experiments": {
+    "reactNativeBridgeless": false
   }
 }

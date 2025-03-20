@@ -19,6 +19,8 @@ const App = () => {
         await Font.loadAsync({
           NanumSquare_acB: require("../assets/fonts/NanumSquare_acB.ttf"),
           NanumSquare_acR: require("../assets/fonts/NanumSquare_acR.ttf"),
+          NanumSquare_acEB: require("../assets/fonts/NanumSquare_acEB.ttf"),
+
         });
       } catch (e) {
         console.warn(e);
