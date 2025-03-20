@@ -7,7 +7,6 @@ import Signup from "../screens/Signup";
 import FindPw from "../screens/FindPw";
 import SignupDone from "../screens/SignupDone";
 import DeleteAccount from "../screens/DeleteAccount"; // 나중에 여기서 빠질수도
-import ApplicationForm from "../screens/ApplicationForm"; //나중에 삭제될지도
 import { MaterialIcons } from "@expo/vector-icons";
 
 const Stack = createStackNavigator();
@@ -16,33 +15,7 @@ const Auth = () => {
   const theme = useContext(ThemeContext);
 
   return (
-    <Stack.Navigator
-      initialRouteName="로그인"
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.colors.white,
-          elevation: 0, // 안드로이드 그림자 제거
-          shadowOpacity: 0, // iOS 그림자 제거
-          borderBottomWidth: 0, // iOS 선 제거
-        },
-        headerTitleAlign: "center",
-        headerBackTitleVisible: false,
-        headerTintColor: theme.colors.black,
-        headerTitleStyle: {
-          fontFamily: theme.fonts.bold,
-          fontSize: 16,
-        },
-        headerLeft: ({ onPress, tintColor }) => (
-          <MaterialIcons
-            name="keyboard-arrow-left"
-            size={38}
-            color={tintColor}
-            onPress={onPress}
-          />
-        ),
-      }}
-    >
-      <Stack.Screen name="신청서 작성" component={ApplicationForm} />
+    <Stack.Navigator>
       <Stack.Screen
         name="로그인"
         component={Signin}
