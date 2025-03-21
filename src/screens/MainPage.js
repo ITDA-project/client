@@ -4,14 +4,15 @@ import { ThemeContext,styled } from 'styled-components/native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import Logo from "../../assets/logo.svg";
-import AllPosts from './AllPosts';
+// ✅ API 요청을 위한 라이브러리 (fetch 대체 가능)
+import axios from "axios";
+
 
 const LogoContainer = styled.View`
   align-items: center;  
   margin-top: 60px;
   margin-bottom: 40px;
 `;
-
 
 
 
@@ -93,6 +94,27 @@ const meetings = [
   { id: "10", title: "프랑스어 스터디", created_at: "2025.02.01", likes: 6 },
 ];
 
+/*
+ const [meetings, setMeetings] = useState([]); // 🔹 백엔드에서 가져온 데이터를 저장할 상태
+  const [loading, setLoading] = useState(true); // 🔹 로딩 상태 추가
+
+  // ✅ 백엔드에서 데이터 가져오기 (GET 요청)
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const response = await axios.get("https://api.example.com/meetings"); // 백엔드 API 주소
+        setMeetings(response.data); // 가져온 데이터 저장
+      } catch (error) {
+        console.error("데이터를 불러오는 중 오류 발생:", error);
+      } finally {
+        setLoading(false); // 로딩 완료
+      }
+    };
+
+    fetchMeetings();
+  }, []);
+
+*/
 const latestMeetings=[...meetings].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 const popularMeetings=[...meetings].sort((a, b) => b.likes - a.likes);
 
@@ -116,7 +138,7 @@ const PostList = ({ data }) => (
 
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
         <LogoContainer>
             <Logo width={130} height={30} />
         </LogoContainer>
@@ -140,20 +162,21 @@ const PostList = ({ data }) => (
           </TouchableOpacity>
   )}
         />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* 최신 모임 섹션 */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>최신 모임</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings })}>
+            <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
+          </TouchableOpacity>
+        </View>
+        <PostList data={latestMeetings} />
 
-      {/* 최신 모임 섹션 */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>최신 모임</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AllPosts", { meetings: latestMeetings })}>
-          <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
-        </TouchableOpacity>
-      </View>
-      <PostList data={latestMeetings} />
-
-      {/* 주간 인기 소모임 섹션 */}
-      <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
-      <PostList data={popularMeetings} />
-    </ScrollView>
+        {/* 주간 인기 소모임 섹션 */}
+        <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
+        <PostList data={popularMeetings} />
+      </ScrollView>
+    </View>
   );
 };
 

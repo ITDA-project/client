@@ -4,7 +4,6 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import {ThemeContext} from 'styled-components/native';
 import Button from "../components/Button";
-import Header from "../components/Header";
 
   const AllPosts = ({ route }) => {
     const theme=useContext(ThemeContext);
@@ -56,8 +55,7 @@ import Header from "../components/Header";
   
     return (
     <View style={styles.container}>
-        {/* 헤더 */}
-        <Header title="전체글"/>
+
   
         {/* 정렬 버튼 */}
         <View style={styles.sortContainer}>

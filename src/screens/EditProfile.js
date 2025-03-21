@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
 import styled from "styled-components/native";
 import * as ImagePicker from "expo-image-picker";
 import {Feather} from "@expo/vector-icons";
 import Button from "../components/Button";
 import Input from "../components/Input"
-import Header from "../components/Header";
+
 
 const Container = styled.View`
   flex: 1;
@@ -48,7 +48,7 @@ const Label = styled.Text`
   font-size: 16px;
   font-family: ${({theme}) => theme.fonts.bold};
   color: #656565;
-  margin-bottom: 10px;
+  margin-bottom: -10px;
 `;
 
 
@@ -61,6 +61,11 @@ const ButtonContainer = styled.View`
 const EditProfile = ({ navigation, route }) => {
   const [image, setImage] = useState(route.params?.user?.image || null);
   const [career, setCareer] = useState(route.params?.user?.career || "");
+  const [disabled, setDisabled] = useState(true);
+    
+      useEffect(() => {
+        setDisabled(career.trim().length === 0);
+      }, [career]);
 
   // 사진 선택 함수
   const pickImage = async () => {
@@ -86,11 +91,11 @@ const EditProfile = ({ navigation, route }) => {
     });
   };
   
+   
 
   return (
     <Container>
-        {/* 헤더 */}
-        <Header title="사진/경력 수정"/>
+      
           
       {/* 프로필 사진 */}
       <ProfileImageContainer onPress={pickImage}>
@@ -103,16 +108,20 @@ const EditProfile = ({ navigation, route }) => {
       {/* 경력 입력 */}
       <Label>경력</Label>
       <Input
-        height="150px"
-        placeholder="경력을 적어주세요!"
+        returnKeyType="done"
         value={career}
-        onChangeText={setCareer}
-        multiline
+        onChangeText={(text) => setCareer(text)}
+        placeholder="경력을 적어주세요!"
+        containerStyle={{ marginTop:0,width: "100%" }}
+        textStyle={{ height: 200 }}
+        multiline={true}
+        numberOfLines={10}
       />
 
       {/* 저장 버튼 */}
       <ButtonContainer>
-        <Button title="저장" onPress={handleSave} 
+        <Button title="저장" onPress={handleSave}
+        disabled={disabled} 
         containerStyle={{ height: 40,width:100}} 
         textStyle={{ fontSize: 16,marginLeft:0}}
         style={{height: 40,width:100}}/>
