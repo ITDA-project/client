@@ -13,15 +13,6 @@ const Container = styled.View`
   padding: 20px;
 `;
 
-const Header = styled.View`
-  align-items: center;
-  margin-top: 40px;
-`;
-
-const HeaderTitle = styled.Text`
-  font-size: 18px;
-  font-family: ${({theme}) => theme.fonts.bold};
-`;
 
 const MyPageSection = styled.View`
   flex-direction: row;
@@ -196,10 +187,7 @@ const MyPage = () => {
 
   return (
     <Container>
-      <Header>
-        <HeaderTitle>마이페이지</HeaderTitle>
-      </Header>
-
+     
 
       {/* 프로필 영역 */}
       <MyPageSection>
@@ -219,7 +207,7 @@ const MyPage = () => {
             </StarContainer>
           </UserRow>
         </UserInfo>
-        <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+        <TouchableOpacity onPress={() => navigation.navigate("프로필")}>
           <Feather name="chevron-right" size={24} color="#999" />
         </TouchableOpacity>
       </MyPageSection>

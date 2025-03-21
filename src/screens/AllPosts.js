@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import {ThemeContext} from 'styled-components/native';
 import Button from "../components/Button";
-import Header from "../components/Header";
+
 
   const AllPosts = ({ route }) => {
     const theme=useContext(ThemeContext);
@@ -56,8 +56,7 @@ import Header from "../components/Header";
   
     return (
     <View style={styles.container}>
-        {/* 헤더 */}
-        <Header title="전체글"/>
+      
   
         {/* 정렬 버튼 */}
         <View style={styles.sortContainer}>
@@ -96,7 +95,7 @@ import Header from "../components/Header";
         {/* 글쓰기 버튼 */}
         <View style={styles.ButtonContainer}>
           <Button title="글쓰기" 
-          onPress={() => navigation.navigate("CreatePost")}
+          onPress={() => navigation.navigate("모임생성")}
           containerStyle={{ height: 40,width:95}} 
           textStyle={{ fontSize: 16,marginLeft:0}}
           style={{height: 40,width:95}} />

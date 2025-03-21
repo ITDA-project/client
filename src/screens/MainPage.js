@@ -144,7 +144,7 @@ const PostList = ({ data }) => (
       {/* 최신 모임 섹션 */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>최신 모임</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AllPosts", { meetings: latestMeetings })}>
+        <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings })}>
           <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
         </TouchableOpacity>
       </View>

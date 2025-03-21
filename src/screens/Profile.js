@@ -4,7 +4,6 @@ import styled from "styled-components/native";
 import { MaterialIcons ,Feather} from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
-import Header from "../components/Header";
 import Review from "../components/Review";
 
 // 스타일
@@ -163,9 +162,6 @@ const Profile = ({ navigation, route }) => {
       <Container>  
       <ScrollView style={{ flex: 1, backgroundColor: "#fff", paddingHorizontal: 5 }}>
       
-      <Header title="프로필" />
-      
-  
        
         <ProfileContainer>
           <ProfileImageContainer>
@@ -188,7 +184,7 @@ const Profile = ({ navigation, route }) => {
         <EditButton>
           <Button 
           title="사진 / 경력 수정" 
-          onPress={() => navigation.navigate("EditProfile")}
+          onPress={() => navigation.navigate("사진/경력 수정")}
           containerStyle={{ height: 40,width:340}} 
           textStyle={{ fontSize: 16}}
           style={{height: 40,width:340}}/>
