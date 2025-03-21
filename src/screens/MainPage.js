@@ -172,11 +172,22 @@ const PostList = ({ data }) => (
         </View>
         <PostList data={latestMeetings} />
 
-        {/* 주간 인기 소모임 섹션 */}
-        <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
-        <PostList data={popularMeetings} />
-      </ScrollView>
+      {/* 최신 모임 섹션 */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>최신 모임</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings })}>
+          <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
+        </TouchableOpacity>
+      </View>
+      <PostList data={latestMeetings} />
+
+      {/* 주간 인기 소모임 섹션 */}
+      <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
+      <PostList data={popularMeetings} />
+    </ScrollView>
+
     </View>
+
   );
 };
 

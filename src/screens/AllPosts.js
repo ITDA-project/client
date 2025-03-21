@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import {ThemeContext} from 'styled-components/native';
 import Button from "../components/Button";
 
+
   const AllPosts = ({ route }) => {
     const theme=useContext(ThemeContext);
 
@@ -78,7 +79,7 @@ import Button from "../components/Button";
           data={sortedMeetings}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.postItem} onPress={()=>console.log("게시글 상세보기")}>
+            <TouchableOpacity style={styles.postItem} onPress={()=>console.log("게시글 상세보기")}> 
               <Text style={styles.postTitle}>{item.title}</Text>
               <View style={styles.postInfo}>
                 <Text style={styles.postDate}>{item.created_at}</Text>
@@ -94,7 +95,7 @@ import Button from "../components/Button";
         {/* 글쓰기 버튼 */}
         <View style={styles.ButtonContainer}>
           <Button title="글쓰기" 
-          onPress={() => console.log("글쓰기")}
+          onPress={() => navigation.navigate("모임생성")}
           containerStyle={{ height: 40,width:95}} 
           textStyle={{ fontSize: 16,marginLeft:0}}
           style={{height: 40,width:95}} />

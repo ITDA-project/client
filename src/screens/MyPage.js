@@ -198,7 +198,6 @@ const MyPage = () => {
   return (
     <Container>
 
-
       {/* 프로필 영역 */}
       <MyPageSection>
         <ProfileImageContainer>
