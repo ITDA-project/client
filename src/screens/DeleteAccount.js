@@ -63,6 +63,7 @@ const DeleteAccount = ({ navigation }) => {
             width: "100%",
             marginTop: 100,
           }}
+          textStyle={{ marginLeft: 0 }}
         />
       </FooterContainer>
     </KeyboardAwareScrollView>

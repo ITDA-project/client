@@ -56,7 +56,7 @@ import Button from "../components/Button";
   
     return (
     <View style={styles.container}>
-      
+
   
         {/* 정렬 버튼 */}
         <View style={styles.sortContainer}>
