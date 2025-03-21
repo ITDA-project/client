@@ -500,9 +500,9 @@ const CreatePost = () => {
             title="만들기"
             onPress={handleSubmit}
             disabled={!isFormValid()}
-            containerStyle={{ height: 40, width: 350 }}
+            containerStyle={{ height: 45, width: 350 }}
             textStyle={{ fontSize: 16 }}
-            style={{ height: 40, width: 350 }}
+            style={{ height: 45, width: 350 }}
           />
         </ButtonContainer>
       </ScrollView>
