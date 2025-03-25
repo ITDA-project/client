@@ -11,7 +11,6 @@ import Search from "./Search";
 import AllPosts from "./AllPosts";
 import Profile from "./Profile";
 import EditProfile from "./EditProfile";
-import Navertest from "./Navertest";
 
 export {
   Signin,
@@ -27,5 +26,4 @@ export {
   MyPage,
   Profile,
   EditProfile,
-  Navertest,
 };

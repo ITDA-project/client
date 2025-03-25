@@ -9,7 +9,6 @@ import SignupDone from "../screens/SignupDone";
 import DeleteAccount from "../screens/DeleteAccount"; // 나중에 여기서 빠질수도
 import ApplicationForm from "../screens/ApplicationForm"; //나중에 삭제될지도
 import { MaterialIcons } from "@expo/vector-icons";
-import Navertest from "../screens/Navertest";
 
 const Stack = createStackNavigator();
 
