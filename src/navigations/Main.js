@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import { ThemeContext } from 'styled-components/native';
 import { createStackNavigator} from '@react-navigation/stack';
-import {MainPage,Chat,Notifications,Search,MyPage,AllPosts,Profile,EditProfile,PostDetail,MyPostDetail} from '../screens';
+import {MainPage,Chat,Notifications,Search,MyPage,AllPosts,Profile,EditProfile,CreatePost,PostDetail,MyPostDetail} from '../screens';
 import Home from './Home';
 import { MaterialIcons } from "@expo/vector-icons";
+
 
 const Stack=createStackNavigator();
 
@@ -87,8 +88,8 @@ const Main = () =>{
                   onPress={onPress}
                 />
               ),
-            }}/>
-            <Stack.Screen name="MyPostDetail" component={MyPostDetail}
+            }} />
+          <Stack.Screen name="MyPostDetail" component={MyPostDetail}
             options={{
               headerTitle:"",
               headerTitleAlign: "center",
@@ -108,6 +109,25 @@ const Main = () =>{
               ),
             }}/>
       
+            <Stack.Screen name="모임생성" component={CreatePost}
+            options={{
+              headerTitleAlign: "center",
+              headerBackTitleVisible: false,
+              headerTintColor: theme.colors.black,
+              headerTitleStyle: {
+                fontFamily: theme.fonts.bold,
+                fontSize: 16,
+              },
+              headerLeft: ({ onPress, tintColor }) => (
+                <MaterialIcons
+                  name="keyboard-arrow-left"
+                  size={38}
+                  color={tintColor}
+                  onPress={onPress}
+                />
+              ),
+            }} />
+     
         </Stack.Navigator>
     );
 };
