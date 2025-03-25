@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Image, ActivityIndicator } from "react-native";
 import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
@@ -48,6 +48,15 @@ const Signin = ({ navigation }) => {
   const [success, setSuccessResponse] = useState(null);
   const [failure, setFailureResponse] = useState(null);
   const [getProfileRes, setGetProfileRes] = useState(null);
+
+  useEffect(() => {
+    NaverLogin.initialize({
+      appName,
+      consumerKey,
+      consumerSecret,
+      serviceUrlScheme,
+    });
+  }, []);
 
   const signinWithKakao = async () => {
     try {
