@@ -39,5 +39,7 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
         //추가
         maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' } 
+
     }
 }
+                    

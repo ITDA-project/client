@@ -11,6 +11,7 @@ import Search from "./Search";
 import AllPosts from "./AllPosts";
 import Profile from "./Profile";
 import EditProfile from "./EditProfile";
+import CreatePost from "./CreatePost";
 
 export {
   Signin,
@@ -26,4 +27,5 @@ export {
   MyPage,
   Profile,
   EditProfile,
+  CreatePost,
 };

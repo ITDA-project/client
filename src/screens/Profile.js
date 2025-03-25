@@ -4,8 +4,8 @@ import styled from "styled-components/native";
 import { MaterialIcons ,Feather} from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
-import Header from "../components/Header";
 import Review from "../components/Review";
+import axios from "axios";
 
 // 스타일
 
@@ -148,10 +148,24 @@ const dummyUser = {
     { star: 4.7, text: "다음에도 참여하고 싶어요!", created_at: "2025.02.22" }
   ]
 };
+
+/*
+
+const fetchProfile = async () => {
+  try {
+    const response = await axios.get("https://your-api.com/profile", {
+    
+    setUser(response.data);
+  } catch (error) {
+    console.error("프로필 데이터 불러오기 실패:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+*/
 dummyUser.totalStar = dummyUser.reviews.length > 0 
   ? (dummyUser.reviews.reduce((acc, review) => acc + review.star, 0) / dummyUser.reviews.length).toFixed(1) 
   : "0.0";
-
 const Profile = ({ navigation, route }) => {
     const theme = useContext(ThemeContext);
     const user = route?.params?.user || dummyUser; //더미데이터 사용용
@@ -163,10 +177,6 @@ const Profile = ({ navigation, route }) => {
       <Container>  
       <ScrollView style={{ flex: 1, backgroundColor: "#fff", paddingHorizontal: 5 }}>
       
-      <Header title="프로필" />
-      
-  
-       
         <ProfileContainer>
           <ProfileImageContainer>
             {user.image ? (
@@ -188,7 +198,7 @@ const Profile = ({ navigation, route }) => {
         <EditButton>
           <Button 
           title="사진 / 경력 수정" 
-          onPress={() => navigation.navigate("EditProfile")}
+          onPress={() => navigation.navigate("사진/경력 수정")}
           containerStyle={{ height: 40,width:340}} 
           textStyle={{ fontSize: 16}}
           style={{height: 40,width:340}}/>
