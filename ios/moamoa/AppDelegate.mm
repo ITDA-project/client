@@ -4,7 +4,11 @@
 #import <React/RCTLinkingManager.h>
 
 // 추가
+#import "ExpoModulesCore-Swift.h"
+
 #import <RNKakaoLogins.h>
+#import <NaverThirdPartyLogin/NaverThirdPartyLoginConnection.h>
+#import "moamoa-Swift.h"
 
 @implementation AppDelegate
 
@@ -15,6 +19,9 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
+
+  //naver
+  [NidOAuth.shared initialize];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -35,11 +42,22 @@
 
 // Linking API + Kakao
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+  if ([url.scheme isEqualToString:@"undefined"]) {
+    return [[NaverThirdPartyLoginConnection getSharedInstance] application:application openURL:url options:options];
+  }
+
 
   // 카카오톡 로그인 URL 처리
   if ([RNKakaoLogins isKakaoTalkLoginUrl:url]) {
     return [RNKakaoLogins handleOpenUrl:url];
   }
+
+  // ✅ 네이버 로그인 URL 처리 (신버전)
+  // naver
+  if ([url.scheme isEqualToString:@"com.csj1430.moamoa"]) {
+    return [[NaverThirdPartyLoginConnection getSharedInstance] application:application openURL:url options:options];
+  }
+
 
   // React Native 딥링크 처리
   BOOL result = [RCTLinkingManager application:application openURL:url options:options];

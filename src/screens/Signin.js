@@ -8,6 +8,12 @@ import {
   login,
   getProfile as getKakaoProfile,
 } from "@react-native-seoul/kakao-login";
+import NaverLogin from "@react-native-seoul/naver-login";
+
+const consumerKey = "jXwhTHdVTq8o67R0hwKd";
+const consumerSecret = "0N1OGuLkjK";
+const appName = "moaoa";
+const serviceUrlScheme = "navertest";
 
 const Container = styled.View`
   flex: 1;
@@ -39,8 +45,11 @@ const Signin = ({ navigation }) => {
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
+  const [success, setSuccessResponse] = useState(null);
+  const [failure, setFailureResponse] = useState(null);
+  const [getProfileRes, setGetProfileRes] = useState(null);
 
-  const signInWithKakao = async () => {
+  const signinWithKakao = async () => {
     try {
       setLoading(true);
 
@@ -53,7 +62,7 @@ const Signin = ({ navigation }) => {
         refreshToken: token.refreshToken,
       };
 
-      console.log("백엔드로 보낼 로그인 데이터", loginData);
+      console.log("백엔드로 보낼 카카오 로그인 데이터", loginData);
 
       // 2. 카카오 프로필 가져오기
       const profile = await getKakaoProfile();
@@ -66,7 +75,7 @@ const Signin = ({ navigation }) => {
         phoneNumber: profile.phoneNumber,
       };
 
-      console.log("백엔드로 보낼 데이터", userData);
+      console.log("백엔드로 보낼 카카오 데이터", userData);
 
       // 4. 백엔드로 전달 (예시: fetch 사용)
       const response = await fetch("http://<백엔드-URL>/auth/kakao", {
@@ -86,6 +95,92 @@ const Signin = ({ navigation }) => {
       console.error("카카오 로그인 실패", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const signinWithNaver = async () => {
+    try {
+      setLoading(true);
+
+      // 1. 네이버 로그인
+      const { successResponse } = await NaverLogin.login({
+        appName,
+        consumerKey,
+        consumerSecret,
+        serviceUrlScheme,
+      });
+
+      if (!successResponse) {
+        throw new Error("네이버 로그인 실패");
+      }
+
+      const loginData = {
+        accessToken: successResponse.accessToken,
+        idToken: successResponse.idToken,
+        refreshToken: successResponse.refreshToken,
+      };
+
+      console.log("백엔드로 보낼 네이버 로그인 데이터", loginData);
+
+      // 2. 네이버 프로필 가져오기
+      const profileResult = await NaverLogin.getProfile(
+        successResponse.accessToken
+      );
+
+      if (!profileResult || profileResult.resultcode !== "00") {
+        throw new Error("네이버 프로필 가져오기 실패");
+      }
+
+      // 3. 필요한 정보 추출
+      const userData = {
+        name: profileResult.response.name,
+        email: profileResult.response.email,
+        gender: profileResult.response.gender,
+        phoneNumber: profileResult.response.mobile_e164,
+      };
+
+      console.log("백엔드로 보낼 네이버 데이터", userData);
+
+      // 4. 백엔드로 전달 (예시: fetch 사용)
+      const response = await fetch("http://<백엔드-URL>/auth/naver", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const responseData = await response.json();
+      console.log("백엔드 응답", responseData);
+
+      // 5. 필요하면 토큰 저장 등 후처리
+      setResult(JSON.stringify(responseData));
+    } catch (err) {
+      console.error("네이버 로그인 실패", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //나중에 로그아웃 페이지로 옮겨
+  const logoutWithNaver = async () => {
+    try {
+      await NaverLogin.logout();
+      setSuccessResponse(null);
+      setFailureResponse(null);
+      setGetProfileRes(null);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  const deleteToken = async () => {
+    try {
+      await NaverLogin.deleteToken();
+      setSuccessResponse(null);
+      setFailureResponse(null);
+      setGetProfileRes(null);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -109,7 +204,7 @@ const Signin = ({ navigation }) => {
 
       <Button
         title="카카오로 시작하기"
-        onPress={signInWithKakao}
+        onPress={signinWithKakao}
         icon={require("../../assets/kakao.png")}
         containerStyle={{
           width: "100%",
@@ -127,7 +222,7 @@ const Signin = ({ navigation }) => {
 
       <Button
         title="네이버로 시작하기"
-        onPress={() => console.log("네이버 로그인 준비 중!")}
+        onPress={signinWithNaver}
         icon={require("../../assets/naver.png")}
         containerStyle={{
           width: "100%",
