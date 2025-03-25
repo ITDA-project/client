@@ -26,9 +26,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"]
-  },
-  "experiments": {
-    "reactNativeBridgeless": false
+    "plugins": [
+      "expo-font",
+      [
+        "@react-native-seoul/naver-login",
+        {
+          "urlScheme": "com.csj1430.moamoa"
+        }
+      ]
+    ]
   }
 }
