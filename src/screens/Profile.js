@@ -177,7 +177,6 @@ const Profile = ({ navigation, route }) => {
       <Container>  
       <ScrollView style={{ flex: 1, backgroundColor: "#fff", paddingHorizontal: 5 }}>
       
-
         <ProfileContainer>
           <ProfileImageContainer>
             {user.image ? (
