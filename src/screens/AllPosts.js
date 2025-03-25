@@ -9,6 +9,8 @@ import Header from "../components/Header";
   const AllPosts = ({ route }) => {
     const theme=useContext(ThemeContext);
 
+    const currentUser = { userId: 1 }; // 로그인한 사용자 ID
+    
     const styles = StyleSheet.create({
         container: {flex: 1, backgroundColor: "#fff",paddingHorizontal: 20, },
         
@@ -41,13 +43,13 @@ import Header from "../components/Header";
       });
 
     const navigation = useNavigation();
-    const { meetings } = route.params;
+    const { meetings=[] } = route.params || {};
     const [selectedSort, setSelectedSort] = useState("latest");
   
     // 정렬된 데이터 생성
     const sortedMeetings = [...meetings].sort((a, b) => {
       if (selectedSort === "latest") {
-        return new Date(b.created_at) - new Date(a.created_at); // 최신순 (날짜 내림차순)
+        return new Date(b.createdAt) - new Date(a.createdAt); // 최신순 (날짜 내림차순)
       } else {
         return b.likes - a.likes; // 인기순 (좋아요 내림차순)
       }
@@ -78,12 +80,18 @@ import Header from "../components/Header";
         <FlatList
           showsVerticalScrollIndicator={false}
           data={sortedMeetings}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.postId.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.postItem} onPress={()=>console.log("게시글 상세보기")}>
+            <TouchableOpacity style={styles.postItem} 
+            onPress={()=>{if (item.userId === currentUser.userId) {
+              navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, createdAt: item.createdAt, likes:item.likes });
+            } else {
+              navigation.navigate("PostDetail", { postId: item.postId, title: item.title, createdAt: item.createdAt, likes:item.likes });
+            }}}>
+
               <Text style={styles.postTitle}>{item.title}</Text>
               <View style={styles.postInfo}>
-                <Text style={styles.postDate}>{item.created_at}</Text>
+                <Text style={styles.postDate}>{item.createdAt}</Text>
                 <View style={styles.likesContainer}>
                   <Feather name="heart" size={16} color="#ccc" />
                   <Text style={styles.likesText}>{item.likes}</Text>
