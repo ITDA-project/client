@@ -1,5 +1,5 @@
 import React, { useState,useEffect,useContext} from "react";
-import {  ScrollView, View,Platform,TextInput } from "react-native";
+import {  ScrollView, View,Platform,TextInput,Text } from "react-native";
 import styled from "styled-components/native";
 import Input from "../components/Input";
 import Button from "../components/Button";
@@ -235,7 +235,7 @@ const CreatePost = () => {
       activityStart,  
       activityEnd,
     });
-  };
+  }; //MyPostDetail로 이동 구현 추가가
 
   const isFormValid = () => {
     return title && description && selectedCity && selectedDistrict && maxParticipants && deposit && tags &&recruitmentStart &&
@@ -269,7 +269,7 @@ const CreatePost = () => {
 
          {/* 카테고리 선택 */}
         <Label>카테고리</Label>
-        <View style={{ width:"40%", zIndex: 3000 }}>
+        <View style={{ width:"45%", zIndex: 3000 }}>
           <DropDownPicker
             open={categoryOpen}
             value={category}
@@ -326,8 +326,7 @@ const CreatePost = () => {
         <TextInput
           value={description}
           onChangeText={setDescription}
-          placeholder="어떤 모임인지 자유롭게 설명해주세요!       
-    (ex. 주 몇회, 초보자 환영, 필요물품 ...)"
+          placeholder="어떤 모임인지 자유롭게 설명해주세요!"
           placeholderTextColor={theme.colors.grey}
           multiline={true}
           numberOfLines={5}
@@ -456,6 +455,7 @@ const CreatePost = () => {
         <Label>모집 기간</Label>
         <RowContainer>
           <CalendarPicker date={recruitmentStart} setDate={setRecruitmentStart} />
+          <Text style={{fontSize:18,fontWeight:'bold',}}>~</Text>
           <CalendarPicker
             date={recruitmentEnd}
             setDate={setRecruitmentEnd}
@@ -467,6 +467,7 @@ const CreatePost = () => {
         <Label>활동 기간</Label>
         <RowContainer>
           <CalendarPicker date={activityStart} setDate={setActivityStart}  />
+          <Text style={{fontSize:18,fontWeight:'bold',}}>~</Text>
           <CalendarPicker
             date={activityEnd}
             setDate={setActivityEnd}
@@ -500,9 +501,9 @@ const CreatePost = () => {
             title="만들기"
             onPress={handleSubmit}
             disabled={!isFormValid()}
-            containerStyle={{ height: 45, width: 350 }}
-            textStyle={{ fontSize: 16 }}
-            style={{ height: 45, width: 350 }}
+            containerStyle={{ height: 50, width: 350 }}
+            textStyle={{ fontSize: 18 }}
+            style={{ height: 50, width: 350 }}
           />
         </ButtonContainer>
       </ScrollView>
