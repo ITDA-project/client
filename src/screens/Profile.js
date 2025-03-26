@@ -162,7 +162,7 @@ const Profile = ({ navigation, route }) => {
         <EditButton>
           <Button
             title="사진 / 경력 수정"
-            onPress={() => navigation.navigate("EditProfile")}
+            onPress={() => navigation.navigate("사진/경력 수정")}
             containerStyle={{ height: 40, width: 340 }}
             textStyle={{ fontSize: 16 }}
             style={{ height: 40, width: 340 }}
