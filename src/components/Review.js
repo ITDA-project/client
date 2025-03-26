@@ -34,15 +34,15 @@ const DateText = styled.Text`
   margin-top: 4px;
 `;
 
-const Review = ({ star, text, created_at }) => {
+const Review = ({ star, sentence, createdAt }) => {
   return (
     <Container>
       <StarContainer>
         <MaterialIcons name="star" size={18} color="#FFC107" />
         <StarText>{star}</StarText>
       </StarContainer>
-      <Content>{text}</Content>
-      <DateText>{created_at}</DateText>
+      <Content>{sentence}</Content>
+      <DateText>{createdAt}</DateText>
     </Container>
   );
 };

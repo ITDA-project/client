@@ -11,21 +11,9 @@ import Search from "./Search";
 import AllPosts from "./AllPosts";
 import Profile from "./Profile";
 import EditProfile from "./EditProfile";
+import MyPostDetail from "./MyPostDetail";
+import PostDetail from "./PostDetail";
 import CreatePost from "./CreatePost";
 
-export {
-  Signin,
-  SigninWithEmail,
-  Signup,
-  FindPw,
-  SignupDone,
-  Chat,
-  MainPage,
-  Notifications,
-  Search,
-  AllPosts,
-  MyPage,
-  Profile,
-  EditProfile,
-  CreatePost,
-};
+export { Signin, SigninWithEmail, Signup, FindPw, SignupDone,Chat,MainPage,Notifications,Search,AllPosts,MyPage,Profile,EditProfile,CreatePost,MyPostDetail,PostDetail};
+
