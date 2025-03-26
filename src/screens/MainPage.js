@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Image,View, Text, TextInput, FlatList, TouchableOpacity,ScrollView, StyleSheet } from 'react-native';
+import { Image,View, Text, TextInput, FlatList, TouchableOpacity,ScrollView, StyleSheet, SafeAreaView } from 'react-native';
 import { ThemeContext,styled } from 'styled-components/native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
@@ -39,6 +39,9 @@ const MainPage = () => {
         flexDirection: 'column',
         alignItems: 'center',
         marginRight: 30, // 카테고리 아이콘 사이의 간격
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 40,
        
       },
       categoryText: {
@@ -47,6 +50,7 @@ const MainPage = () => {
         marginTop: 10,
         width: '100%',
         marginLeft:0,
+        fontSize:14,
         color: theme.colors.grey,
         fontFamily: theme.fonts.bold,
       },
@@ -55,9 +59,8 @@ const MainPage = () => {
         flexDirection: 'row',      // 가로 정렬
         justifyContent: 'space-between',  // 양 끝 정렬
         alignItems: 'center',      // 수직 중앙 정렬
-       
       },
-    sectionTitle: { fontSize: 20, fontFamily: theme.fonts.bold, marginTop: 20, marginBottom: 10, color:"#656565" },
+    sectionTitle: { fontSize: 20, fontFamily: theme.fonts.bold, marginTop: 25, marginBottom: 10, color:"#656565" },
     
     viewAllButton: { fontSize: 16, marginLeft:'auto',fontFamily: theme.fonts.bold},
 
@@ -128,7 +131,7 @@ const PostList = ({ data }) => (
 
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
         <LogoContainer>
             <Logo width={130} height={30} />
         </LogoContainer>
@@ -143,7 +146,7 @@ const PostList = ({ data }) => (
         <FlatList data={categories}
           keyExtractor={(item) => item.id}
           horizontal
-          showsHorizontalScrollIndicator={false}
+          showsHorizontalScrollIndicator={true}
           contentContainerStyle={styles.categoryContainer}
           renderItem={({ item }) => (
           <TouchableOpacity style={styles.categoryItem}>
@@ -152,20 +155,22 @@ const PostList = ({ data }) => (
           </TouchableOpacity>
   )}
         />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* 최신 모임 섹션 */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>최신 모임</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings  })}>
+            <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
+          </TouchableOpacity>
+        </View>
+        <PostList data={latestMeetings} />
 
-      {/* 최신 모임 섹션 */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>최신 모임</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings  })}>
-          <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
-        </TouchableOpacity>
-      </View>
-      <PostList data={latestMeetings} />
-
-      {/* 주간 인기 소모임 섹션 */}
-      <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
-      <PostList data={popularMeetings} />
-    </ScrollView>
+        {/* 주간 인기 소모임 섹션 */}
+        <Text style={styles.sectionTitle}>주간 TOP3 모임</Text>
+        <PostList data={popularMeetings} />
+      </ScrollView>
+      
+    </View>
   );
 };
 

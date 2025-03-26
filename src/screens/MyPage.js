@@ -18,6 +18,7 @@ const MyPageSection = styled.View`
   flex-direction: row;
   align-items: center;
   margin-top: 50px;
+  margin-bottom:20px;
   padding-bottom: 10px;
   border-bottom-width: 1px;
   border-bottom-color: #ddd;
@@ -70,7 +71,7 @@ const StarText = styled.Text`
 `;
 
 const Section = styled.View`
-  margin-top: 20px;
+  margin-top: 10px;
   margin-left: 10px;
   margin-bottom: 15px;
 `;

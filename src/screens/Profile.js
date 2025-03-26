@@ -73,7 +73,7 @@ const SectionTitle = styled.Text`
   font-size: 18px;
   font-family: ${({ theme }) => theme.fonts.bold};
   color: #656565;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 `;
 
 const ScrollSection = styled.View`
@@ -101,7 +101,8 @@ const Placeholder = styled.Text`
 const Divider = styled.View`
   height: 1px;
   background-color: ${({ theme }) => theme.colors.grey};
-  margin: 10px 0;
+  margin-top:20px;
+  margin-bottom: 10px;
 `;
 
 const ReviewSection = styled.View`
@@ -110,7 +111,7 @@ const ReviewSection = styled.View`
 `;
 
 const ButtonContainer = styled.View`
-  padding: 10px 20px 20px;
+  padding: 5px 10px 20px;
   flex-direction: row;
   justify-content: center;
   align-items: center;
