@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Image, ActivityIndicator } from "react-native";
 import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
@@ -9,11 +9,12 @@ import {
   getProfile as getKakaoProfile,
 } from "@react-native-seoul/kakao-login";
 import NaverLogin from "@react-native-seoul/naver-login";
+import axios from "axios";
 
 const consumerKey = "jXwhTHdVTq8o67R0hwKd";
 const consumerSecret = "0N1OGuLkjK";
-const appName = "moaoa";
-const serviceUrlScheme = "navertest";
+const appName = "moamoa";
+const serviceUrlScheme = "com.csj1430.moamoa";
 
 const Container = styled.View`
   flex: 1;
@@ -49,6 +50,17 @@ const Signin = ({ navigation }) => {
   const [failure, setFailureResponse] = useState(null);
   const [getProfileRes, setGetProfileRes] = useState(null);
 
+  useEffect(() => {
+    NaverLogin.initialize({
+      appName,
+      consumerKey,
+      consumerSecret,
+      serviceUrlScheme,
+      serviceUrlSchemeIOS: serviceUrlScheme,
+      disableNaverAppAuthIOS: true,
+    });
+  }, []);
+
   const signinWithKakao = async () => {
     try {
       setLoading(true);
@@ -77,14 +89,16 @@ const Signin = ({ navigation }) => {
 
       console.log("백엔드로 보낼 카카오 데이터", userData);
 
-      // 4. 백엔드로 전달 (예시: fetch 사용)
-      const response = await fetch("http://<백엔드-URL>/auth/kakao", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
+      // 4. 백엔드로 전달 (axios 사용)
+      // const response = await axios.post(
+      //   "http://10.0.2.2:8080/auth/kakao",
+      //   userData,
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //   }
+      // );
 
       const responseData = await response.json();
       console.log("백엔드 응답", responseData);
@@ -141,14 +155,16 @@ const Signin = ({ navigation }) => {
 
       console.log("백엔드로 보낼 네이버 데이터", userData);
 
-      // 4. 백엔드로 전달 (예시: fetch 사용)
-      const response = await fetch("http://<백엔드-URL>/auth/naver", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
+      // 4. 백엔드로 전달 (axios 사용)
+      // const response = await axios.post(
+      //   "http://10.0.2.2:8080/auth/kakao",
+      //   userData,
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //   }
+      // );
 
       const responseData = await response.json();
       console.log("백엔드 응답", responseData);
