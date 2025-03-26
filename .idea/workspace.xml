@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="719506b4-b96e-4aa9-9d8c-959cc20c30cd" name="Changes" comment="" />
+    <list default="true" id="719506b4-b96e-4aa9-9d8c-959cc20c30cd" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/screens/AllPosts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/AllPosts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/screens/CreatePost.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/CreatePost.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/screens/Profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/Profile.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,9 +21,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2uZT9Dg6oYEDv62yM7K592QIXTR" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -31,7 +36,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "헤더스타일수정",
+    "git-widget-placeholder": "chore/remove-unused-code",
     "kotlin-language-version-configured": "true"
   }
 }]]></component>
