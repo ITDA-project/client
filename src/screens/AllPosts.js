@@ -95,8 +95,6 @@ const AllPosts = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      {/* 헤더 */}
-      <Header title="전체글" />
 
       {/* 정렬 버튼 */}
       <View style={styles.sortContainer}>
@@ -169,21 +167,22 @@ const AllPosts = ({ route }) => {
                 <Text style={styles.likesText}>{item.likes}</Text>
               </View>
             </View>
-          </TouchableOpacity>
-        )}
-      />
 
-      {/* 글쓰기 버튼 */}
-      <View style={styles.ButtonContainer}>
-        <Button
-          title="글쓰기"
-          onPress={() => console.log("글쓰기")}
-          containerStyle={{ height: 40, width: 95 }}
-          textStyle={{ fontSize: 16, marginLeft: 0 }}
-          style={{ height: 40, width: 95 }}
-        />
+            </TouchableOpacity>
+          )}
+      />
+  
+        {/* 글쓰기 버튼 */}
+        <View style={styles.ButtonContainer}>
+          <Button title="글쓰기" 
+          onPress={() => navigation.navigate("모임생성")}
+          containerStyle={{ height: 40,width:95}} 
+          textStyle={{ fontSize: 16,marginLeft:0}}
+          style={{height: 40,width:95}} />
+
+        </View>
+
       </View>
-    </View>
   );
 };
 
