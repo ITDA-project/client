@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components/native";
+import React, { useState, useEffect, useContext } from "react";
+import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TouchableOpacity, ActivityIndicator, FlatList } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
@@ -47,6 +47,8 @@ const StyledFlatList = styled(FlatList)`
 
 const ApplicationList = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const theme = useContext(ThemeContext);
+
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,20 +74,13 @@ const ApplicationList = ({ navigation }) => {
   }, []);
 
   const renderItem = ({ item }) => (
-    <ListItem onPress={() => navigation.navigate("신청서 확인", { id: item.id })}>
+    <ListItem onPress={() => navigation.navigate("신청서 확인", { id: item.id, name: item.name, image: item.image })}>
       <ProfileImage source={item.image} />
       <NameText>{item.name}</NameText>
-      <AntDesign name="right" size={20} color="#a1a1a1" />
+      <AntDesign name="right" size={20} style={{ color: theme.colors.grey }} />
     </ListItem>
   );
 
-  if (loading) {
-    return (
-      <Container insets={insets}>
-        <ActivityIndicator size="large" color="#1A4568" />
-      </Container>
-    );
-  }
   // 타이틀 나중에 수정
   return (
     <Container insets={insets}>
