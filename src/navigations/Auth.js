@@ -43,131 +43,20 @@ const Auth = () => {
       }}
     >
       <Stack.Screen name="신청서 작성" component={ApplicationForm} />
-      <Stack.Screen
-        name="로그인"
-        component={Signin}
-        options={{
-          headerTitleAlign: "center",
-          headerBackTitleVisible: false,
-          headerTintColor: theme.colors.black,
-          headerTitleStyle: {
-            fontFamily: theme.fonts.bold,
-            fontSize: 16,
-          },
-          headerLeft: ({ onPress, tintColor }) => (
-            <MaterialIcons
-              name="keyboard-arrow-left"
-              size={38}
-              color={tintColor}
-              onPress={onPress}
-            />
-          ),
-        }}
-      />
-      <Stack.Screen
-        name="이메일로 시작하기"
-        component={SigninWithEmail}
-        options={{
-          headerTitleAlign: "center",
-          headerBackTitleVisible: false,
-          headerTintColor: theme.colors.black,
-          headerTitleStyle: {
-            fontFamily: theme.fonts.bold,
-            fontSize: 16,
-          },
-          headerLeft: ({ onPress, tintColor }) => (
-            <MaterialIcons
-              name="keyboard-arrow-left"
-              size={38}
-              color={tintColor}
-              onPress={onPress}
-            />
-          ),
-        }}
-      />
-      <Stack.Screen
-        name="회원가입"
-        component={Signup}
-        options={{
-          headerTitleAlign: "center",
-          headerBackTitleVisible: false,
-          headerTintColor: theme.colors.black,
-          headerTitleStyle: {
-            fontFamily: theme.fonts.bold,
-            fontSize: 16,
-          },
-          headerLeft: ({ onPress, tintColor }) => (
-            <MaterialIcons
-              name="keyboard-arrow-left"
-              size={38}
-              color={tintColor}
-              onPress={onPress}
-            />
-          ),
-        }}
-      />
-      <Stack.Screen
-        name="비밀번호 찾기"
-        component={FindPw}
-        options={{
-          headerTitleAlign: "center",
-          headerBackTitleVisible: false,
-          headerTintColor: theme.colors.black,
-          headerTitleStyle: {
-            fontFamily: theme.fonts.bold,
-            fontSize: 16,
-          },
-          headerLeft: ({ onPress, tintColor }) => (
-            <MaterialIcons
-              name="keyboard-arrow-left"
-              size={38}
-              color={tintColor}
-              onPress={onPress}
-            />
-          ),
-        }}
-      />
+      <Stack.Screen name="로그인" component={Signin} />
+      <Stack.Screen name="이메일로 시작하기" component={SigninWithEmail} />
+      <Stack.Screen name="회원가입" component={Signup} />
+      <Stack.Screen name="비밀번호 찾기" component={FindPw} />
       <Stack.Screen
         name="회원가입 완료"
         component={SignupDone}
         options={{
-          headerTitleAlign: "center",
-          headerBackTitleVisible: false,
-          headerTintColor: theme.colors.black,
-          headerTitleStyle: {
-            fontFamily: theme.fonts.bold,
-            fontSize: 16,
-          },
-          headerLeft: ({ onPress, tintColor }) => (
-            <MaterialIcons
-              name="keyboard-arrow-left"
-              size={38}
-              color={tintColor}
-              onPress={onPress}
-            />
-          ),
+          headerShown: false,
         }}
       />
       <Stack.Screen //나중에 여기서 빠질수도
         name="회원탈퇴"
         component={DeleteAccount}
-        options={{
-          headerTitleAlign: "center",
-          headerBackTitleVisible: false,
-          headerTintColor: theme.colors.black,
-          headerTitleStyle: {
-            fontFamily: theme.fonts.bold,
-            fontSize: 16,
-          },
-          headerLeft: ({ onPress, tintColor }) => (
-            <MaterialIcons
-              name="keyboard-arrow-left"
-              size={38}
-              color={tintColor}
-              onPress={onPress}
-            />
-          ),
-        }}
       />
     </Stack.Navigator>
   );
