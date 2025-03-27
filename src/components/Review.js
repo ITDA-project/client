@@ -16,21 +16,21 @@ const StarContainer = styled.View`
 const StarText = styled.Text`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.mainBlue};
-  font-family: ${({theme}) => theme.fonts.extraBold};
+  font-family: ${({ theme }) => theme.fonts.extraBold};
   margin-left: 5px;
 `;
 
 const Content = styled.Text`
   font-size: 14px;
-  font-family: ${({theme}) => theme.fonts.regular};
+  font-family: ${({ theme }) => theme.fonts.regular};
   color: ${({ theme }) => theme.colors.black};
   margin-top: 5px;
 `;
 
 const DateText = styled.Text`
   font-size: 12px;
-  font-family: ${({theme}) => theme.fonts.regular};
-  color: ${({theme})=>theme.colors.grey};
+  font-family: ${({ theme }) => theme.fonts.regular};
+  color: ${({ theme }) => theme.colors.grey};
   margin-top: 4px;
 `;
 
