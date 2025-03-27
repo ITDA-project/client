@@ -14,6 +14,7 @@ import EditProfile from "./EditProfile";
 import MyPostDetail from "./MyPostDetail";
 import PostDetail from "./PostDetail";
 import CreatePost from "./CreatePost";
+import ApplicationList from "./ApplicationList";
 
 export {
   Signin,
@@ -32,4 +33,5 @@ export {
   CreatePost,
   MyPostDetail,
   PostDetail,
+  ApplicationList,
 };
