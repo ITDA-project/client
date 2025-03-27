@@ -10,7 +10,7 @@ const Stack = createStackNavigator();
 const Navigation = () => {
   return (
     <NavigationContainer>
-      <Main />
+      <Auth />
     </NavigationContainer>
   );
 };
