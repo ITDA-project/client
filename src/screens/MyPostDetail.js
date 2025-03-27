@@ -1,12 +1,11 @@
-import React, { useState,useContext } from "react";
+import React, { useState, useContext } from "react";
 import { TouchableWithoutFeedback, Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
-import { Feather, AntDesign,Ionicons,FontAwesome6} from "@expo/vector-icons";
-import {styled,ThemeContext} from "styled-components/native";
+import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
+import { styled, ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
 import { useNavigation } from "@react-navigation/native";
-import axios from 'axios';
-
+import axios from "axios";
 
 const Container = styled.View`
   flex: 1;
@@ -21,8 +20,8 @@ const Section = styled.View`
 const Title = styled.Text`
   font-size: 24px;
   font-weight: bold;
-  font-family: ${({theme})=>theme.fonts.extraBold};
-  margin-top:10px;
+  font-family: ${({ theme }) => theme.fonts.extraBold};
+  margin-top: 10px;
 `;
 
 const MoreMenu = styled.View`
@@ -34,8 +33,7 @@ const MoreMenu = styled.View`
   border-color: ${({ theme }) => theme.colors.grey};
   border-radius: 8px;
   padding: 5px;
-  z-index: 10; 
-
+  z-index: 10;
 `;
 
 const MenuItem = styled.TouchableOpacity`
@@ -48,38 +46,37 @@ const MenuText = styled.Text`
   color: ${({ danger }) => (danger ? "red" : "#000")};
 `;
 
-const Date=styled.Text`
-  color: ${({theme})=>theme.colors.grey};
+const Date = styled.Text`
+  color: ${({ theme }) => theme.colors.grey};
   font-size: 14px;
-  font-family: ${({theme})=>theme.fonts.regular};
+  font-family: ${({ theme }) => theme.fonts.regular};
   margin-top: 5px;
 `;
 
-const Content=styled.Text`
+const Content = styled.Text`
   font-size: 18px;
-  font-family: ${({theme})=>theme.fonts.regular};
-  line-height: 30px; 
-  margin-top:15px;
+  font-family: ${({ theme }) => theme.fonts.regular};
+  line-height: 30px;
+  margin-top: 15px;
   margin-bottom: 20px;
 `;
 
 const Info = styled.Text`
   font-size: 16px;
-  font-family: ${({theme})=>theme.fonts.regular};
+  font-family: ${({ theme }) => theme.fonts.regular};
 `;
 
 const Divider = styled.View`
   height: 1px;
-  background-color: ${({theme})=>theme.colors.grey};
+  background-color: ${({ theme }) => theme.colors.grey};
   margin-top: 15px;
-  
 `;
 
 const ProfileContainer = styled.View`
   flex-direction: column; /* 전체를 세로 정렬 */
   margin-top: 10px;
-  margin-left:10px;
-  margin-right:10px
+  margin-left: 10px;
+  margin-right: 10px;
 `;
 
 const ProfileHeader = styled.View`
@@ -111,14 +108,14 @@ const RowContainer = styled.View`
 
 const Label = styled.Text`
   font-size: 16px;
-  font-family:${({theme})=>theme.fonts.regular};
+  font-family: ${({ theme }) => theme.fonts.regular};
   color: ${({ theme }) => theme.colors.grey};
   margin-right: 5px;
 `;
 
 const ProfileName = styled.Text`
   font-size: 18px;
-  font-family:${({theme})=>theme.fonts.bold};
+  font-family: ${({ theme }) => theme.fonts.bold};
   color: #000;
 `;
 
@@ -138,7 +135,7 @@ const Footer = styled.View`
   background-color: #fff;
   padding: 10px 20px;
   border-top-width: 1px;
-  border-color: ${({theme})=>theme.colors.grey};
+  border-color: ${({ theme }) => theme.colors.grey};
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -156,19 +153,20 @@ const LikeText = styled.Text`
   color: ${({ liked }) => (liked ? "#FF6B6B" : "#000")};
 `;
 
-
-
 // 모임 상세 페이지
 const MyPostDetail = () => {
   const theme = useContext(ThemeContext);
   const route = useRoute();
   const navigation = useNavigation();
 
-  const { postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
+  const {
+    postId,
+    title = "제목 없음",
+    createdAt = "날짜 없음",
+  } = route.params || {};
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(7);
 
-  
   const [menuVisible, setMenuVisible] = useState(false);
 
   const toggleMenu = () => {
@@ -184,7 +182,7 @@ const MyPostDetail = () => {
     console.log("게시글 수정하기"); // 게시글 수정 화면으로 이동
   };
 
-/*const deletePost = async (postId) => {
+  /*const deletePost = async (postId) => {
   const response = await axios.delete(`https://your-api-url.com/posts/${postId}`);
   return response.data;
 };*/
@@ -193,9 +191,8 @@ const MyPostDetail = () => {
     setMenuVisible(false);
     Alert.alert("게시글 삭제", "정말 삭제하시겠습니까?", [
       { text: "취소", style: "cancel" },
-      { text: "삭제", 
-        onPress: () => console.log("게시글 삭제") },
-        /*async () => {
+      { text: "삭제", onPress: () => console.log("게시글 삭제") },
+      /*async () => {
         try {
           await deletePost(postId); // 삭제 API 호출
           Alert.alert("삭제 완료", "게시글이 삭제되었습니다.");
@@ -219,13 +216,14 @@ const MyPostDetail = () => {
     postId,
     title,
     createdAt,
-    content: "뜨개질이 취미이신 분? \n처음이지만 같이 해보실 분?\n모두모두 환영합니다! 😊",
+    content:
+      "뜨개질이 취미이신 분? \n처음이지만 같이 해보실 분?\n모두모두 환영합니다! 😊",
     location: "서울 종로구",
     memberMax: "10",
-    recruitmentStart: "2025.02.22",  
-    recruitmentEnd: "2025.03.01",  
-    activityStart: "2025.03.08",  
-    activityEnd:"202.04.08",
+    recruitmentStart: "2025.02.22",
+    recruitmentEnd: "2025.03.01",
+    activityStart: "2025.03.08",
+    activityEnd: "202.04.08",
     deposit: "5,000원",
     tags: ["#취미", "#뜨개질", "#종로구"],
     likes: 7,
@@ -234,21 +232,32 @@ const MyPostDetail = () => {
   // 작성자 더미 데이터
   const user = {
     name: "홍길동",
-    career: "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
+    career:
+      "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
     image: null, // 프로필 사진이 없을 경우 기본 아이콘 사용
   };
 
   return (
-    
     <TouchableWithoutFeedback onPress={closeMenu}>
       <Container>
-        
         <Section>
-          <RowContainer style={{ justifyContent: "space-between", alignItems: "center" }}>
+          <RowContainer
+            style={{ justifyContent: "space-between", alignItems: "center" }}
+          >
             <Title>{meeting.title}</Title>
-            <RowContainer >
-              <Ionicons style={{marginRight:10}} name="share-outline" size={25} onPress={()=>console.log("공유하기")}/>
-              <Feather name="more-horizontal" size={25} color="#000" onPress={toggleMenu} />
+            <RowContainer>
+              <Ionicons
+                style={{ marginRight: 10 }}
+                name="share-outline"
+                size={25}
+                onPress={() => console.log("공유하기")}
+              />
+              <Feather
+                name="more-horizontal"
+                size={25}
+                color="#000"
+                onPress={toggleMenu}
+              />
             </RowContainer>
           </RowContainer>
 
@@ -257,7 +266,7 @@ const MyPostDetail = () => {
               <MenuItem onPress={handleEdit}>
                 <MenuText>수정</MenuText>
               </MenuItem>
-              <Divider style={{marginTop:0,PointerEvent:"none"}}/>
+              <Divider style={{ marginTop: 0, PointerEvent: "none" }} />
               <MenuItem onPress={handleDelete}>
                 <MenuText danger>삭제</MenuText>
               </MenuItem>
@@ -265,40 +274,62 @@ const MyPostDetail = () => {
           )}
           <Date>{meeting.createdAt}</Date>
           <Content>{meeting.content}</Content>
-          <RowContainer style={{marginBottom:10}}>
-            <Ionicons name="location-outline" size={24} color={theme.colors.grey}/>
-            <Label style={{marginRight:40,marginLeft:5}}>지역</Label>
+          <RowContainer style={{ marginBottom: 10 }}>
+            <Ionicons
+              name="location-outline"
+              size={24}
+              color={theme.colors.grey}
+            />
+            <Label style={{ marginRight: 40, marginLeft: 5 }}>지역</Label>
             <Info>{meeting.location}</Info>
           </RowContainer>
-          
-          <RowContainer style={{marginBottom:10}}>
-            <Ionicons name="people-outline" size={24} color={theme.colors.grey}/>
-            <Label style={{marginRight:13,marginLeft:5}}>모집인원</Label>
+
+          <RowContainer style={{ marginBottom: 10 }}>
+            <Ionicons
+              name="people-outline"
+              size={24}
+              color={theme.colors.grey}
+            />
+            <Label style={{ marginRight: 13, marginLeft: 5 }}>모집인원</Label>
             <Info>{meeting.memberMax}</Info>
           </RowContainer>
 
-          <RowContainer style={{marginBottom:10}}>
-            <Ionicons name="calendar-outline" size={24} color={theme.colors.grey}/>
-            <Label style={{marginRight:13,marginLeft:5}}>모집기간</Label>
-            <Info>{meeting.recruitmentStart} ~ {meeting.recruitmentEnd}</Info>
+          <RowContainer style={{ marginBottom: 10 }}>
+            <Ionicons
+              name="calendar-outline"
+              size={24}
+              color={theme.colors.grey}
+            />
+            <Label style={{ marginRight: 13, marginLeft: 5 }}>모집기간</Label>
+            <Info>
+              {meeting.recruitmentStart} ~ {meeting.recruitmentEnd}
+            </Info>
           </RowContainer>
 
-          <RowContainer style={{marginBottom:10}}>
-            <Ionicons name="timer-outline" size={24} color={theme.colors.grey}/>
-            <Label style={{marginRight:13,marginLeft:5}}>활동기간</Label>
-            <Info>{meeting.activityStart} ~ {meeting.activityEnd}</Info>
+          <RowContainer style={{ marginBottom: 10 }}>
+            <Ionicons
+              name="timer-outline"
+              size={24}
+              color={theme.colors.grey}
+            />
+            <Label style={{ marginRight: 13, marginLeft: 5 }}>활동기간</Label>
+            <Info>
+              {meeting.activityStart} ~ {meeting.activityEnd}
+            </Info>
           </RowContainer>
 
-          <RowContainer style={{marginBottom:10}}>
-            <Feather name="dollar-sign" size={24} color={theme.colors.grey}/>
-            <Label style={{marginRight:26,marginLeft:5}}>보증금</Label>
+          <RowContainer style={{ marginBottom: 10 }}>
+            <Feather name="dollar-sign" size={24} color={theme.colors.grey} />
+            <Label style={{ marginRight: 26, marginLeft: 5 }}>보증금</Label>
             <Info>{meeting.deposit}</Info>
           </RowContainer>
 
-          <Info style={{color:"#3386CA",marginTop:10}}>{meeting.tags.join("  ")}</Info>
+          <Info style={{ color: "#3386CA", marginTop: 10 }}>
+            {meeting.tags.join("  ")}
+          </Info>
 
           <Divider />
-        </Section>  
+        </Section>
 
         {/* 작성자 정보 섹션 */}
         <ProfileContainer>
@@ -307,10 +338,10 @@ const MyPostDetail = () => {
               {user.image ? (
                 <ProfileImage source={{ uri: user.image }} />
               ) : (
-                <Feather name="user" size={35} color="#888"  />
+                <Feather name="user" size={35} color="#888" />
               )}
             </ProfileImageContainer>
-            
+
             <RowContainer>
               <Label>작성자</Label>
               <ProfileName>{user.name}</ProfileName>
@@ -318,25 +349,26 @@ const MyPostDetail = () => {
           </ProfileHeader>
           <ProfileIntro>{user.career}</ProfileIntro>
         </ProfileContainer>
-      {/* 하단 좋아요 & 신청 버튼 고정 */}
-      <Footer>
-        <LikeButton onPress={toggleLike}>
-        {liked ? (
-            <AntDesign name="heart" size={28} color="#FF6B6B" /> // 꽉 찬 하트
-          ) : (
-            <Feather name="heart" size={28} color="#000" /> // 빈 하트
-          )}
-          <LikeText liked={liked}>{likes}</LikeText>
-        </LikeButton>
-        <Button title="신청 목록 확인" 
-        onPress={() => console.log("신청 목록 확인")}
-        containerStyle={{ height: 50 ,width:280}} 
-        textStyle={{marginLeft:0}}
-        style={{height: 50,width:280}}/>
-      </Footer>
-    </Container>
+        {/* 하단 좋아요 & 신청 버튼 고정 */}
+        <Footer>
+          <LikeButton onPress={toggleLike}>
+            {liked ? (
+              <AntDesign name="heart" size={28} color="#FF6B6B" /> // 꽉 찬 하트
+            ) : (
+              <Feather name="heart" size={28} color="#000" /> // 빈 하트
+            )}
+            <LikeText liked={liked}>{likes}</LikeText>
+          </LikeButton>
+          <Button
+            title="신청 목록 확인"
+            onPress={() => console.log("신청 목록 확인")}
+            containerStyle={{ height: 50, width: 280 }}
+            textStyle={{ marginLeft: 0 }}
+            style={{ height: 50, width: 280 }}
+          />
+        </Footer>
+      </Container>
     </TouchableWithoutFeedback>
-    
   );
 };
 
