@@ -5,6 +5,7 @@ import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils";
+import axios from "axios";
 
 const Container = styled.View`
   flex: 1;
@@ -65,7 +66,7 @@ const Signup = ({ navigation }) => {
   const theme = useContext(ThemeContext);
 
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [phone, setPhone] = useState("");
@@ -79,7 +80,7 @@ const Signup = ({ navigation }) => {
     setDisabled(
       !(
         email &&
-        name &&
+        username &&
         password &&
         passwordConfirm &&
         phone &&
@@ -90,7 +91,7 @@ const Signup = ({ navigation }) => {
     );
   }, [
     email,
-    name,
+    username,
     password,
     passwordConfirm,
     phone,
@@ -112,9 +113,9 @@ const Signup = ({ navigation }) => {
     );
   };
 
-  const _handleNameChange = (name) => {
-    const changeName = removeWhitespace(name);
-    setName(changeName);
+  const _handleNameChange = (username) => {
+    const changeUsername = removeWhitespace(username);
+    setUsername(changeUsername);
   };
 
   const _handlePasswordChange = (password) => {
@@ -144,6 +145,29 @@ const Signup = ({ navigation }) => {
     }
 
     setPhone(changePhone);
+  };
+
+  const _handleSignup = async () => {
+    try {
+      const response = await axios.post("http://172.16.88.149:8080/join", {
+        username,
+        password,
+      });
+
+      console.log("회원가입 성공:", response.data); // 성공 메시지 출력
+      navigation.navigate("회원가입 완료");
+    } catch (error) {
+      if (error.response) {
+        // 서버에서 응답이 온 경우
+        console.error("서버 오류:", error.response.data); // 서버에서 반환된 오류 메시지
+      } else if (error.request) {
+        // 서버에 요청을 보냈으나 응답을 받지 못한 경우
+        console.error("네트워크 오류:", error.request); // 요청이 전달되지 않았을 때
+      } else {
+        // 다른 오류
+        console.error("오류 발생:", error.message); // 일반적인 오류 메시지
+      }
+    }
   };
 
   return (
@@ -197,7 +221,7 @@ const Signup = ({ navigation }) => {
         <Input
           label="이름"
           returnKeyType="next"
-          value={name}
+          value={username}
           onChangeText={_handleNameChange}
           containerStyle={{
             width: "100%",
@@ -264,7 +288,7 @@ const Signup = ({ navigation }) => {
 
         <Button
           title="가입"
-          onPress={() => navigation.navigate("회원가입 완료")}
+          onPress={_handleSignup}
           disabled={disabled}
           containerStyle={{
             width: "100%",
