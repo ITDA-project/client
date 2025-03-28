@@ -1,4 +1,3 @@
-
 import React,{useContext} from "react";
 import {Image,View,Platform} from 'react-native';
 import {ThemeContext} from 'styled-components/native';
