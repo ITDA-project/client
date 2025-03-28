@@ -9,14 +9,11 @@ const theme = {
     lightBlue: "#DBECF4", //말풍선 배경2, 완료되지 않은 상태버튼
   },
 
-
   fonts: {
     regular: "NanumSquare_acR",
     bold: "NanumSquare_acB",
-    extraBold: "NanumSquare_acEB"
-
+    extraBold: "NanumSquare_acEB",
   },
-  
 };
 
 export default theme;

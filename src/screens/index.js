@@ -14,6 +14,24 @@ import EditProfile from "./EditProfile";
 import MyPostDetail from "./MyPostDetail";
 import PostDetail from "./PostDetail";
 import CreatePost from "./CreatePost";
+import ApplicationList from "./ApplicationList";
 
-export { Signin, SigninWithEmail, Signup, FindPw, SignupDone,Chat,MainPage,Notifications,Search,AllPosts,MyPage,Profile,EditProfile,CreatePost,MyPostDetail,PostDetail};
-
+export {
+  Signin,
+  SigninWithEmail,
+  Signup,
+  FindPw,
+  SignupDone,
+  Chat,
+  MainPage,
+  Notifications,
+  Search,
+  AllPosts,
+  MyPage,
+  Profile,
+  EditProfile,
+  CreatePost,
+  MyPostDetail,
+  PostDetail,
+  ApplicationList,
+};
