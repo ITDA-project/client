@@ -4,6 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./Home";
 import Main from "./Main";
 import Auth from "./Auth";
+import Application from "./Applicaton";
 
 const Stack = createStackNavigator();
 
