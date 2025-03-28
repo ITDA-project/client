@@ -1,3 +1,4 @@
+
 import React,{useContext} from "react";
 import {Image,View,Platform} from 'react-native';
 import {ThemeContext} from 'styled-components/native';
@@ -13,6 +14,7 @@ import searchIconActive from '../../assets/icons/searchIcon_.png';
 import chatIconActive from '../../assets/icons/chatIcon_.png';
 import NotificationIconActive from '../../assets/icons/NotificationIcon_.png';
 import profileIconActive from '../../assets/icons/profileIcon_.png';
+
 
 
 
@@ -132,6 +134,7 @@ const Home=()=>{
       
         
     );
+
 };
 
 export default Home;
