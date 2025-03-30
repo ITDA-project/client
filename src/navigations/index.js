@@ -12,7 +12,7 @@ const Stack = createStackNavigator();
 const Navigation = () => {
   return (
     <NavigationContainer>
-      <Review />
+      <Auth />
     </NavigationContainer>
   );
 };

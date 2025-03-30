@@ -6,7 +6,7 @@ import SigninWithEmail from "../screens/SigninWithEmail";
 import Signup from "../screens/Signup";
 import FindPw from "../screens/FindPw";
 import SignupDone from "../screens/SignupDone";
-import DeleteAccount from "../screens/DeleteAccount"; // 나중에 여기서 빠질수도
+import DeleteAccount from "../screens/DeleteAccount";
 import { MaterialIcons } from "@expo/vector-icons";
 
 const Stack = createStackNavigator();
@@ -44,7 +44,6 @@ const Auth = () => {
           headerShown: false,
         }}
       />
-      //나중에 여기서 빠질수도
       <Stack.Screen name="회원탈퇴" component={DeleteAccount} />
     </Stack.Navigator>
   );

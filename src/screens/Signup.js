@@ -44,8 +44,7 @@ const GenderCircle = styled.View`
   height: 24px;
   border-radius: 12px;
   border-width: 2px;
-  border-color: ${({ theme, selected }) =>
-    selected ? theme.colors.mainBlue : theme.colors.grey};
+  border-color: ${({ theme, selected }) => (selected ? theme.colors.mainBlue : theme.colors.grey)};
   align-items: center;
   justify-content: center;
   margin-right: 10px;
@@ -72,33 +71,12 @@ const Signup = ({ navigation }) => {
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
   const [emailErrorMessage, setEmailErrorMessage] = useState("");
-  const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] =
-    useState("");
+  const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState("");
   const [disabled, setDisabled] = useState(true);
 
   useEffect(() => {
-    setDisabled(
-      !(
-        email &&
-        username &&
-        password &&
-        passwordConfirm &&
-        phone &&
-        gender &&
-        !emailErrorMessage &&
-        !passwordConfirmErrorMessage
-      )
-    );
-  }, [
-    email,
-    username,
-    password,
-    passwordConfirm,
-    phone,
-    gender,
-    emailErrorMessage,
-    passwordConfirmErrorMessage,
-  ]);
+    setDisabled(!(email && username && password && passwordConfirm && phone && gender && !emailErrorMessage && !passwordConfirmErrorMessage));
+  }, [email, username, password, passwordConfirm, phone, gender, emailErrorMessage, passwordConfirmErrorMessage]);
 
   const _handleEmailChange = (email) => {
     let changeEmail = removeWhitespace(email);
@@ -108,9 +86,7 @@ const Signup = ({ navigation }) => {
 
     setEmail(changeEmail);
 
-    setEmailErrorMessage(
-      validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요"
-    );
+    setEmailErrorMessage(validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요");
   };
 
   const _handleNameChange = (username) => {
@@ -127,9 +103,7 @@ const Signup = ({ navigation }) => {
     const changePasswordConfirm = removeWhitespace(passwordConfirm);
     setPasswordConfirm(changePasswordConfirm);
 
-    setPasswordConfirmErrorMessage(
-      password !== changePasswordConfirm ? "비밀번호가 일치하지 않습니다" : ""
-    );
+    setPasswordConfirmErrorMessage(password !== changePasswordConfirm ? "비밀번호가 일치하지 않습니다" : "");
   };
 
   // 전화번호 핸들러 - 숫자만, 010으로 시작, 11자리 제한
@@ -149,8 +123,8 @@ const Signup = ({ navigation }) => {
 
   const _handleSignup = async () => {
     try {
-      const response = await axios.post("http://172.16.88.149:8080/join", {
-        username,
+      const response = await axios.post("http://192.168.219.77:8080/join", {
+        username: email,
         password,
       });
 
@@ -214,10 +188,7 @@ const Signup = ({ navigation }) => {
             }}
           />
         </EmailContainer>
-        <ErrorMessage
-          message={emailErrorMessage}
-          containerStyle={{ position: "absolute" }}
-        />
+        <ErrorMessage message={emailErrorMessage} containerStyle={{ position: "absolute" }} />
         <Input
           label="이름"
           returnKeyType="next"
@@ -271,16 +242,12 @@ const Signup = ({ navigation }) => {
           <Label>성별</Label>
           <GenderContainer>
             <GenderOption onPress={() => setGender("여성")}>
-              <GenderCircle selected={gender === "여성"}>
-                {gender === "여성" && <GenderInnerCircle />}
-              </GenderCircle>
+              <GenderCircle selected={gender === "여성"}>{gender === "여성" && <GenderInnerCircle />}</GenderCircle>
               <GenderLabel>여성</GenderLabel>
             </GenderOption>
 
             <GenderOption onPress={() => setGender("남성")}>
-              <GenderCircle selected={gender === "남성"}>
-                {gender === "남성" && <GenderInnerCircle />}
-              </GenderCircle>
+              <GenderCircle selected={gender === "남성"}>{gender === "남성" && <GenderInnerCircle />}</GenderCircle>
               <GenderLabel>남성</GenderLabel>
             </GenderOption>
           </GenderContainer>

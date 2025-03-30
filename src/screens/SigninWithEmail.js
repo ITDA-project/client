@@ -8,6 +8,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils";
 import { Keyboard } from "react-native";
+import axios from "axios";
 
 const Container = styled.View`
   flex: 1;
@@ -43,19 +44,13 @@ const SigninWithEmail = ({ navigation }) => {
   }, [email, password, errorMessage]);
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        setKeyboardVisible(true);
-      }
-    );
+    const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
 
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setKeyboardVisible(false);
-      }
-    );
+    const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
 
     return () => {
       keyboardDidShowListener.remove();
@@ -71,9 +66,7 @@ const SigninWithEmail = ({ navigation }) => {
 
     setEmail(changeEmail);
 
-    setErrorMessage(
-      validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요"
-    );
+    setErrorMessage(validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요");
   };
 
   const _handlePasswordChange = (password) => {
@@ -84,8 +77,8 @@ const SigninWithEmail = ({ navigation }) => {
   };
 
   const _handleSigninBtnPress = async () => {
-    //백이랑 연결하고 나서 회원정보가 일치하지 않는다는 에러 메세지 추가할 것
-    console.log("로그인버튼 누름");
+    console.log("로그인 버튼 누름");
+    console.log("보내는 데이터:", JSON.stringify({ username: email, password }));
 
     if (!validateEmail(email)) {
       setErrorMessage("이메일을 올바르게 입력해주세요");
@@ -99,14 +92,41 @@ const SigninWithEmail = ({ navigation }) => {
 
     setErrorMessage("");
 
-    navigation.navigate("main");
+    try {
+      const response = await axios.post(
+        "http://192.168.219.77:8080/auth/login",
+        { username: email, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("로그인 성공:", response.data);
+      navigation.navigate("회원가입 완료");
+    } catch (error) {
+      if (error.response) {
+        console.error("서버 응답 상태 코드:", error.response.status);
+        console.error("서버 응답 데이터:", error.response.data);
+
+        if (error.response.status === 500) {
+          setErrorMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } else {
+          setErrorMessage(error.response.data.message || "로그인에 실패했습니다.");
+        }
+      } else if (error.request) {
+        console.error("네트워크 오류:", error.request);
+        setErrorMessage("서버와 연결할 수 없습니다.");
+      } else {
+        console.error("오류 발생:", error.message);
+        setErrorMessage("예기치 못한 오류가 발생했습니다.");
+      }
+    }
   };
 
   return (
-    <KeyboardAwareScrollView
-      extraScrollHeight={20}
-      contentContainerStyle={{ flex: 1 }}
-    >
+    <KeyboardAwareScrollView extraScrollHeight={20} contentContainerStyle={{ flex: 1 }}>
       <Container insets={insets}>
         <Logo style={{ marginBottom: 50 }} />
         <Input

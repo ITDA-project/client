@@ -36,10 +36,7 @@ const SignupDone = ({ navigation }) => {
   const theme = useContext(ThemeContext);
 
   return (
-    <KeyboardAwareScrollView
-      extraScrollHeight={20}
-      contentContainerStyle={{ flex: 1 }}
-    >
+    <KeyboardAwareScrollView extraScrollHeight={20} contentContainerStyle={{ flex: 1 }}>
       <Container insets={insets}>
         <MessageText>회원가입이 완료되었습니다!</MessageText>
 
@@ -52,7 +49,7 @@ const SignupDone = ({ navigation }) => {
       <FooterContainer>
         <Button
           title="확인"
-          onPress={() => navigation.navigate("메인")}
+          onPress={() => navigation.pop(2)}
           containerStyle={{
             width: "100%",
             marginTop: 100,
