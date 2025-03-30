@@ -11,7 +11,7 @@ const Stack = createStackNavigator();
 const Navigation = () => {
   return (
     <NavigationContainer>
-      <Application />
+      <Main />
     </NavigationContainer>
   );
 };

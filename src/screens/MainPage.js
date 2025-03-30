@@ -31,93 +31,58 @@ const MainPage = () => {
   const navigation = useNavigation(); //네비게이션 사용
 
   const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#fff", padding: 20 },
-    title: {
-      fontSize: 30,
-      fontFamily: theme.fonts.bold,
-      textAlign: "center",
-      marginBottom: 20,
-    },
-
-    searchContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      borderWidth: 2,
-      borderRadius: 10,
-      paddingHorizontal: 10,
-      borderColor: theme.colors.mainBlue,
-    },
+    container: { flex: 1, backgroundColor: '#fff', padding: 20 },
+    title: { fontSize: 30, fontFamily: theme.fonts.bold, textAlign: 'center', marginBottom: 20 },
+  
+    searchContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderRadius: 10, paddingHorizontal: 10, borderColor: theme.colors.mainBlue},
     searchInput: { flex: 1, height: 50 },
     searchIcon: { marginLeft: 5 },
-
+  
     categoryContainer: {
-      marginTop: 30, // 검색창과 카테고리 간의 간격
-      marginBottom: 20, // 카테고리과 모임 목록 간의 간격
-      flexDirection: "row",
-      justifyContent: "space-between", // 아이콘 사이에 공간을 자동으로 분배
-      paddingHorizontal: 10,
-    },
-    categoryItem: {
-      flexDirection: "column",
-      alignItems: "center",
-      marginRight: 30, // 카테고리 아이콘 사이의 간격
-    },
-    categoryText: {
-      marginLeft: 10, // 아이콘과 텍스트 간의 여백
-      textAlign: "center",
-      marginTop: 10,
-      width: "100%",
-      marginLeft: 0,
-      color: theme.colors.grey,
-      fontFamily: theme.fonts.bold,
-    },
+        marginTop: 30, // 검색창과 카테고리 간의 간격
+        marginBottom: 20, // 카테고리과 모임 목록 간의 간격
+        flexDirection: 'row',
+        justifyContent: 'space-between', // 아이콘 사이에 공간을 자동으로 분배
+        paddingHorizontal: 10,
+      },
+      categoryItem: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginRight: 30, // 카테고리 아이콘 사이의 간격
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 40,
+       
+      },
+      categoryText: {
+        marginLeft: 10,  // 아이콘과 텍스트 간의 여백
+        textAlign:'center',
+        marginTop: 10,
+        width: '100%',
+        marginLeft:0,
+        fontSize:14,
+        color: theme.colors.grey,
+        fontFamily: theme.fonts.bold,
+      },
 
-    sectionHeader: {
-      flexDirection: "row", // 가로 정렬
-      justifyContent: "space-between", // 양 끝 정렬
-      alignItems: "center", // 수직 중앙 정렬
-    },
-    sectionTitle: {
-      fontSize: 20,
-      fontFamily: theme.fonts.bold,
-      marginTop: 20,
-      marginBottom: 10,
-      color: "#656565",
-    },
+      sectionHeader: {
+        flexDirection: 'row',      // 가로 정렬
+        justifyContent: 'space-between',  // 양 끝 정렬
+        alignItems: 'center',      // 수직 중앙 정렬
+      },
+    sectionTitle: { fontSize: 20, fontFamily: theme.fonts.bold, marginTop: 25, marginBottom: 10, color:"#656565" },
+    
+    viewAllButton: { fontSize: 16, marginLeft:'auto',fontFamily: theme.fonts.bold},
 
-    viewAllButton: {
-      fontSize: 16,
-      marginLeft: "auto",
-      fontFamily: theme.fonts.bold,
-    },
 
-    listItem: {
-      paddingVertical: 15,
-      borderBottomWidth: 1,
-      borderBottomColor: "#ddd",
-    },
-    listTitle: {
-      fontSize: 16,
-      fontFamily: theme.fonts.extraBold,
-      color: theme.grey,
-    },
-    listInfo: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 10,
-    },
-    listDate: { color: "#888", fontFamily: theme.fonts.regular },
-    likesContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginLeft: "auto",
-      justifyContent: "center",
-    },
-    likesText: {
-      marginLeft: 5,
-      color: "#979C9E",
-      fontFamily: theme.fonts.bold,
-    },
+    listItem: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#ddd' },
+    listTitle: { fontSize: 16, fontFamily: theme.fonts.extraBold, color:theme.grey},
+    listInfo: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+    listDate: { color: '#888',fontFamily: theme.fonts.regular },
+    likesContainer: { flexDirection: 'row', alignItems: 'center', marginLeft:'auto',justifyContent:'center'},
+    likesText: { marginLeft: 5, color: "#979C9E", fontFamily: theme.fonts.bold },
+
+
   });
 
   const categories = [
@@ -242,19 +207,9 @@ const MainPage = () => {
           style={styles.listItem}
           onPress={() => {
             if (item.userId === currentUser.userId) {
-              navigation.navigate("MyPostDetail", {
-                postId: item.postId,
-                title: item.title,
-                created_at: item.createdAt,
-                likes: item.likes,
-              });
+              navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
             } else {
-              navigation.navigate("PostDetail", {
-                postId: item.postId,
-                title: item.title,
-                created_at: item.createdAt,
-                likes: item.likes,
-              });
+              navigation.navigate("PostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
             }
           }}
         >
@@ -270,61 +225,61 @@ const MainPage = () => {
       ))}
     </View>
   );
-
-  return (
-    <ScrollView style={styles.container}>
-      <LogoContainer>
-        <Logo width={130} height={30} />
-      </LogoContainer>
-
-      {/* 검색창 */}
-      <View style={styles.searchContainer}>
-        <TextInput style={styles.searchInput} placeholder="검색" />
-        <Feather
-          name="search"
-          size={26}
-          color="#888"
-          style={styles.searchIcon}
-        />
+  
+  
+    return (
+  
+      <View style={styles.container} contentContainerStyle={{paddingBottom:100}}>
+          <LogoContainer>
+              <Logo width={130} height={30} />
+          </LogoContainer>
+        
+  
+  
+        {/* 검색창 */}
+        <View style={styles.searchContainer}>
+          <TextInput style={styles.searchInput} placeholder="검색" />
+          <Feather
+            name="search"
+            size={26}
+            color={theme.colors.mainBlue}
+            style={styles.searchIcon}
+          />
+        </View>
+  
+  
+  
+          {/* 카테고리 (Flaticon 기반 아이콘 적용) */}
+          <FlatList data={categories}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={true}
+            contentContainerStyle={styles.categoryContainer}
+            renderItem={({ item }) => (
+  
+            <TouchableOpacity style={styles.categoryItem}>
+              <Image source={item.image} style={{width:35,height:35}} resizeMode='contain'/>
+              <Text style={styles.categoryText}>{item.name}</Text>
+            </TouchableOpacity>
+    )}
+          />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* 최신 모임 섹션 */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>최신 모임</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings  })}>
+              <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
+            </TouchableOpacity>
+          </View>
+          <PostList data={latestMeetings} />
+  
+          {/* 주간 인기 소모임 섹션 */}
+          <Text style={styles.sectionTitle}>주간 TOP3 모임</Text>
+          <PostList data={popularMeetings} />
+        </ScrollView>
+        
       </View>
-
-      {/* 카테고리 (Flaticon 기반 아이콘 적용) */}
-      <FlatList
-        data={categories}
-        keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoryContainer}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.categoryItem}>
-            <Image
-              source={item.image}
-              style={{ width: 35, height: 35 }}
-              resizeMode="contain"
-            />
-            <Text style={styles.categoryText}>{item.name}</Text>
-          </TouchableOpacity>
-        )}
-      />
-
-      {/* 최신 모임 섹션 */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>최신 모임</Text>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("전체글", { meetings: latestMeetings })
-          }
-        >
-          <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
-        </TouchableOpacity>
-      </View>
-      <PostList data={latestMeetings} />
-
-      {/* 주간 인기 소모임 섹션 */}
-      <Text style={styles.sectionTitle}>주간 인기 소모임</Text>
-      <PostList data={popularMeetings} />
-    </ScrollView>
-  );
-};
-
+  
+    );
+  };
 export default MainPage;

@@ -80,8 +80,27 @@ const AllPosts = ({ route }) => {
     },
   });
 
+  //Category,sort 불러오기
+  /*useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get("https://your-api.com/posts", {
+          params: {
+            category: category || undefined,
+            sort: selectedSort,
+          },
+        });
+        setMeetings(response.data);
+      } catch (error) {
+        console.error("게시글 불러오기 실패:", error);
+      }
+    };
+
+    fetchPosts();
+  }, [category, selectedSort]);*/
+
   const navigation = useNavigation();
-  const { meetings = [] } = route.params || {};
+  const { meetings = [], categories } = route.params || {};
   const [selectedSort, setSelectedSort] = useState("latest");
 
   // 정렬된 데이터 생성
@@ -95,6 +114,25 @@ const AllPosts = ({ route }) => {
 
   return (
     <View style={styles.container}>
+
+      {/* 선택된 카테고리 표시 */}
+      <View style={{ marginTop: 15, marginBottom: 5 }}>
+          <Text style={{
+            fontSize: 20,
+            fontFamily: theme.fonts.extraBold,
+            color: '#333',
+          }}>
+            {categories ? `'${categories}' 카테고리 모임` : '전체 모임'}
+          </Text>
+          <Text style={{
+            fontSize: 14,
+            fontFamily: theme.fonts.regular,
+            color: theme.colors.grey,
+            marginTop: 4,
+          }}>
+            총 {meetings.length}개의 모임이 있습니다
+          </Text>
+        </View>
 
       {/* 정렬 버튼 */}
       <View style={styles.sortContainer}>
