@@ -103,90 +103,90 @@ const popularMeetings=[...meetings].sort((a, b) => b.likes - a.likes);
 
 const currentUser = { userId: 1 }; // 로그인한 사용자 ID
 
-// 게시글 목록 컴포넌트
-const PostList = ({ data }) => (
-  <View>
-    {data.slice(0, 3).map((item) => (
-      <TouchableOpacity
-        key={item.postId}
-        style={styles.listItem}
-        onPress={() => {
-          if (item.userId === currentUser.userId) {
-            navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
-          } else {
-            navigation.navigate("PostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
-          }
-        }}
-      >
-        <Text style={styles.listTitle}>{item.title}</Text>
-        <View style={styles.listInfo}>
-          <Text style={styles.listDate}>{item.createdAt}</Text>
-          <View style={styles.likesContainer}>
-            <Feather name="heart" size={16} color="#979C9E" />
-            <Text style={styles.likesText}>{item.likes}</Text>
+  // 게시글 목록 컴포넌트
+  const PostList = ({ data }) => (
+    <View>
+      {data.slice(0, 3).map((item) => (
+        <TouchableOpacity
+          key={item.postId}
+          style={styles.listItem}
+          onPress={() => {
+            if (item.userId === currentUser.userId) {
+              navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
+            } else {
+              navigation.navigate("PostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
+            }
+          }}
+        >
+          <Text style={styles.listTitle}>{item.title}</Text>
+          <View style={styles.listInfo}>
+            <Text style={styles.listDate}>{item.createdAt}</Text>
+            <View style={styles.likesContainer}>
+              <Feather name="heart" size={16} color="#979C9E" />
+              <Text style={styles.likesText}>{item.likes}</Text>
+            </View>
           </View>
-        </View>
-      </TouchableOpacity>
-    ))}
-  </View>
-);
-
-
-  return (
-
-    <View style={styles.container}>
-        <LogoContainer>
-            <Logo width={130} height={30} />
-        </LogoContainer>
-      
-
-
-      {/* 검색창 */}
-      <View style={styles.searchContainer}>
-        <TextInput style={styles.searchInput} placeholder="검색" />
-        <Feather
-          name="search"
-          size={26}
-          color={theme.colors.mainBlue}
-          style={styles.searchIcon}
-        />
-      </View>
-
-
-
-        {/* 카테고리 (Flaticon 기반 아이콘 적용) */}
-        <FlatList data={categories}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={true}
-          contentContainerStyle={styles.categoryContainer}
-          renderItem={({ item }) => (
-
-          <TouchableOpacity style={styles.categoryItem}>
-            <Image source={item.image} style={{width:35,height:35}} resizeMode='contain'/>
-            <Text style={styles.categoryText}>{item.name}</Text>
-          </TouchableOpacity>
-  )}
-        />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* 최신 모임 섹션 */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>최신 모임</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings  })}>
-            <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
-          </TouchableOpacity>
-        </View>
-        <PostList data={latestMeetings} />
-
-        {/* 주간 인기 소모임 섹션 */}
-        <Text style={styles.sectionTitle}>주간 TOP3 모임</Text>
-        <PostList data={popularMeetings} />
-      </ScrollView>
-      
+        </TouchableOpacity>
+      ))}
     </View>
-
   );
-};
-
-
+  
+  
+    return (
+  
+      <View style={styles.container} contentContainerStyle={{paddingBottom:100}}>
+          <LogoContainer>
+              <Logo width={130} height={30} />
+          </LogoContainer>
+        
+  
+  
+        {/* 검색창 */}
+        <View style={styles.searchContainer}>
+          <TextInput style={styles.searchInput} placeholder="검색" />
+          <Feather
+            name="search"
+            size={26}
+            color={theme.colors.mainBlue}
+            style={styles.searchIcon}
+          />
+        </View>
+  
+  
+  
+          {/* 카테고리 (Flaticon 기반 아이콘 적용) */}
+          <FlatList data={categories}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={true}
+            contentContainerStyle={styles.categoryContainer}
+            renderItem={({ item }) => (
+  
+            <TouchableOpacity 
+            style={styles.categoryItem}
+            onPress={()=>navigation.navigate("전체글",{meetings,categories:item.name})}>
+              <Image source={item.image} style={{width:35,height:35}} resizeMode='contain'/>
+              <Text style={styles.categoryText}>{item.name}</Text>
+            </TouchableOpacity>
+    )}
+          />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* 최신 모임 섹션 */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>최신 모임</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("전체글", { meetings: latestMeetings  })}>
+              <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
+            </TouchableOpacity>
+          </View>
+          <PostList data={latestMeetings} />
+  
+          {/* 주간 인기 소모임 섹션 */}
+          <Text style={styles.sectionTitle}>주간 TOP3 모임</Text>
+          <PostList data={popularMeetings} />
+        </ScrollView>
+        
+      </View>
+  
+    );
+  };
 export default MainPage;
