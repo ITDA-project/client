@@ -216,4 +216,3 @@ const Profile = ({ navigation, route }) => {
 
 
 export default Profile;
-
