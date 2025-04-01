@@ -7,6 +7,7 @@ import Navigation from "./navigations";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import { Provider as PaperProvider } from "react-native-paper";
+import { AuthProvider } from "./contexts/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,14 +43,16 @@ const App = () => {
   }
 
   return (
-    <PaperProvider>
-      <ThemeProvider theme={theme}>
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-          <StatusBar style="auto" />
-          <Navigation />
-        </View>
-      </ThemeProvider>
-    </PaperProvider>
+    <AuthProvider>
+      <PaperProvider>
+        <ThemeProvider theme={theme}>
+          <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+            <StatusBar style="auto" />
+            <Navigation />
+          </View>
+        </ThemeProvider>
+      </PaperProvider>
+    </AuthProvider>
   );
 };
 

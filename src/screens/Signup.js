@@ -123,7 +123,7 @@ const Signup = ({ navigation }) => {
 
   const _handleSignup = async () => {
     try {
-      const response = await axios.post("http://192.168.219.77:8080/join", {
+      const response = await axios.post("http://10.0.2.2:8080/join", {
         username: email,
         password,
       });

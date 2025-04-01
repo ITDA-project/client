@@ -94,7 +94,7 @@ const SigninWithEmail = ({ navigation }) => {
 
     try {
       const response = await axios.post(
-        "http://192.168.219.77:8080/auth/login",
+        "http://10.0.2.2:8080/auth/login",
         { username: email, password },
         {
           headers: {
@@ -104,7 +104,7 @@ const SigninWithEmail = ({ navigation }) => {
       );
 
       console.log("로그인 성공:", response.data);
-      navigation.navigate("회원가입 완료");
+      navigation.pop(2);
     } catch (error) {
       if (error.response) {
         console.error("서버 응답 상태 코드:", error.response.status);

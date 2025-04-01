@@ -6,14 +6,20 @@ import Main from "./Main";
 import Auth from "./Auth";
 import Application from "./Applicaton";
 import Review from "./Review";
+import { AuthProvider } from "../contexts/AuthContext";
 
 const Stack = createStackNavigator();
 
 const Navigation = () => {
   return (
-    <NavigationContainer>
-      <Auth />
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Main" component={Main} />
+          <Stack.Screen name="Auth" component={Auth} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
 

@@ -1,11 +1,14 @@
 import React from "react";
 import { View, Text } from "react-native";
+import RequireAuth from "../components/RequireAuth";
 
 const Search = () => {
   return (
-    <View>
-      <Text>Search Screen</Text>
-    </View>
+    <RequireAuth>
+      <View>
+        <Text>Search Screen</Text>
+      </View>
+    </RequireAuth>
   );
 };
 
