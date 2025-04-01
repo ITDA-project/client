@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils";
 import { Keyboard } from "react-native";
 import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
 
 const Container = styled.View`
   flex: 1;
@@ -38,6 +39,8 @@ const SigninWithEmail = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [disabled, setDisabled] = useState(true);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  const { setUser } = useAuth();
 
   useEffect(() => {
     setDisabled(!(email && password && !errorMessage));
@@ -104,6 +107,8 @@ const SigninWithEmail = ({ navigation }) => {
       );
 
       console.log("로그인 성공:", response.data);
+
+      setUser(response.data);
       navigation.pop(2);
     } catch (error) {
       if (error.response) {

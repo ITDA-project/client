@@ -1,13 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components/native";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
@@ -296,11 +289,7 @@ const MyPage = () => {
       {/* 프로필 영역 */}
       <MyPageSection>
         <ProfileImageContainer>
-          {user.image ? (
-            <ProfileImage source={{ uri: user.image }} />
-          ) : (
-            <Feather name="user" size={30} color="#888" />
-          )}
+          {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
         </ProfileImageContainer>
         <UserInfo>
           <UserRow>

@@ -32,12 +32,12 @@ const Main = () => {
     >
       <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
       <Stack.Screen name="MainPage" component={Screens.MainPage} options={{ headerShown: false }} />
-      <Stack.Screen name="전체글" component={Screens.AllPosts} />
-      <Stack.Screen name="MyPage" component={Screens.MyPage} screenOptions={{ headerShown: false }} />
-      <Stack.Screen name="프로필" component={Screens.Profile} />
-      <Stack.Screen name="사진/경력 수정" component={Screens.EditProfile} />
       <Stack.Screen name="PostDetail" component={Screens.PostDetail} options={{ headerTitle: "" }} />
       <Stack.Screen name="MyPostDetail" component={Screens.MyPostDetail} options={{ headerTitle: "" }} />
+      <Stack.Screen name="MyPage" component={Screens.MyPage} screenOptions={{ headerShown: false }} />
+      <Stack.Screen name="전체글" component={Screens.AllPosts} />
+      <Stack.Screen name="프로필" component={Screens.Profile} />
+      <Stack.Screen name="사진/경력 수정" component={Screens.EditProfile} />
       <Stack.Screen name="모임생성" component={Screens.CreatePost} />
 
       <Stack.Screen name="로그인" component={Screens.Signin} />

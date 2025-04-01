@@ -222,7 +222,7 @@ const Profile = ({ navigation, route }) => {
         />
         <Button
           title="회원탈퇴"
-          onPress={() => console.log("회원탈퇴")}
+          onPress={() => navigation.navigate("회원탈퇴")}
           containerStyle={{
             backgroundColor: theme.colors.lightBlue,
             height: 40,
