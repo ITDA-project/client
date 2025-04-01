@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Platform } from "react-native";
 import styled from "styled-components/native";
-import { MaterialIcons ,Feather} from "@expo/vector-icons";
+import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
 import Review from "../components/Review";
@@ -101,7 +101,7 @@ const Placeholder = styled.Text`
 const Divider = styled.View`
   height: 1px;
   background-color: ${({ theme }) => theme.colors.grey};
-  margin-top:20px;
+  margin-top: 20px;
   margin-bottom: 10px;
 `;
 
@@ -128,92 +128,77 @@ const dummyUser = {
     { star: 5.0, sentence: "친절하고 배려심 넘치는 진행이었어요.", createdAt: "2025.02.25" },
     { star: 3.5, sentence: "조금 아쉬운 점도 있었지만, 전반적으로 만족합니다.", createdAt: "2025.02.24" },
     { star: 4.2, sentence: "재밌는 활동들 덕분에 시간 가는 줄 몰랐어요!", createdAt: "2025.02.23" },
-    { star: 4.7, sentence: "다음에도 참여하고 싶어요!", createdAt: "2025.02.22" }
-  ]
+    { star: 4.7, sentence: "다음에도 참여하고 싶어요!", createdAt: "2025.02.22" },
+  ],
 };
-dummyUser.totalStar = dummyUser.reviews.length > 0 
-  ? (dummyUser.reviews.reduce((acc, review) => acc + review.star, 0) / dummyUser.reviews.length).toFixed(1) 
-  : "0.0";
+dummyUser.totalStar =
+  dummyUser.reviews.length > 0 ? (dummyUser.reviews.reduce((acc, review) => acc + review.star, 0) / dummyUser.reviews.length).toFixed(1) : "0.0";
 
 const Profile = ({ navigation, route }) => {
+  const theme = useContext(ThemeContext);
+  const user = route?.params?.user || dummyUser; //더미데이터 사용용
 
-    const theme = useContext(ThemeContext);
-    const user = route?.params?.user || dummyUser; //더미데이터 사용용
-    
-    
-    return (
-      <Container>
-        {/* 상단 프로필 */}
-        <ProfileContainer>
-          <ProfileImageContainer>
-            {user.image ? (
-              <ProfileImage source={{ uri: user.image }} />
-            ) : (
-              <Feather name="user" size={30} color="#888" />
-            )}
-          </ProfileImageContainer>
-          <UserInfo>
-            <UserName>{user.name}</UserName>
-            <StarContainer>
-              <MaterialIcons name="star" size={18} color="#FFC107" />
-              <StarText>{user.totalStar}</StarText>
-            </StarContainer>
-          </UserInfo>
-        </ProfileContainer>
-  
-        <EditButton>
-          <Button
-            title="사진 / 경력 수정"
-            onPress={() => navigation.navigate("사진/경력 수정")}
-            containerStyle={{ height: 40, width: 340 }}
-            textStyle={{ fontSize: 16 }}
-            style={{ height: 40, width: 340 }}
-          />
-        </EditButton>
-  
-        {/* 경력 영역 (2 비율) */}
-        <ScrollSection>
-          <SectionTitle>경력</SectionTitle>
-          <ScrollArea>
-            {user.career ? <CareerText>{user.career}</CareerText> : <Placeholder>등록되지 않았습니다</Placeholder>}
-          </ScrollArea>
-        </ScrollSection>
-  
-        <Divider />
-  
-        {/* 리뷰 영역 (3 비율) */}
-        <ReviewSection>
-          <SectionTitle>리뷰</SectionTitle>
-          <ScrollArea>
-            {user.reviews.length > 0 ? (
-              user.reviews.map((review, index) => <Review key={index} {...review} />)
-            ) : (
-              <Placeholder>등록되지 않았습니다</Placeholder>
-            )}
-          </ScrollArea>
-        </ReviewSection>
-  
-        {/* 하단 버튼 */}
-        <ButtonContainer>
-          <Button
-            title="로그아웃"
-            onPress={() => console.log("로그아웃")}
-            containerStyle={{ height: 40, width: 95 }}
-            textStyle={{ fontSize: 16, marginLeft: 0 }}
-            style={{ height: 40, width: 95 }}
-          />
-          <Button
-            title="회원탈퇴"
-            onPress={() => console.log("회원탈퇴")}
-            containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: 95 }}
-            textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
-            style={{ height: 40, width: 95 }}
-          />
-        </ButtonContainer>
-      </Container>
-    );
-  };
+  return (
+    <Container>
+      {/* 상단 프로필 */}
+      <ProfileContainer>
+        <ProfileImageContainer>
+          {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
+        </ProfileImageContainer>
+        <UserInfo>
+          <UserName>{user.name}</UserName>
+          <StarContainer>
+            <MaterialIcons name="star" size={18} color="#FFC107" />
+            <StarText>{user.totalStar}</StarText>
+          </StarContainer>
+        </UserInfo>
+      </ProfileContainer>
 
+      <EditButton>
+        <Button
+          title="사진 / 경력 수정"
+          onPress={() => navigation.navigate("사진/경력 수정")}
+          containerStyle={{ height: 40, width: 340 }}
+          textStyle={{ fontSize: 16 }}
+          style={{ height: 40, width: 340 }}
+        />
+      </EditButton>
+
+      {/* 경력 영역 (2 비율) */}
+      <ScrollSection>
+        <SectionTitle>경력</SectionTitle>
+        <ScrollArea>{user.career ? <CareerText>{user.career}</CareerText> : <Placeholder>등록되지 않았습니다</Placeholder>}</ScrollArea>
+      </ScrollSection>
+
+      <Divider />
+
+      {/* 리뷰 영역 (3 비율) */}
+      <ReviewSection>
+        <SectionTitle>리뷰</SectionTitle>
+        <ScrollArea>
+          {user.reviews.length > 0 ? user.reviews.map((review, index) => <Review key={index} {...review} />) : <Placeholder>등록되지 않았습니다</Placeholder>}
+        </ScrollArea>
+      </ReviewSection>
+
+      {/* 하단 버튼 */}
+      <ButtonContainer>
+        <Button
+          title="로그아웃"
+          onPress={() => console.log("로그아웃")}
+          containerStyle={{ height: 40, width: 95 }}
+          textStyle={{ fontSize: 16, marginLeft: 0 }}
+          style={{ height: 40, width: 95 }}
+        />
+        <Button
+          title="회원탈퇴"
+          onPress={() => navigation.navigate("회원탈퇴")}
+          containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: 95 }}
+          textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
+          style={{ height: 40, width: 95 }}
+        />
+      </ButtonContainer>
+    </Container>
+  );
+};
 
 export default Profile;
-
