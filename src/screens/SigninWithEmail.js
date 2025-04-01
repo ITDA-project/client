@@ -10,6 +10,7 @@ import { validateEmail, removeWhitespace } from "../utils";
 import { Keyboard } from "react-native";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -107,6 +108,18 @@ const SigninWithEmail = ({ navigation }) => {
       );
 
       console.log("로그인 성공:", response.data);
+
+      // 나중에 엑세스 토큰 추가
+      const { refresh_token } = response.data;
+
+      if (refresh_token) {
+        await AsyncStorage.setItem("refreshToken", refresh_token);
+
+        const storedRefresh = await AsyncStorage.getItem("refreshToken");
+        console.log("저장된 리프레쉬 토큰: ", storedRefresh);
+      } else {
+        console.error("refresh_token이 존재하지 않습니다");
+      }
 
       setUser(response.data);
       navigation.pop(2);
