@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { ThemeContext } from "styled-components/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { MainPage, Chat, Notifications, Search, MyPage, AllPosts, Profile, EditProfile, CreatePost, PostDetail, MyPostDetail } from "../screens";
+import { MainPage, Chat, Notifications, Search, MyPage, AllPosts, Profile, EditProfile, CreatePost, PostDetail, MyPostDetail, EditPost } from "../screens";
 import Home from "./Home";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -102,6 +102,21 @@ const Main = () => {
           headerLeft: ({ onPress, tintColor }) => <MaterialIcons name="keyboard-arrow-left" size={38} color={tintColor} onPress={onPress} />,
         }}
       />
+      <Stack.Screen
+        name="모임수정"
+        component={EditPost}
+        options={{
+          headerTitleAlign: "center",
+          headerBackTitleVisible: false,
+          headerTintColor: theme.colors.black,
+          headerTitleStyle: {
+            fontFamily: theme.fonts.bold,
+            fontSize: 16,
+          },
+          headerLeft: ({ onPress, tintColor }) => <MaterialIcons name="keyboard-arrow-left" size={38} color={tintColor} onPress={onPress} />,
+        }}
+      />
+
     </Stack.Navigator>
   );
 };

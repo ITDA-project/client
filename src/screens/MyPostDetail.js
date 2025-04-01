@@ -179,7 +179,21 @@ const MyPostDetail = () => {
 
   const handleEdit = () => {
     setMenuVisible(false);
-    console.log("게시글 수정하기"); // 게시글 수정 화면으로 이동
+    navigation.navigate("모임수정", {
+    postId: meeting.postId,
+    title: meeting.title,
+    description: meeting.content,
+    selectedCity: "서울", // 예시로 넣은 값
+    selectedDistrict: "종로구", // 예시로 넣은 값
+    category: "취미", // 실제로는 state나 API에서 받아야 함
+    maxParticipants: meeting.memberMax,
+    deposit: meeting.deposit,
+    tags: meeting.tags.join(" "),
+    recruitmentStart: meeting.recruitmentStart,
+    recruitmentEnd: meeting.recruitmentEnd,
+    activityStart: meeting.activityStart,
+    activityEnd: meeting.activityEnd,
+    });
   };
 
   /*const deletePost = async (postId) => {
