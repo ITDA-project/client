@@ -49,7 +49,7 @@ const SignupDone = ({ navigation }) => {
       <FooterContainer>
         <Button
           title="확인"
-          onPress={() => navigation.pop(2)}
+          onPress={() => navigation.pop(3)}
           containerStyle={{
             width: "100%",
             marginTop: 100,

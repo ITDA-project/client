@@ -163,12 +163,7 @@ const dummyUser = {
   ],
 };
 dummyUser.totalStar =
-  dummyUser.reviews.length > 0
-    ? (
-        dummyUser.reviews.reduce((acc, review) => acc + review.star, 0) /
-        dummyUser.reviews.length
-      ).toFixed(1)
-    : "0.0";
+  dummyUser.reviews.length > 0 ? (dummyUser.reviews.reduce((acc, review) => acc + review.star, 0) / dummyUser.reviews.length).toFixed(1) : "0.0";
 
 const Profile = ({ navigation, route }) => {
   const theme = useContext(ThemeContext);
@@ -179,11 +174,7 @@ const Profile = ({ navigation, route }) => {
       {/* 상단 프로필 */}
       <ProfileContainer>
         <ProfileImageContainer>
-          {user.image ? (
-            <ProfileImage source={{ uri: user.image }} />
-          ) : (
-            <Feather name="user" size={30} color="#888" />
-          )}
+          {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
         </ProfileImageContainer>
         <UserInfo>
           <UserName>{user.name}</UserName>
@@ -197,7 +188,7 @@ const Profile = ({ navigation, route }) => {
       <EditButton>
         <Button
           title="사진 / 경력 수정"
-          onPress={() => navigation.navigate("EditProfile")}
+          onPress={() => navigation.navigate("사진/경력 수정")}
           containerStyle={{ height: 40, width: 340 }}
           textStyle={{ fontSize: 16 }}
           style={{ height: 40, width: 340 }}
@@ -207,13 +198,7 @@ const Profile = ({ navigation, route }) => {
       {/* 경력 영역 (2 비율) */}
       <ScrollSection>
         <SectionTitle>경력</SectionTitle>
-        <ScrollArea>
-          {user.career ? (
-            <CareerText>{user.career}</CareerText>
-          ) : (
-            <Placeholder>등록되지 않았습니다</Placeholder>
-          )}
-        </ScrollArea>
+        <ScrollArea>{user.career ? <CareerText>{user.career}</CareerText> : <Placeholder>등록되지 않았습니다</Placeholder>}</ScrollArea>
       </ScrollSection>
 
       <Divider />
@@ -222,13 +207,7 @@ const Profile = ({ navigation, route }) => {
       <ReviewSection>
         <SectionTitle>리뷰</SectionTitle>
         <ScrollArea>
-          {user.reviews.length > 0 ? (
-            user.reviews.map((review, index) => (
-              <Review key={index} {...review} />
-            ))
-          ) : (
-            <Placeholder>등록되지 않았습니다</Placeholder>
-          )}
+          {user.reviews.length > 0 ? user.reviews.map((review, index) => <Review key={index} {...review} />) : <Placeholder>등록되지 않았습니다</Placeholder>}
         </ScrollArea>
       </ReviewSection>
 

@@ -8,7 +8,7 @@ const RequireAuth = ({ children }) => {
 
   useEffect(() => {
     if (!user) {
-      navigation.navigate("Auth", { screen: "로그인" }); // 로그인 안 되어 있으면 로그인 화면으로 이동
+      navigation.navigate("로그인"); // 로그인 안 되어 있으면 로그인 화면으로 이동
     }
   }, [user, navigation]);
 

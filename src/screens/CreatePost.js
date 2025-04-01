@@ -69,9 +69,7 @@ const CalendarPicker = ({ date, setDate, minDate, disabled }) => {
         }}
         disabled={disabled}
       >
-        <DateText>
-          {date ? date.toLocaleDateString("ko-KR") : "날짜 선택"}
-        </DateText>
+        <DateText>{date ? date.toLocaleDateString("ko-KR") : "날짜 선택"}</DateText>
         <Ionicons name="calendar-outline" size={20} color="#888" />
       </DateInputContainer>
 
@@ -168,30 +166,11 @@ const districtData = {
     "해운대구",
   ],
   대구: ["남구", "달서구", "달성군", "동구", "북구", "서구", "수성구", "중구"],
-  인천: [
-    "강화군",
-    "계양구",
-    "미추홀구",
-    "남동구",
-    "동구",
-    "부평구",
-    "서구",
-    "연수구",
-    "옹진군",
-    "중구",
-  ],
+  인천: ["강화군", "계양구", "미추홀구", "남동구", "동구", "부평구", "서구", "연수구", "옹진군", "중구"],
   광주: ["광산구", "남구", "동구", "북구", "서구"],
   대전: ["대덕구", "동구", "서구", "유성구", "중구"],
   울산: ["남구", "동구", "북구", "울주군", "중구"],
-  세종: [
-    "조치원읍",
-    "한솔동",
-    "도담동",
-    "고운동",
-    "아름동",
-    "종촌동",
-    "장군면",
-  ],
+  세종: ["조치원읍", "한솔동", "도담동", "고운동", "아름동", "종촌동", "장군면"],
 
   경기도: [
     "가평군",
@@ -246,18 +225,7 @@ const districtData = {
     "화천군",
     "횡성군",
   ],
-  충청북도: [
-    "괴산군",
-    "단양군",
-    "보은군",
-    "영동군",
-    "옥천군",
-    "음성군",
-    "제천시",
-    "진천군",
-    "청주시",
-    "충주시",
-  ],
+  충청북도: ["괴산군", "단양군", "보은군", "영동군", "옥천군", "음성군", "제천시", "진천군", "청주시", "충주시"],
   충청남도: [
     "계룡시",
     "공주시",
@@ -275,22 +243,7 @@ const districtData = {
     "태안군",
     "홍성군",
   ],
-  전라북도: [
-    "고창군",
-    "군산시",
-    "김제시",
-    "남원시",
-    "무주군",
-    "부안군",
-    "순창군",
-    "완주군",
-    "익산시",
-    "임실군",
-    "장수군",
-    "전주시",
-    "정읍시",
-    "진안군",
-  ],
+  전라북도: ["고창군", "군산시", "김제시", "남원시", "무주군", "부안군", "순창군", "완주군", "익산시", "임실군", "장수군", "전주시", "정읍시", "진안군"],
   전라남도: [
     "강진군",
     "고흥군",
@@ -440,10 +393,7 @@ const CreatePost = () => {
       keyboardShouldPersistTaps="handled"
     >
       <Container>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {/* 카테고리 선택 */}
           <Label>카테고리</Label>
           <View style={{ width: "40%", zIndex: 3000 }}>
@@ -490,21 +440,14 @@ const CreatePost = () => {
           </View>
 
           <Label>제목</Label>
-          <Input
-            returnKeyType="next"
-            value={title}
-            onChangeText={setTitle}
-            placeholder="글 제목"
-            containerStyle={{ marginTop: -20 }}
-          />
+          <Input returnKeyType="next" value={title} onChangeText={setTitle} placeholder="글 제목" containerStyle={{ marginTop: -20 }} />
 
           <Label>상세설명</Label>
           {/* input컴포넌트 사용시 높이조절 x */}
           <TextInput
             value={description}
             onChangeText={setDescription}
-            placeholder="어떤 모임인지 자유롭게 설명해주세요!       
-    (ex. 주 몇회, 초보자 환영, 필요물품 ...)"
+            placeholder={`어떤 모임인지 자유롭게 설명해주세요!\n(ex. 주 몇회, 초보자 환영, 필요물품 ...)`}
             placeholderTextColor={theme.colors.grey}
             multiline={true}
             numberOfLines={5}
@@ -630,10 +573,7 @@ const CreatePost = () => {
 
           <Label>모집 기간</Label>
           <RowContainer>
-            <CalendarPicker
-              date={recruitmentStart}
-              setDate={setRecruitmentStart}
-            />
+            <CalendarPicker date={recruitmentStart} setDate={setRecruitmentStart} />
             <CalendarPicker
               date={recruitmentEnd}
               setDate={setRecruitmentEnd}
@@ -654,22 +594,10 @@ const CreatePost = () => {
           </RowContainer>
 
           <Label>보증금</Label>
-          <Input
-            returnKeyType="next"
-            value={deposit}
-            onChangeText={setDeposit}
-            placeholder="₩ 999,999,999"
-            containerStyle={{ marginTop: -20 }}
-          />
+          <Input returnKeyType="next" value={deposit} onChangeText={setDeposit} placeholder="₩ 999,999,999" containerStyle={{ marginTop: -20 }} />
 
           <Label>태그</Label>
-          <Input
-            returnKeyType="done"
-            value={tags}
-            onChangeText={setTags}
-            placeholder="#뜨개질 #취미 #종로구"
-            containerStyle={{ marginTop: -20 }}
-          />
+          <Input returnKeyType="done" value={tags} onChangeText={setTags} placeholder="#뜨개질 #취미 #종로구" containerStyle={{ marginTop: -20 }} />
 
           <ButtonContainer>
             <Button

@@ -1,10 +1,10 @@
+//탭바 화면
+
 import React, { useContext } from "react";
 import { Image, View } from "react-native";
 import { ThemeContext } from "styled-components/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MainPage, Search, Chat, Notifications, MyPage } from "../screens";
-import { Feather, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { NavigationContainer } from "@react-navigation/native";
 import homeIcon from "../../assets/icons/homeIcon.png";
 import searchIcon from "../../assets/icons/searchIcon.png";
 import chatIcon from "../../assets/icons/chatIcon.png";
