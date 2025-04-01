@@ -46,18 +46,5 @@ export {
   SigninWithEmail,
   Signup,
   SignupDone,
-  Chat,
-  MainPage,
-  Notifications,
-  Search,
-  AllPosts,
-  MyPage,
-  Profile,
-  EditProfile,
-  CreatePost,
-  MyPostDetail,
-  PostDetail,
-  ApplicationList,
-  EditPost
-
+  EditPost,
 };

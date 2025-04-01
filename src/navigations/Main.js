@@ -54,7 +54,7 @@ const Main = () => {
 
       <Stack.Screen
         name="모임수정"
-        component={EditPost}
+        component={Screens.EditPost}
         options={{
           headerTitleAlign: "center",
           headerBackTitleVisible: false,

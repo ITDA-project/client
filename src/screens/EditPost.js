@@ -99,21 +99,24 @@ const EditPost = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const {
-    postId,
-    title: initialTitle,
-    description: initialDesc,
-    selectedCity: initialCity,
-    selectedDistrict: initialDistrict,
-    category: initialCategory,
-    maxParticipants,
-    deposit,
-    tags,
-    recruitmentStart,
-    recruitmentEnd,
-    activityStart,
-    activityEnd,
-  } = route.params || {};
+  // fallback 처리
+const params = route?.params ?? {};
+
+const {
+  postId,
+  title: initialTitle,
+  description: initialDesc,
+  selectedCity: initialCity,
+  selectedDistrict: initialDistrict,
+  category: initialCategory,
+  maxParticipants,
+  deposit,
+  tags,
+  recruitmentStart,
+  recruitmentEnd,
+  activityStart,
+  activityEnd,
+} = params;
 
   const [title, setTitle] = useState(initialTitle || "");
   const [description, setDescription] = useState(initialDesc || "");
@@ -131,10 +134,17 @@ const EditPost = () => {
   const [money, setMoney] = useState(deposit || "");
   const [tagText, setTagText] = useState(tags || "");
 
-  const [recruitStart, setRecruitStart] = useState(new Date(recruitmentStart));
-  const [recruitEnd, setRecruitEnd] = useState(new Date(recruitmentEnd));
-  const [activityStartDate, setActivityStartDate] = useState(new Date(activityStart));
-  const [activityEndDate, setActivityEndDate] = useState(new Date(activityEnd));
+  const safeParseDate = (value) => {
+    if (!value || typeof value !== "string") return new Date();
+    const normalized = value.replace(/\./g, "-").replace(/\s/g, "");
+    const parsed = new Date(normalized);
+    return isNaN(parsed.getTime()) ? new Date() : parsed;
+  };
+  
+  const [recruitStart, setRecruitStart] = useState(safeParseDate(recruitmentStart));
+  const [recruitEnd, setRecruitEnd] = useState(safeParseDate(recruitmentEnd));
+  const [activityStartDate, setActivityStartDate] = useState(safeParseDate(activityStart));
+  const [activityEndDate, setActivityEndDate] = useState(safeParseDate(activityEnd));
 
   useEffect(() => {
     if (selectedCity) {
@@ -165,27 +175,32 @@ const EditPost = () => {
   };
 
   const handleUpdate = () => {
+    const formatDate = (date) => {
+        return date instanceof Date ? date.toISOString().split("T")[0] : "";
+      };
+    
     const updatedPost = {
-      postId,
-      title,
-      description,
-      category,
-      selectedCity,
-      selectedDistrict,
-      maxParticipants: max,
-      deposit: money,
-      tags: tagText,
-      recruitmentStart: recruitStart,
-      recruitmentEnd: recruitEnd,
-      activityStart: activityStartDate,
-      activityEnd: activityEndDate,
-    };
+        postId,
+        title,
+        description,
+        category,
+        selectedCity,
+        selectedDistrict,
+        memberMax: max,
+        deposit: money,
+        tags: tagText.split(" "),
+        recruitmentStart: formatDate(recruitStart),
+        recruitmentEnd: formatDate(recruitEnd),
+        activityStart: formatDate(activityStartDate),
+        activityEnd: formatDate(activityEndDate),
+        createdAt: new Date().toISOString().split("T")[0], // 또는 유지할 기존 createdAt
+      };
 
     console.log("수정된 데이터:", updatedPost);
 
     // 여기에 실제 API 연동 로직 추가
     Alert.alert("수정 완료", "게시글이 성공적으로 수정되었습니다.");
-    navigation.goBack();
+    navigation.replace("MyPostDetail",{updatedPost});
   };
 
   return (
@@ -208,7 +223,8 @@ const EditPost = () => {
           </View>
 
           <Label>제목</Label>
-          <Input value={title} onChangeText={setTitle} placeholder="글 제목" />
+          <Input value={title} onChangeText={setTitle} placeholder="글 제목"
+          containerStyle={{ marginTop: -20 }} />
 
           <Label>상세설명</Label>
           <TextInput
@@ -266,6 +282,7 @@ const EditPost = () => {
             onChangeText={setMax}
             placeholder="예: 10"
             keyboardType="numeric"
+            containerStyle={{ marginTop: -20 }}
           />
 
           <Label>모집 기간</Label>
@@ -296,6 +313,7 @@ const EditPost = () => {
             onChangeText={setMoney}
             placeholder="₩ 0"
             keyboardType="numeric"
+            containerStyle={{ marginTop: -20 }}
           />
 
           <Label>태그</Label>
@@ -303,6 +321,7 @@ const EditPost = () => {
             value={tagText}
             onChangeText={setTagText}
             placeholder="#친목 #서울"
+            containerStyle={{ marginTop: -20 }}
           />
 
           <ButtonContainer>
