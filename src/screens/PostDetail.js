@@ -3,6 +3,7 @@ import { useRoute } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
+import useRequireLogin from "../hooks/useRequireLogin";
 
 const Container = styled.View`
   flex: 1;
@@ -129,13 +130,10 @@ const LikeText = styled.Text`
 
 // 모임 상세 페이지
 const PostDetail = () => {
+  const checkLogin = useRequireLogin();
   const theme = useContext(ThemeContext);
   const route = useRoute();
-  const {
-    postId,
-    title = "제목 없음",
-    createdAt = "날짜 없음",
-  } = route.params || {};
+  const { postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(7);
 
@@ -149,8 +147,7 @@ const PostDetail = () => {
     postId,
     title,
     createdAt,
-    content:
-      "뜨개질이 취미이신 분? \n처음이지만 같이 해보실 분?\n모두모두 환영합니다! 😊",
+    content: "뜨개질이 취미이신 분? \n처음이지만 같이 해보실 분?\n모두모두 환영합니다! 😊",
     location: "서울 종로구",
     maxParticipants: "10",
     recruitmentStart: "2025.02.22",
@@ -165,33 +162,22 @@ const PostDetail = () => {
   // 작성자 더미 데이터
   const user = {
     name: "홍길동",
-    career:
-      "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
+    career: "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
     image: null, // 프로필 사진이 없을 경우 기본 아이콘 사용
   };
 
   return (
     <Container>
       <Section>
-        <RowContainer
-          style={{ justifyContent: "space-between", alignItems: "center" }}
-        >
+        <RowContainer style={{ justifyContent: "space-between", alignItems: "center" }}>
           <Title>{meeting.title}</Title>
-          <Ionicons
-            name="share-outline"
-            size={25}
-            onPress={() => console.log("공유하기")}
-          />
+          <Ionicons name="share-outline" size={25} onPress={() => console.log("공유하기")} />
         </RowContainer>
 
         <Date>{meeting.createdAt}</Date>
         <Content>{meeting.content}</Content>
         <RowContainer style={{ marginBottom: 10 }}>
-          <Ionicons
-            name="location-outline"
-            size={24}
-            color={theme.colors.grey}
-          />
+          <Ionicons name="location-outline" size={24} color={theme.colors.grey} />
           <Label style={{ marginRight: 40, marginLeft: 5 }}>지역</Label>
           <Info>{meeting.location}</Info>
         </RowContainer>
@@ -203,11 +189,7 @@ const PostDetail = () => {
         </RowContainer>
 
         <RowContainer style={{ marginBottom: 10 }}>
-          <Ionicons
-            name="calendar-outline"
-            size={24}
-            color={theme.colors.grey}
-          />
+          <Ionicons name="calendar-outline" size={24} color={theme.colors.grey} />
           <Label style={{ marginRight: 13, marginLeft: 5 }}>모집기간</Label>
           <Info>
             {meeting.recruitmentStart} ~ {meeting.recruitmentEnd}
@@ -228,9 +210,7 @@ const PostDetail = () => {
           <Info>{meeting.deposit}</Info>
         </RowContainer>
 
-        <Info style={{ color: "#3386CA", marginTop: 10 }}>
-          {meeting.tags.join("  ")}
-        </Info>
+        <Info style={{ color: "#3386CA", marginTop: 10 }}>{meeting.tags.join("  ")}</Info>
 
         <Divider />
       </Section>
@@ -239,11 +219,7 @@ const PostDetail = () => {
       <ProfileContainer>
         <ProfileHeader>
           <ProfileImageContainer>
-            {user.image ? (
-              <ProfileImage source={{ uri: user.image }} />
-            ) : (
-              <Feather name="user" size={35} color="#888" />
-            )}
+            {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
           </ProfileImageContainer>
 
           <RowContainer>
@@ -265,7 +241,7 @@ const PostDetail = () => {
         </LikeButton>
         <Button
           title="신청하기"
-          onPress={() => console.log("신청하기")}
+          onPress={() => checkLogin("신청서 작성")}
           containerStyle={{ height: 50, width: 280 }}
           textStyle={{ marginLeft: 0 }}
           style={{ height: 50, width: 280 }}

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Alert } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 
@@ -8,7 +9,10 @@ const RequireAuth = ({ children }) => {
 
   useEffect(() => {
     if (!user) {
-      navigation.navigate("로그인"); // 로그인 안 되어 있으면 로그인 화면으로 이동
+      Alert.alert("로그인이 필요합니다", "이 기능을 사용하려면 로그인이 필요합니다. 로그인하시겠습니까?", [
+        { text: "취소", style: "cancel" },
+        { text: "로그인", onPress: () => navigation.navigate("로그인") },
+      ]);
     }
   }, [user, navigation]);
 
@@ -16,5 +20,3 @@ const RequireAuth = ({ children }) => {
 };
 
 export default RequireAuth;
-
-// 로그인 해야만 접근 할 수 있는 페이지를 <RequireAuth> 로 감싸야 함
