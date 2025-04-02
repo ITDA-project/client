@@ -10,9 +10,9 @@ const useRequireLogin = () => {
   const checkLogin = (nextScreen, params = {}) => {
     if (!user) {
       // 로그인 안 되어 있으면
-      Alert.alert("로그인이 필요합니다", "이 기능을 사용하려면 로그인이 필요합니다. 로그인하시겠습니까?", [
-        { text: "취소", style: "cancel" },
+      Alert.alert("로그인이 필요합니다", "이 기능을 사용하려면 로그인이 필요합니다.\n로그인하시겠습니까?", [
         { text: "로그인", onPress: () => navigation.navigate("로그인") },
+        { text: "취소", style: "cancel" },
       ]);
       return false;
     }
