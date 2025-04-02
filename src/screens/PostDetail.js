@@ -130,7 +130,7 @@ const LikeText = styled.Text`
 
 // 모임 상세 페이지
 const PostDetail = () => {
-  const checkLogin = useRequireLogin();
+  const { checkLogin, LoginAlert } = useRequireLogin();
   const theme = useContext(ThemeContext);
   const route = useRoute();
   const { postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
@@ -246,6 +246,7 @@ const PostDetail = () => {
           textStyle={{ marginLeft: 0 }}
           style={{ height: 50, width: 280 }}
         />
+        <LoginAlert />
       </Footer>
     </Container>
   );
