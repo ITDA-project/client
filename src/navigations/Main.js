@@ -31,10 +31,11 @@ const Main = () => {
       }}
     >
       <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
-      <Stack.Screen name="MainPage" component={Screens.MainPage} options={{ headerShown: false }} />
       <Stack.Screen name="PostDetail" component={Screens.PostDetail} options={{ headerTitle: "" }} />
       <Stack.Screen name="MyPostDetail" component={Screens.MyPostDetail} options={{ headerTitle: "" }} />
       <Stack.Screen name="MyPage" component={Screens.MyPage} screenOptions={{ headerShown: false }} />
+      <Stack.Screen name="Chat" component={Screens.Chat} screenOptions={{ headerShown: false }} />
+      <Stack.Screen name="Notifications" component={Screens.Notifications} screenOptions={{ headerShown: false }} />
       <Stack.Screen name="전체글" component={Screens.AllPosts} />
       <Stack.Screen name="프로필" component={Screens.Profile} />
       <Stack.Screen name="사진/경력 수정" component={Screens.EditProfile} />

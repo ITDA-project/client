@@ -10,10 +10,15 @@ const useRequireLogin = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const checkLogin = (nextScreen, params = {}) => {
+    console.log("이동 요청:", nextScreen);
+
     if (!user) {
+      console.log("로그인 안됨! 로그인 모달 표시");
       setModalVisible(true);
       return false;
     }
+
+    console.log("로그인 상태! 네비게이션 이동: ", nextScreen);
     navigation.navigate(nextScreen, params);
     return true;
   };
