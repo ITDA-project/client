@@ -112,9 +112,9 @@ const currentUser = { userId: 1 }; // 로그인한 사용자 ID
           style={styles.listItem}
           onPress={() => {
             if (item.userId === currentUser.userId) {
-              navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
+              navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, createdAt: item.createdAt, likes:item.likes });
             } else {
-              navigation.navigate("PostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
+              navigation.navigate("PostDetail", { postId: item.postId, title: item.title, createdAt: item.createdAt, likes:item.likes });
             }
           }}
         >

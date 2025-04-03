@@ -90,7 +90,7 @@ const CalendarPicker = ({ date, setDate, minDate, disabled }) => {
   );
 };
 
-const categoryData = [
+export const categoryData = [
   { label: "취미", value: "취미" },
   { label: "운동", value: "운동" },
   { label: "또래", value: "또래" },
@@ -99,7 +99,7 @@ const categoryData = [
   { label: "게임", value: "게임" },
 ];
 
-const cityData = [
+export const cityData = [
   { label: "서울", value: "서울" },
   { label: "부산", value: "부산" },
   { label: "대구", value: "대구" },
@@ -119,7 +119,7 @@ const cityData = [
   { label: "제주도", value: "제주도" },
 ];
 
-const districtData = {
+export const districtData = {
   서울: [
     "강남구",
     "강동구",
@@ -396,7 +396,7 @@ const CreatePost = () => {
         <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {/* 카테고리 선택 */}
           <Label>카테고리</Label>
-          <View style={{ width: "40%", zIndex: 3000 }}>
+          <View style={{ width: "45%", zIndex: 3000 }}>
             <DropDownPicker
               open={categoryOpen}
               value={category}
