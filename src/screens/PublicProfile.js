@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import styled from "styled-components/native";
 import { MaterialIcons ,Feather} from "@expo/vector-icons";
-import Header from "../components/Header";
+
 import Review from "../components/Review";
 // 스타일
 
