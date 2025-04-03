@@ -10,7 +10,8 @@ import { validateEmail, removeWhitespace } from "../utils";
 import { Keyboard } from "react-native";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import EncryptedStorage from "react-native-encrypted-storage";
+import * as Keychain from "react-native-keychain";
 
 const Container = styled.View`
   flex: 1;
@@ -114,18 +115,23 @@ const SigninWithEmail = ({ navigation }) => {
       const refreshToken = response.data.refresh_token;
 
       if (accessToken) {
+        await EncryptedStorage.setItem("accessToken", accessToken);
         setAccessToken(accessToken);
-        console.log("저장된 엑세스 토큰: ", accessToken);
+
+        const storedAccessToeken = await EncryptedStorage.getItem("accessToken");
+        console.log("저장된 엑세스 토큰: ", storedAccessToeken);
       } else {
         console.log("access가 존재하지 않습니다");
       }
 
       if (refreshToken) {
-        await AsyncStorage.setItem("refreshToken", refreshToken);
+        await Keychain.setGenericPassword("refreshToken", refreshToken);
 
-        const storedRefresh = await AsyncStorage.getItem("refreshToken");
+        const credentials = await Keychain.getGenericPassword();
 
-        console.log("저장된 리프레쉬 토큰: ", storedRefresh);
+        if (credentials) {
+          console.log("저장된 리프레쉬 토큰: ", credentials.password);
+        }
       } else {
         console.error("refresh_token이 존재하지 않습니다");
       }
