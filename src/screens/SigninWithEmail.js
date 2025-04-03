@@ -41,7 +41,7 @@ const SigninWithEmail = ({ navigation }) => {
   const [disabled, setDisabled] = useState(true);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-  const { setUser } = useAuth();
+  const { setUser, setAccessToken } = useAuth();
 
   useEffect(() => {
     setDisabled(!(email && password && !errorMessage));
@@ -103,19 +103,28 @@ const SigninWithEmail = ({ navigation }) => {
         {
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
         }
       );
 
       console.log("로그인 성공:", response.data);
 
-      // 나중에 엑세스 토큰 추가
-      const { refresh_token } = response.data;
+      const accessToken = response.headers.access;
+      const refreshToken = response.data.refresh_token;
 
-      if (refresh_token) {
-        await AsyncStorage.setItem("refreshToken", refresh_token);
+      if (accessToken) {
+        setAccessToken(accessToken);
+        console.log("저장된 엑세스 토큰: ", accessToken);
+      } else {
+        console.log("access가 존재하지 않습니다");
+      }
+
+      if (refreshToken) {
+        await AsyncStorage.setItem("refreshToken", refreshToken);
 
         const storedRefresh = await AsyncStorage.getItem("refreshToken");
+
         console.log("저장된 리프레쉬 토큰: ", storedRefresh);
       } else {
         console.error("refresh_token이 존재하지 않습니다");
