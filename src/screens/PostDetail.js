@@ -10,7 +10,7 @@ const Container = styled.View`
   background-color: #fff;
 `;
 const Section = styled.View`
-  min-height: 400px;
+  min-height: 100px;
   margin-bottom: 10px;
 `;
 
