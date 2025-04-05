@@ -5,6 +5,7 @@ import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils";
+import axios from "axios";
 
 const Container = styled.View`
   flex: 1;
@@ -14,7 +15,7 @@ const Container = styled.View`
   padding: 0 30px;
   padding-bottom: ${({ insets: { bottom } }) => bottom}px;
 `;
-const EmailContainer = styled.View`
+const RowContainer = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: center;
@@ -29,29 +30,12 @@ const FindPw = () => {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [emailErrorMessage, setEmailErrorMessage] = useState("");
-  const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] =
-    useState("");
+  const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState("");
   const [disabled, setDisabled] = useState(true);
 
   useEffect(() => {
-    setDisabled(
-      !(
-        email &&
-        authNum &&
-        password &&
-        passwordConfirm &&
-        !emailErrorMessage &&
-        !passwordConfirmErrorMessage
-      )
-    );
-  }, [
-    email,
-    authNum,
-    password,
-    passwordConfirm,
-    emailErrorMessage,
-    passwordConfirmErrorMessage,
-  ]);
+    setDisabled(!(email && authNum && password && passwordConfirm && !emailErrorMessage && !passwordConfirmErrorMessage));
+  }, [email, authNum, password, passwordConfirm, emailErrorMessage, passwordConfirmErrorMessage]);
 
   const _handleEmailChange = (email) => {
     let changeEmail = removeWhitespace(email);
@@ -61,10 +45,26 @@ const FindPw = () => {
 
     setEmail(changeEmail);
 
-    setEmailErrorMessage(
-      validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요"
-    );
+    setEmailErrorMessage(validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요");
     //등록된 이메일이 아닙니다. 오류 메세지 백이랑 연결 시 추가
+  };
+
+  const sendEmailOtp = async () => {
+    try {
+      const res = await axios.post("http://10.0.2.2:8080/api/auth/password/find", {
+        email,
+      });
+
+      // 여기서 상태 코드나 응답 구조를 보고 체크해줘야 해
+      if (res.status === 200) {
+        alert("이메일로 인증번호를 전송했습니다.");
+      } else {
+        alert("이메일 전송에 실패했습니다.");
+      }
+    } catch (err) {
+      console.log("인증번호 전송 에러:", err.response?.data || err.message);
+      alert("인증번호 전송 실패");
+    }
   };
 
   const _handleAuthNumChange = (authNum) => {
@@ -77,6 +77,24 @@ const FindPw = () => {
     setAuthNum(changeAuthNum);
   };
 
+  const verifyOtp = async () => {
+    try {
+      const res = await axios.patch("http://10.0.2.2:8080/api/auth/password/find", {
+        email,
+        otpNumber: parseInt(authNum),
+        password,
+      });
+
+      if (res.data.success) {
+        alert("인증번호가 확인되었습니다.");
+      } else {
+        alert("인증번호가 일치하지 않습니다.");
+      }
+    } catch (err) {
+      alert("인증번호 확인 실패");
+    }
+  };
+
   const _handlePasswordChange = (password) => {
     const changePassword = removeWhitespace(password);
 
@@ -87,18 +105,17 @@ const FindPw = () => {
     const changePasswordConfirm = removeWhitespace(passwordConfirm);
     setPasswordConfirm(changePasswordConfirm);
 
-    setPasswordConfirmErrorMessage(
-      password !== changePasswordConfirm ? "비밀번호가 일치하지 않습니다" : ""
-    );
+    setPasswordConfirmErrorMessage(password !== changePasswordConfirm ? "비밀번호가 일치하지 않습니다" : "");
+  };
+
+  const ChangeBtn = () => {
+    console.log("변경버튼 누름");
   };
 
   return (
-    <KeyboardAwareScrollView
-      extraScrollHeight={20}
-      contentContainerStyle={{ flex: 1 }}
-    >
+    <KeyboardAwareScrollView extraScrollHeight={20} contentContainerStyle={{ flex: 1 }}>
       <Container insets={insets}>
-        <EmailContainer>
+        <RowContainer>
           <Input
             label="이메일"
             placeholder="example@email.com"
@@ -112,7 +129,7 @@ const FindPw = () => {
           />
           <Button
             title="전송"
-            onPress={() => console.log("이메일 전송")} //백이랑 연결하면 로직 추가. 이메일이 전송 되었습니다
+            onPress={sendEmailOtp}
             disabled={!email || !!emailErrorMessage}
             containerStyle={{
               width: 70,
@@ -131,21 +148,42 @@ const FindPw = () => {
               marginLeft: 0,
             }}
           />
-        </EmailContainer>
-        <ErrorMessage
-          message={emailErrorMessage}
-          containerStyle={{ position: "absolute" }}
-        />
-        <Input
-          label="인증번호"
-          returnKeyType="next"
-          value={authNum}
-          onChangeText={_handleAuthNumChange}
-          containerStyle={{
-            width: "100%",
-            paddingBottom: 17,
-          }}
-        />
+        </RowContainer>
+        <ErrorMessage message={emailErrorMessage} containerStyle={{ position: "absolute" }} />
+
+        <RowContainer style={{ paddingBottom: 17 }}>
+          <Input
+            label="인증번호"
+            returnKeyType="next"
+            value={authNum}
+            onChangeText={_handleAuthNumChange}
+            containerStyle={{
+              marginRight: 7,
+              width: "77%",
+            }}
+          />
+          <Button
+            title="확인"
+            onPress={verifyOtp} // 업데이트되면 변경
+            disabled={!authNum}
+            containerStyle={{
+              width: 70,
+              alignItems: "center",
+              justifyContents: "center",
+              height: 50,
+              backgroundColor: theme.colors.mainBlue,
+              marginTop: 32,
+              paddingTop: 0,
+              paddingBottom: 0,
+            }}
+            textStyle={{
+              color: theme.colors.white,
+              fontSize: 15,
+              fontFamily: theme.fonts.bold,
+              marginLeft: 0,
+            }}
+          />
+        </RowContainer>
         <Input
           label="비밀번호"
           returnKeyType="next"
@@ -176,7 +214,7 @@ const FindPw = () => {
         />
         <Button
           title="변경"
-          onPress={() => console.log("변경")}
+          onPress={ChangeBtn}
           disabled={disabled}
           containerStyle={{
             width: "100%",

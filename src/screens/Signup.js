@@ -200,7 +200,7 @@ const Signup = ({ navigation }) => {
         gender,
       });
 
-      console.log("회원가입 성공:", response.data); // 성공 메시지 출력
+      console.log("회원가입 성공"); // 성공 메시지 출력
       navigation.navigate("회원가입 완료");
     } catch (error) {
       if (error.response) {
