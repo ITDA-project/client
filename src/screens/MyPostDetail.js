@@ -6,6 +6,7 @@ import { styled, ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import { ScrollView } from "react-native-gesture-handler";
 import useRequireLogin from "../hooks/useRequireLogin";
 
 const Container = styled.View`
@@ -14,7 +15,7 @@ const Container = styled.View`
   background-color: #fff;
 `;
 const Section = styled.View`
-  min-height: 400px;
+  min-height: 100px;
   margin-bottom: 10px;
 `;
 
@@ -156,12 +157,46 @@ const LikeText = styled.Text`
 
 // 모임 상세 페이지
 const MyPostDetail = () => {
-  const { checkLogin, LoginAlert } = useRequireLogin();
   const theme = useContext(ThemeContext);
   const route = useRoute();
   const navigation = useNavigation();
 
-  const { postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
+  const { checkLogin, LoginAlert } = useRequireLogin();
+  const { updatedPost, postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
+
+  // 더미 데이터 (추후 API 연동 필요)
+  const meeting = updatedPost
+    ? {
+        postId: updatedPost.postId,
+        title: updatedPost.title,
+        createdAt: updatedPost.createdAt ?? new Date().toISOString().split("T")[0],
+        content: updatedPost.description, // ✅ description → content
+        location: `${updatedPost.selectedCity} ${updatedPost.selectedDistrict}`, // ✅ city + district
+        memberMax: updatedPost.memberMax, // ✅ 명칭 통일
+        recruitmentStart: updatedPost.recruitmentStart,
+        recruitmentEnd: updatedPost.recruitmentEnd,
+        activityStart: updatedPost.activityStart,
+        activityEnd: updatedPost.activityEnd,
+        deposit: updatedPost.deposit,
+        tags: updatedPost.tags, // ✅ 문자열 → 배열로 처리됨
+        likes: updatedPost.likes ?? 7, // 기본값
+      }
+    : {
+        postId,
+        title,
+        createdAt,
+        content: "뜨개질이 취미이신 분? \n초보여도 괜찮아요😊\n함께 정보 공유해요",
+        location: "서울 종로구",
+        memberMax: "10",
+        recruitmentStart: "2025.02.22",
+        recruitmentEnd: "2025.03.01",
+        activityStart: "2025.03.08",
+        activityEnd: "2025.04.08",
+        deposit: "5,000원",
+        tags: ["#취미", "#뜨개질", "#종로구"],
+        likes: 7,
+      };
+
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(7);
 
@@ -177,7 +212,21 @@ const MyPostDetail = () => {
 
   const handleEdit = () => {
     setMenuVisible(false);
-    console.log("게시글 수정하기"); // 게시글 수정 화면으로 이동
+    navigation.navigate("모임수정", {
+      postId: meeting.postId,
+      title: meeting.title,
+      description: meeting.content,
+      selectedCity: "서울", // 예시로 넣은 값
+      selectedDistrict: "종로구", // 예시로 넣은 값
+      category: "취미", // 실제로는 state나 API에서 받아야 함
+      maxParticipants: meeting.memberMax,
+      deposit: meeting.deposit,
+      tags: meeting.tags.join(" "),
+      recruitmentStart: meeting.recruitmentStart,
+      recruitmentEnd: meeting.recruitmentEnd,
+      activityStart: meeting.activityStart,
+      activityEnd: meeting.activityEnd,
+    });
   };
 
   /*const deletePost = async (postId) => {
@@ -209,23 +258,6 @@ const MyPostDetail = () => {
     setLikes(liked ? likes - 1 : likes + 1);
   };
 
-  // 더미 데이터 (추후 API 연동 필요)
-  const meeting = {
-    postId,
-    title,
-    createdAt,
-    content: "뜨개질이 취미이신 분? \n처음이지만 같이 해보실 분?\n모두모두 환영합니다! 😊",
-    location: "서울 종로구",
-    memberMax: "10",
-    recruitmentStart: "2025.02.22",
-    recruitmentEnd: "2025.03.01",
-    activityStart: "2025.03.08",
-    activityEnd: "202.04.08",
-    deposit: "5,000원",
-    tags: ["#취미", "#뜨개질", "#종로구"],
-    likes: 7,
-  };
-
   // 작성자 더미 데이터
   const user = {
     name: "홍길동",
@@ -236,81 +268,83 @@ const MyPostDetail = () => {
   return (
     <TouchableWithoutFeedback onPress={closeMenu}>
       <Container>
-        <Section>
-          <RowContainer style={{ justifyContent: "space-between", alignItems: "center" }}>
-            <Title>{meeting.title}</Title>
-            <RowContainer>
-              <Ionicons style={{ marginRight: 10 }} name="share-outline" size={25} onPress={() => console.log("공유하기")} />
-              <Feather name="more-horizontal" size={25} color="#000" onPress={toggleMenu} />
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+          <Section>
+            <RowContainer style={{ justifyContent: "space-between", alignItems: "center" }}>
+              <Title>{meeting.title}</Title>
+              <RowContainer>
+                <Ionicons style={{ marginRight: 10 }} name="share-outline" size={25} onPress={() => console.log("공유하기")} />
+                <Feather name="more-horizontal" size={25} color="#000" onPress={toggleMenu} />
+              </RowContainer>
             </RowContainer>
-          </RowContainer>
 
-          {menuVisible && (
-            <MoreMenu>
-              <MenuItem onPress={handleEdit}>
-                <MenuText>수정</MenuText>
-              </MenuItem>
-              <Divider style={{ marginTop: 0, PointerEvent: "none" }} />
-              <MenuItem onPress={handleDelete}>
-                <MenuText danger>삭제</MenuText>
-              </MenuItem>
-            </MoreMenu>
-          )}
-          <Date>{meeting.createdAt}</Date>
-          <Content>{meeting.content}</Content>
-          <RowContainer style={{ marginBottom: 10 }}>
-            <Ionicons name="location-outline" size={24} color={theme.colors.grey} />
-            <Label style={{ marginRight: 40, marginLeft: 5 }}>지역</Label>
-            <Info>{meeting.location}</Info>
-          </RowContainer>
-
-          <RowContainer style={{ marginBottom: 10 }}>
-            <Ionicons name="people-outline" size={24} color={theme.colors.grey} />
-            <Label style={{ marginRight: 13, marginLeft: 5 }}>모집인원</Label>
-            <Info>{meeting.memberMax}</Info>
-          </RowContainer>
-
-          <RowContainer style={{ marginBottom: 10 }}>
-            <Ionicons name="calendar-outline" size={24} color={theme.colors.grey} />
-            <Label style={{ marginRight: 13, marginLeft: 5 }}>모집기간</Label>
-            <Info>
-              {meeting.recruitmentStart} ~ {meeting.recruitmentEnd}
-            </Info>
-          </RowContainer>
-
-          <RowContainer style={{ marginBottom: 10 }}>
-            <Ionicons name="timer-outline" size={24} color={theme.colors.grey} />
-            <Label style={{ marginRight: 13, marginLeft: 5 }}>활동기간</Label>
-            <Info>
-              {meeting.activityStart} ~ {meeting.activityEnd}
-            </Info>
-          </RowContainer>
-
-          <RowContainer style={{ marginBottom: 10 }}>
-            <Feather name="dollar-sign" size={24} color={theme.colors.grey} />
-            <Label style={{ marginRight: 26, marginLeft: 5 }}>보증금</Label>
-            <Info>{meeting.deposit}</Info>
-          </RowContainer>
-
-          <Info style={{ color: "#3386CA", marginTop: 10 }}>{meeting.tags.join("  ")}</Info>
-
-          <Divider />
-        </Section>
-
-        {/* 작성자 정보 섹션 */}
-        <ProfileContainer>
-          <ProfileHeader>
-            <ProfileImageContainer>
-              {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
-            </ProfileImageContainer>
-
-            <RowContainer>
-              <Label>작성자</Label>
-              <ProfileName>{user.name}</ProfileName>
+            {menuVisible && (
+              <MoreMenu>
+                <MenuItem onPress={handleEdit}>
+                  <MenuText>수정</MenuText>
+                </MenuItem>
+                <Divider style={{ marginTop: 0, PointerEvent: "none" }} />
+                <MenuItem onPress={handleDelete}>
+                  <MenuText danger>삭제</MenuText>
+                </MenuItem>
+              </MoreMenu>
+            )}
+            <Date>{meeting.createdAt}</Date>
+            <Content>{meeting.content}</Content>
+            <RowContainer style={{ marginBottom: 10 }}>
+              <Ionicons name="location-outline" size={24} color={theme.colors.grey} />
+              <Label style={{ marginRight: 40, marginLeft: 5 }}>지역</Label>
+              <Info>{meeting.location}</Info>
             </RowContainer>
-          </ProfileHeader>
-          <ProfileIntro>{user.career}</ProfileIntro>
-        </ProfileContainer>
+
+            <RowContainer style={{ marginBottom: 10 }}>
+              <Ionicons name="people-outline" size={24} color={theme.colors.grey} />
+              <Label style={{ marginRight: 13, marginLeft: 5 }}>모집인원</Label>
+              <Info>{meeting.memberMax}</Info>
+            </RowContainer>
+
+            <RowContainer style={{ marginBottom: 10 }}>
+              <Ionicons name="calendar-outline" size={24} color={theme.colors.grey} />
+              <Label style={{ marginRight: 13, marginLeft: 5 }}>모집기간</Label>
+              <Info>
+                {meeting.recruitmentStart} ~ {meeting.recruitmentEnd}
+              </Info>
+            </RowContainer>
+
+            <RowContainer style={{ marginBottom: 10 }}>
+              <Ionicons name="timer-outline" size={24} color={theme.colors.grey} />
+              <Label style={{ marginRight: 13, marginLeft: 5 }}>활동기간</Label>
+              <Info>
+                {meeting.activityStart} ~ {meeting.activityEnd}
+              </Info>
+            </RowContainer>
+
+            <RowContainer style={{ marginBottom: 10 }}>
+              <Feather name="dollar-sign" size={24} color={theme.colors.grey} />
+              <Label style={{ marginRight: 26, marginLeft: 5 }}>보증금</Label>
+              <Info>{meeting.deposit}</Info>
+            </RowContainer>
+
+            <Info style={{ color: "#3386CA", marginTop: 10 }}>{meeting.tags.join("  ")}</Info>
+
+            <Divider />
+          </Section>
+
+          {/* 작성자 정보 섹션 */}
+          <ProfileContainer>
+            <ProfileHeader>
+              <ProfileImageContainer>
+                {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
+              </ProfileImageContainer>
+
+              <RowContainer>
+                <Label>작성자</Label>
+                <ProfileName>{user.name}</ProfileName>
+              </RowContainer>
+            </ProfileHeader>
+            <ProfileIntro>{user.career}</ProfileIntro>
+          </ProfileContainer>
+        </ScrollView>
         {/* 하단 좋아요 & 신청 버튼 고정 */}
         <Footer>
           <LikeButton onPress={toggleLike}>
