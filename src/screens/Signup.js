@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
+import { Modal } from "react-native";
 import { Button, ErrorMessage } from "../components";
 import Input from "../components/Input";
 import styled, { ThemeContext } from "styled-components/native";
@@ -59,6 +60,50 @@ const GenderLabel = styled.Text`
   font-size: 16px;
   color: ${({ theme }) => theme.colors.black};
 `;
+const EmailCheckModal = ({ visible, message, onClose }) => {
+  return (
+    <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
+      <ModalOverlay>
+        <ModalContainer>
+          <ModalText>{message}</ModalText>
+          <ModalButton onPress={onClose}>
+            <ModalButtonText>확인</ModalButtonText>
+          </ModalButton>
+        </ModalContainer>
+      </ModalOverlay>
+    </Modal>
+  );
+};
+const ModalOverlay = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+const ModalContainer = styled.View`
+  width: 280px;
+  padding: 25px;
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 10px;
+  align-items: center;
+`;
+const ModalText = styled.Text`
+  font-size: 14px;
+  font-family: ${({ theme }) => theme.fonts.regular};
+  color: ${({ theme }) => theme.colors.black};
+  text-align: center;
+  margin-bottom: 20px;
+`;
+const ModalButton = styled.TouchableOpacity`
+  background-color: ${({ theme }) => theme.colors.mainBlue};
+  padding: 10px 20px;
+  border-radius: 5px;
+`;
+const ModalButtonText = styled.Text`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.white};
+  font-family: ${({ theme }) => theme.fonts.bold};
+`;
 
 const Signup = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -73,6 +118,8 @@ const Signup = ({ navigation }) => {
   const [emailErrorMessage, setEmailErrorMessage] = useState("");
   const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState("");
   const [disabled, setDisabled] = useState(true);
+  const [emailCheckModalVisible, setEmailCheckModalVisible] = useState(false);
+  const [emailCheckMessage, setEmailCheckMessage] = useState("");
 
   useEffect(() => {
     setDisabled(!(email && name && password && passwordConfirm && phone && gender && !emailErrorMessage && !passwordConfirmErrorMessage));
@@ -91,23 +138,23 @@ const Signup = ({ navigation }) => {
 
   const checkEmailDuplicate = async () => {
     try {
-      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/email/checkemail", {
+      await axios.post("http://10.0.2.2:8080/api/auth/signup/email/checkemail", {
         email: email,
       });
 
-      if (response.data.data === true) {
-        alert("사용 가능한 이메일입니다!");
-      } else {
-        alert("이미 사용 중인 이메일입니다.");
-      }
+      // 성공적으로 응답받았을 때 (409가 아닌 경우)
+      setEmailCheckMessage("사용 가능한 이메일입니다!");
+      setEmailCheckModalVisible(true);
     } catch (error) {
-      if (error.response) {
-        console.error("서버 오류:", error.response.data);
-        alert("이미 사용 중인 이메일입니다.");
+      if (error.response?.status === 409) {
+        // 409 Conflict: 중복된 이메일
+        setEmailCheckMessage("이미 사용 중인 이메일입니다.");
       } else {
-        console.error("요청 실패:", error.message);
-        alert("이메일 확인 중 문제가 발생했습니다.");
+        setEmailCheckMessage("이메일 확인 중 문제가 발생했습니다.");
+        console.error("이메일 확인 중 오류:", error.message);
       }
+
+      setEmailCheckModalVisible(true);
     }
   };
 
@@ -148,7 +195,7 @@ const Signup = ({ navigation }) => {
       const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/email", {
         email,
         name,
-        //추후 휴대폰번호 추가 가능성
+        phone,
         password,
         gender,
       });
@@ -288,6 +335,7 @@ const Signup = ({ navigation }) => {
           textStyle={{ marginLeft: 0 }}
         />
       </Container>
+      <EmailCheckModal visible={emailCheckModalVisible} message={emailCheckMessage} onClose={() => setEmailCheckModalVisible(false)} />
     </KeyboardAwareScrollView>
   );
 };
