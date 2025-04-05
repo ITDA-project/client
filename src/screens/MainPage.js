@@ -25,11 +25,11 @@ const MainPage = () => {
     title: { fontSize: 30, fontFamily: theme.fonts.bold, textAlign: 'center', marginBottom: 20 },
   
     searchContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderRadius: 10, paddingHorizontal: 10, borderColor: theme.colors.mainBlue},
-    searchInput: { flex: 1, height: 50 },
+    searchInput: { flex: 1, height: 60 },
     searchIcon: { marginLeft: 5 },
   
     categoryContainer: {
-        marginTop: 30, // 검색창과 카테고리 간의 간격
+        marginTop: 40, // 검색창과 카테고리 간의 간격
         marginBottom: 20, // 카테고리과 모임 목록 간의 간격
         flexDirection: 'row',
         justifyContent: 'space-between', // 아이콘 사이에 공간을 자동으로 분배
@@ -112,9 +112,9 @@ const currentUser = { userId: 1 }; // 로그인한 사용자 ID
           style={styles.listItem}
           onPress={() => {
             if (item.userId === currentUser.userId) {
-              navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
+              navigation.navigate("MyPostDetail", { postId: item.postId, title: item.title, createdAt: item.createdAt, likes:item.likes });
             } else {
-              navigation.navigate("PostDetail", { postId: item.postId, title: item.title, created_at: item.createdAt, likes:item.likes });
+              navigation.navigate("PostDetail", { postId: item.postId, title: item.title, createdAt: item.createdAt, likes:item.likes });
             }
           }}
         >
@@ -142,16 +142,23 @@ const currentUser = { userId: 1 }; // 로그인한 사용자 ID
   
   
         {/* 검색창 */}
-        <View style={styles.searchContainer}>
-          <TextInput style={styles.searchInput} placeholder="검색" />
-          <Feather
-            name="search"
-            size={26}
-            color={theme.colors.mainBlue}
-            style={styles.searchIcon}
-          />
-        </View>
-  
+        <TouchableOpacity onPress={() => navigation.navigate("Search")}>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="검색"
+              editable={false} // 직접 입력은 막고
+              pointerEvents="none" // 터치 이벤트도 무시해서 TouchableOpacity에서만 처리되도록 함
+            />
+            <Feather
+              name="search"
+              size={26}
+              color={theme.colors.mainBlue}
+              style={styles.searchIcon}
+            />
+          </View>
+        </TouchableOpacity>
+          
   
   
           {/* 카테고리 (Flaticon 기반 아이콘 적용) */}

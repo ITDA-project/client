@@ -15,11 +15,13 @@ import MyPostDetail from "./MyPostDetail";
 import PostDetail from "./PostDetail";
 import CreatePost from "./CreatePost";
 import ApplicationList from "./ApplicationList";
+import EditPost from "./EditPost";
 import ReviewForm from "./ReviewForm";
 import ApplicationDecision from "./ApplicationDecision";
 import ApplicationForm from "./ApplicationForm";
 import DeleteAccount from "./DeleteAccount";
 import PublicProfile from "./PublicProfile";
+
 
 export {
   AllPosts,
@@ -44,4 +46,5 @@ export {
   SigninWithEmail,
   Signup,
   SignupDone,
+  EditPost,
 };

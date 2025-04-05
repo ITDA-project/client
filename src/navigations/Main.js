@@ -52,6 +52,22 @@ const Main = () => {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="모임수정"
+        component={Screens.EditPost}
+        options={{
+          headerTitleAlign: "center",
+          headerBackTitleVisible: false,
+          headerTintColor: theme.colors.black,
+          headerTitleStyle: {
+            fontFamily: theme.fonts.bold,
+            fontSize: 16,
+          },
+          headerLeft: ({ onPress, tintColor }) => <MaterialIcons name="keyboard-arrow-left" size={38} color={tintColor} onPress={onPress} />,
+        }}
+      />
+
       <Stack.Screen name="회원탈퇴" component={Screens.DeleteAccount} />
 
       <Stack.Screen name="신청서 목록" component={Screens.ApplicationList} />
@@ -59,6 +75,7 @@ const Main = () => {
       <Stack.Screen name="신청서 확인" component={Screens.ApplicationDecision} />
 
       <Stack.Screen name="리뷰 등록" component={Screens.ReviewForm} />
+
     </Stack.Navigator>
   );
 };
