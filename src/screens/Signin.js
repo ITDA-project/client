@@ -4,12 +4,12 @@ import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  login,
-  getProfile as getKakaoProfile,
-} from "@react-native-seoul/kakao-login";
+import { login, getProfile as getKakaoProfile } from "@react-native-seoul/kakao-login";
 import NaverLogin from "@react-native-seoul/naver-login";
 import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
+import EncryptedStorage from "react-native-encrypted-storage";
+import * as Keychain from "react-native-keychain";
 
 const consumerKey = "jXwhTHdVTq8o67R0hwKd";
 const consumerSecret = "0N1OGuLkjK";
@@ -50,6 +50,8 @@ const Signin = ({ navigation }) => {
   const [failure, setFailureResponse] = useState(null);
   const [getProfileRes, setGetProfileRes] = useState(null);
 
+  const { setUser, setAccessToken } = useAuth();
+
   useEffect(() => {
     NaverLogin.initialize({
       appName,
@@ -74,37 +76,60 @@ const Signin = ({ navigation }) => {
         refreshToken: token.refreshToken,
       };
 
-      console.log("백엔드로 보낼 카카오 로그인 데이터", loginData);
+      console.log("카카오에서 가져온 카카오 로그인 데이터", token);
 
       // 2. 카카오 프로필 가져오기
       const profile = await getKakaoProfile();
 
       // 3. 필요한 정보 추출
       const userData = {
-        name: profile.name,
         email: profile.email,
+        name: profile.name,
         gender: profile.gender,
-        phoneNumber: profile.phoneNumber,
+        id: profile.id,
+        phonenumber: profile.phoneNumber,
       };
 
       console.log("백엔드로 보낼 카카오 데이터", userData);
 
-      // 4. 백엔드로 전달 (axios 사용)
-      // const response = await axios.post(
-      //   "http://10.0.2.2:8080/auth/kakao",
-      //   userData,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //   }
-      // );
+      //4. 백엔드로 전달 (axios 사용)
+      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/kakao", userData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      const responseData = await response.json();
-      console.log("백엔드 응답", responseData);
+      // 5. JWT 저장 (access token은 헤더, refresh token은 응답 데이터)
+      const accessToken = response.headers.authorization;
+      const refreshToken = response.data.refresh_token;
 
-      // 5. 필요하면 토큰 저장 등 후처리
-      setResult(JSON.stringify(responseData));
+      console.log("백엔드 응답", response.data);
+
+      if (accessToken) {
+        await EncryptedStorage.setItem("accessToken", accessToken);
+        setAccessToken(accessToken);
+
+        const storedAccessToeken = await EncryptedStorage.getItem("accessToken");
+        console.log("저장된 엑세스 토큰: ", storedAccessToeken);
+      } else {
+        console.log("access가 존재하지 않습니다");
+      }
+
+      if (refreshToken) {
+        await Keychain.setGenericPassword("refreshToken", refreshToken);
+
+        const credentials = await Keychain.getGenericPassword();
+
+        if (credentials) {
+          console.log("저장된 리프레쉬 토큰: ", credentials.password);
+        }
+      } else {
+        console.error("refresh_token이 존재하지 않습니다");
+      }
+
+      setUser(response.data);
+      // 6. 메인 화면 이동
+      navigation.navigate("Home");
     } catch (err) {
       console.error("카카오 로그인 실패", err);
     } finally {
@@ -134,12 +159,10 @@ const Signin = ({ navigation }) => {
         refreshToken: successResponse.refreshToken,
       };
 
-      console.log("백엔드로 보낼 네이버 로그인 데이터", loginData);
+      console.log("네이버에서 가져온 네이버 로그인 데이터", loginData);
 
       // 2. 네이버 프로필 가져오기
-      const profileResult = await NaverLogin.getProfile(
-        successResponse.accessToken
-      );
+      const profileResult = await NaverLogin.getProfile(successResponse.accessToken);
 
       if (!profileResult || profileResult.resultcode !== "00") {
         throw new Error("네이버 프로필 가져오기 실패");
@@ -147,30 +170,45 @@ const Signin = ({ navigation }) => {
 
       // 3. 필요한 정보 추출
       const userData = {
-        name: profileResult.response.name,
         email: profileResult.response.email,
+        name: profileResult.response.name,
         gender: profileResult.response.gender,
-        phoneNumber: profileResult.response.mobile_e164,
+        id: profileResult.response.id,
+        phonenumber: profileResult.response.mobile_e164,
       };
 
       console.log("백엔드로 보낼 네이버 데이터", userData);
 
       // 4. 백엔드로 전달 (axios 사용)
-      // const response = await axios.post(
-      //   "http://10.0.2.2:8080/auth/kakao",
-      //   userData,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //   }
-      // );
+      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/naver", userData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      const responseData = await response.json();
-      console.log("백엔드 응답", responseData);
+      console.log("백엔드 응답", response.data);
 
-      // 5. 필요하면 토큰 저장 등 후처리
-      setResult(JSON.stringify(responseData));
+      const accessToken = response.headers.authorization;
+      const refreshToken = response.data.refresh_token;
+
+      if (accessToken) {
+        await EncryptedStorage.setItem("accessToken", accessToken);
+        setAccessToken(accessToken);
+        console.log("저장된 액세스 토큰:", await EncryptedStorage.getItem("accessToken"));
+      } else {
+        console.warn("access_token이 없습니다.");
+      }
+
+      if (refreshToken) {
+        await Keychain.setGenericPassword("refreshToken", refreshToken);
+        console.log("저장된 리프레쉬 토큰:", (await Keychain.getGenericPassword()).password);
+      } else {
+        console.warn("refresh_token이 없습니다.");
+      }
+
+      setUser(response.data);
+      // 6. 메인 화면 이동
+      navigation.navigate("Home");
     } catch (err) {
       console.error("네이버 로그인 실패", err);
     } finally {
@@ -202,13 +240,7 @@ const Signin = ({ navigation }) => {
 
   return (
     <Container insets={insets}>
-      {loading && (
-        <ActivityIndicator
-          size="large"
-          color={theme.colors.red}
-          style={{ position: "absolute", top: "50%", zIndex: 2 }}
-        />
-      )}
+      {loading && <ActivityIndicator size="large" color={theme.colors.red} style={{ position: "absolute", top: "50%", zIndex: 2 }} />}
 
       <Logo style={{ marginBottom: 50 }} />
 
