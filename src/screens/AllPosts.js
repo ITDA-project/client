@@ -1,18 +1,13 @@
 import React, { useState, useContext } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
+import useRequireLogin from "../hooks/useRequireLogin";
 
 const AllPosts = ({ route }) => {
+  const { checkLogin, LoginAlert } = useRequireLogin();
   const theme = useContext(ThemeContext);
 
   const currentUser = { userId: 1 }; // 로그인한 사용자 ID
@@ -114,60 +109,37 @@ const AllPosts = ({ route }) => {
 
   return (
     <View style={styles.container}>
-
       {/* 선택된 카테고리 표시 */}
       <View style={{ marginTop: 15, marginBottom: 5 }}>
-          <Text style={{
+        <Text
+          style={{
             fontSize: 20,
             fontFamily: theme.fonts.extraBold,
-            color: '#333',
-          }}>
-            {categories ? `'${categories}' 카테고리 모임` : '전체 모임'}
-          </Text>
-          <Text style={{
+            color: "#333",
+          }}
+        >
+          {categories ? `'${categories}' 카테고리 모임` : "전체 모임"}
+        </Text>
+        <Text
+          style={{
             fontSize: 14,
             fontFamily: theme.fonts.regular,
             color: theme.colors.grey,
             marginTop: 4,
-          }}>
-            총 {meetings.length}개의 모임이 있습니다
-          </Text>
-        </View>
+          }}
+        >
+          총 {meetings.length}개의 모임이 있습니다
+        </Text>
+      </View>
 
       {/* 정렬 버튼 */}
       <View style={styles.sortContainer}>
-        <TouchableOpacity
-          style={[
-            styles.sortButton,
-            selectedSort === "latest" && styles.selectedSort,
-          ]}
-          onPress={() => setSelectedSort("latest")}
-        >
-          <Text
-            style={[
-              styles.sortText,
-              selectedSort === "latest" && styles.selectedText,
-            ]}
-          >
-            최신순
-          </Text>
+        <TouchableOpacity style={[styles.sortButton, selectedSort === "latest" && styles.selectedSort]} onPress={() => setSelectedSort("latest")}>
+          <Text style={[styles.sortText, selectedSort === "latest" && styles.selectedText]}>최신순</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.sortButton,
-            selectedSort === "popular" && styles.selectedSort,
-          ]}
-          onPress={() => setSelectedSort("popular")}
-        >
-          <Text
-            style={[
-              styles.sortText,
-              selectedSort === "popular" && styles.selectedText,
-            ]}
-          >
-            인기순
-          </Text>
+        <TouchableOpacity style={[styles.sortButton, selectedSort === "popular" && styles.selectedSort]} onPress={() => setSelectedSort("popular")}>
+          <Text style={[styles.sortText, selectedSort === "popular" && styles.selectedText]}>인기순</Text>
         </TouchableOpacity>
       </View>
 
@@ -205,22 +177,22 @@ const AllPosts = ({ route }) => {
                 <Text style={styles.likesText}>{item.likes}</Text>
               </View>
             </View>
-
-            </TouchableOpacity>
-          )}
+          </TouchableOpacity>
+        )}
       />
-  
-        {/* 글쓰기 버튼 */}
-        <View style={styles.ButtonContainer}>
-          <Button title="글쓰기" 
-          onPress={() => navigation.navigate("모임생성")}
-          containerStyle={{ height: 40,width:95}} 
-          textStyle={{ fontSize: 16,marginLeft:0}}
-          style={{height: 40,width:95}} />
 
-        </View>
-
+      {/* 글쓰기 버튼 */}
+      <View style={styles.ButtonContainer}>
+        <Button
+          title="글쓰기"
+          onPress={() => checkLogin("모임생성")}
+          containerStyle={{ height: 40, width: 95 }}
+          textStyle={{ fontSize: 16, marginLeft: 0 }}
+          style={{ height: 40, width: 95 }}
+        />
+        <LoginAlert />
       </View>
+    </View>
   );
 };
 
