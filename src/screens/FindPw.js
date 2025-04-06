@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Button, ErrorMessage } from "../components";
+import { Button, ErrorMessage, AlertModal } from "../components";
 import Input from "../components/Input";
 import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -34,6 +34,8 @@ const FindPw = () => {
   const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState("");
   const [disabled, setDisabled] = useState(true);
   const [isAuthVerified, setIsAuthVerified] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
     setDisabled(!(email && authNum && password && passwordConfirm && !emailErrorMessage && !passwordConfirmErrorMessage && isAuthVerified));
@@ -48,7 +50,6 @@ const FindPw = () => {
     setEmail(changeEmail);
 
     setEmailErrorMessage(validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요");
-    //등록된 이메일이 아닙니다. 오류 메세지 백이랑 연결 시 추가
   };
 
   const _handleAuthNumChange = (authNum) => {
@@ -59,7 +60,6 @@ const FindPw = () => {
     }
 
     setAuthNum(changeAuthNum);
-    setIsAuthVerified(false);
   };
 
   const _handlePasswordChange = (password) => {
@@ -105,13 +105,15 @@ const FindPw = () => {
                 const result = await response.json();
 
                 if (response.ok) {
-                  alert(result.message); // "인증 번호가 전송되었습니다."
+                  setAlertMessage(result.message); // ex: "인증 번호가 전송되었습니다."
+                  setAlertVisible(true);
                 } else {
-                  alert(result.message || "이메일 전송에 실패했습니다.");
+                  setAlertMessage("이메일 전송에 실패했습니다.");
+                  setAlertVisible(true);
                 }
               } catch (error) {
-                console.error(error);
-                alert("네트워크 오류가 발생했습니다.");
+                setAlertMessage(error.message);
+                setAlertVisible(true);
               }
             }}
             disabled={!email || !!emailErrorMessage}
@@ -160,15 +162,16 @@ const FindPw = () => {
                 const result = await response.json();
 
                 if (response.ok && result.data === true) {
-                  alert("인증번호 확인 성공!");
                   setIsAuthVerified(true);
+                  setAlertMessage(result.message);
+                  setAlertVisible(true);
                 } else {
-                  alert("인증번호가 일치하지 않습니다.");
-                  setIsAuthVerified(false);
+                  setAlertMessage("올바르지 않은 번호입니다");
+                  setAlertVisible(true);
                 }
               } catch (error) {
-                console.error(error);
-                alert("네트워크 오류가 발생했습니다.");
+                setAlertMessage(error.message);
+                setAlertVisible(true);
               }
             }}
             disabled={!email || !!emailErrorMessage || authNum.length !== 6}
@@ -232,14 +235,16 @@ const FindPw = () => {
               });
 
               if (response.ok) {
-                alert("비밀번호가 성공적으로 변경되었습니다.");
+                setAlertMessage("비밀번호 변경 성공");
+                setAlertVisible(true);
                 navigation.pop(1);
               } else {
-                alert("비밀번호 변경에 실패했습니다.");
+                setAlertMessage("비밀번호 변경 실패");
+                setAlertVisible(true);
               }
             } catch (error) {
-              console.error(error);
-              alert("네트워크 오류가 발생했습니다.");
+              setAlertMessage(error.message);
+              setAlertVisible(true);
             }
           }}
           disabled={disabled}
@@ -249,6 +254,7 @@ const FindPw = () => {
           }}
           textStyle={{ marginLeft: 0 }}
         />
+        <AlertModal visible={alertVisible} message={alertMessage} onConfirm={() => setAlertVisible(false)} />
       </Container>
     </KeyboardAwareScrollView>
   );
