@@ -109,16 +109,16 @@ const SigninWithEmail = ({ navigation }) => {
         }
       );
 
-      console.log("로그인 성공:", response.data);
+      console.log("로그인 성공");
 
       const accessToken = response.headers.access;
       const refreshToken = response.data.refresh_token;
 
       if (accessToken) {
         await EncryptedStorage.setItem("accessToken", accessToken);
-        setAccessToken(accessToken);
 
         const storedAccessToeken = await EncryptedStorage.getItem("accessToken");
+        setAccessToken(storedAccessToeken);
         console.log("저장된 엑세스 토큰: ", storedAccessToeken);
       } else {
         console.log("access가 존재하지 않습니다");
@@ -133,7 +133,7 @@ const SigninWithEmail = ({ navigation }) => {
           console.log("저장된 리프레쉬 토큰: ", credentials.password);
         }
       } else {
-        console.error("refresh_token이 존재하지 않습니다");
+        console.error("refreshToken이 존재하지 않습니다");
       }
 
       setUser(response.data);
