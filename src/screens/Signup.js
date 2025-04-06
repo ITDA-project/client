@@ -65,7 +65,7 @@ const Signup = ({ navigation }) => {
   const theme = useContext(ThemeContext);
 
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [phone, setPhone] = useState("");
@@ -75,8 +75,8 @@ const Signup = ({ navigation }) => {
   const [disabled, setDisabled] = useState(true);
 
   useEffect(() => {
-    setDisabled(!(email && username && password && passwordConfirm && phone && gender && !emailErrorMessage && !passwordConfirmErrorMessage));
-  }, [email, username, password, passwordConfirm, phone, gender, emailErrorMessage, passwordConfirmErrorMessage]);
+    setDisabled(!(email && name && password && passwordConfirm && phone && gender && !emailErrorMessage && !passwordConfirmErrorMessage));
+  }, [email, name, password, passwordConfirm, phone, gender, emailErrorMessage, passwordConfirmErrorMessage]);
 
   const _handleEmailChange = (email) => {
     let changeEmail = removeWhitespace(email);
@@ -89,9 +89,31 @@ const Signup = ({ navigation }) => {
     setEmailErrorMessage(validateEmail(changeEmail) ? "" : "이메일을 올바르게 입력해주세요");
   };
 
-  const _handleNameChange = (username) => {
-    const changeUsername = removeWhitespace(username);
-    setUsername(changeUsername);
+  const checkEmailDuplicate = async () => {
+    try {
+      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/email/checkemail", {
+        email: email,
+      });
+
+      if (response.data.data === true) {
+        alert("사용 가능한 이메일입니다!");
+      } else {
+        alert("이미 사용 중인 이메일입니다.");
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error("서버 오류:", error.response.data);
+        alert("이미 사용 중인 이메일입니다.");
+      } else {
+        console.error("요청 실패:", error.message);
+        alert("이메일 확인 중 문제가 발생했습니다.");
+      }
+    }
+  };
+
+  const _handleNameChange = (name) => {
+    const changeName = removeWhitespace(name);
+    setName(changeName);
   };
 
   const _handlePasswordChange = (password) => {
@@ -123,9 +145,12 @@ const Signup = ({ navigation }) => {
 
   const _handleSignup = async () => {
     try {
-      const response = await axios.post("http://10.0.2.2:8080/join", {
-        username: email,
+      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/email", {
+        email,
+        name,
+        //추후 휴대폰번호 추가 가능성
         password,
+        gender,
       });
 
       console.log("회원가입 성공:", response.data); // 성공 메시지 출력
@@ -167,7 +192,7 @@ const Signup = ({ navigation }) => {
           />
           <Button
             title="중복확인"
-            onPress={() => console.log("중복확인")} //백이랑 연결하면 로직 추가. alert?
+            onPress={checkEmailDuplicate}
             disabled={!email || !!emailErrorMessage}
             containerStyle={{
               width: 70,
@@ -192,7 +217,7 @@ const Signup = ({ navigation }) => {
         <Input
           label="이름"
           returnKeyType="next"
-          value={username}
+          value={name}
           onChangeText={_handleNameChange}
           containerStyle={{
             width: "100%",
@@ -241,13 +266,13 @@ const Signup = ({ navigation }) => {
         <Gender>
           <Label>성별</Label>
           <GenderContainer>
-            <GenderOption onPress={() => setGender("여성")}>
-              <GenderCircle selected={gender === "여성"}>{gender === "여성" && <GenderInnerCircle />}</GenderCircle>
+            <GenderOption onPress={() => setGender("FEMALE")}>
+              <GenderCircle selected={gender === "FEMALE"}>{gender === "FEMALE" && <GenderInnerCircle />}</GenderCircle>
               <GenderLabel>여성</GenderLabel>
             </GenderOption>
 
-            <GenderOption onPress={() => setGender("남성")}>
-              <GenderCircle selected={gender === "남성"}>{gender === "남성" && <GenderInnerCircle />}</GenderCircle>
+            <GenderOption onPress={() => setGender("MALE")}>
+              <GenderCircle selected={gender === "MALE"}>{gender === "MALE" && <GenderInnerCircle />}</GenderCircle>
               <GenderLabel>남성</GenderLabel>
             </GenderOption>
           </GenderContainer>

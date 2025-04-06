@@ -10,7 +10,8 @@ import { validateEmail, removeWhitespace } from "../utils";
 import { Keyboard } from "react-native";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import EncryptedStorage from "react-native-encrypted-storage";
+import * as Keychain from "react-native-keychain";
 
 const Container = styled.View`
   flex: 1;
@@ -41,7 +42,7 @@ const SigninWithEmail = ({ navigation }) => {
   const [disabled, setDisabled] = useState(true);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-  const { setUser } = useAuth();
+  const { setUser, setAccessToken } = useAuth();
 
   useEffect(() => {
     setDisabled(!(email && password && !errorMessage));
@@ -103,22 +104,36 @@ const SigninWithEmail = ({ navigation }) => {
         {
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
         }
       );
 
-      console.log("로그인 성공:", response.data);
+      console.log("로그인 성공");
 
-      // 나중에 엑세스 토큰 추가
-      const { refresh_token } = response.data;
+      const accessToken = response.headers.access;
+      const refreshToken = response.data.refresh_token;
 
-      if (refresh_token) {
-        await AsyncStorage.setItem("refreshToken", refresh_token);
+      if (accessToken) {
+        await EncryptedStorage.setItem("accessToken", accessToken);
 
-        const storedRefresh = await AsyncStorage.getItem("refreshToken");
-        console.log("저장된 리프레쉬 토큰: ", storedRefresh);
+        const storedAccessToeken = await EncryptedStorage.getItem("accessToken");
+        setAccessToken(storedAccessToeken);
+        console.log("저장된 엑세스 토큰: ", storedAccessToeken);
       } else {
-        console.error("refresh_token이 존재하지 않습니다");
+        console.log("access가 존재하지 않습니다");
+      }
+
+      if (refreshToken) {
+        await Keychain.setGenericPassword("refreshToken", refreshToken);
+
+        const credentials = await Keychain.getGenericPassword();
+
+        if (credentials) {
+          console.log("저장된 리프레쉬 토큰: ", credentials.password);
+        }
+      } else {
+        console.error("refreshToken이 존재하지 않습니다");
       }
 
       setUser(response.data);

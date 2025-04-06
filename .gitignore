@@ -133,4 +133,4 @@ android/captures/
 # NDK build artifacts
 android/obj/
 
-build/reports
+build/

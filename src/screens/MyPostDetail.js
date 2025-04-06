@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { ScrollView } from "react-native-gesture-handler";
+import useRequireLogin from "../hooks/useRequireLogin";
 
 const Container = styled.View`
   flex: 1;
@@ -160,46 +161,42 @@ const MyPostDetail = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const {
-    updatedPost,
-    postId,
-    title = "제목 없음",
-    createdAt = "날짜 없음",
-  } = route.params || {};
+  const { checkLogin, LoginAlert } = useRequireLogin();
+  const { updatedPost, postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
 
   // 더미 데이터 (추후 API 연동 필요)
   const meeting = updatedPost
-  ? {
-      postId: updatedPost.postId,
-      title: updatedPost.title,
-      createdAt: updatedPost.createdAt ?? new Date().toISOString().split("T")[0],
-      content: updatedPost.description, // ✅ description → content
-      location: `${updatedPost.selectedCity} ${updatedPost.selectedDistrict}`, // ✅ city + district
-      memberMax: updatedPost.memberMax, // ✅ 명칭 통일
-      recruitmentStart: updatedPost.recruitmentStart,
-      recruitmentEnd: updatedPost.recruitmentEnd,
-      activityStart: updatedPost.activityStart,
-      activityEnd: updatedPost.activityEnd,
-      deposit: updatedPost.deposit,
-      tags: updatedPost.tags, // ✅ 문자열 → 배열로 처리됨
-      likes: updatedPost.likes ?? 7, // 기본값
-    }
-  : {
-      postId,
-      title,
-      createdAt,
-      content: "뜨개질이 취미이신 분? \n초보여도 괜찮아요😊\n함께 정보 공유해요",
-      location: "서울 종로구",
-      memberMax: "10",
-      recruitmentStart: "2025.02.22",
-      recruitmentEnd: "2025.03.01",
-      activityStart: "2025.03.08",
-      activityEnd: "2025.04.08",
-      deposit: "5,000원",
-      tags: ["#취미", "#뜨개질", "#종로구"],
-      likes: 7,
-    };
-  
+    ? {
+        postId: updatedPost.postId,
+        title: updatedPost.title,
+        createdAt: updatedPost.createdAt ?? new Date().toISOString().split("T")[0],
+        content: updatedPost.description, // ✅ description → content
+        location: `${updatedPost.selectedCity} ${updatedPost.selectedDistrict}`, // ✅ city + district
+        memberMax: updatedPost.memberMax, // ✅ 명칭 통일
+        recruitmentStart: updatedPost.recruitmentStart,
+        recruitmentEnd: updatedPost.recruitmentEnd,
+        activityStart: updatedPost.activityStart,
+        activityEnd: updatedPost.activityEnd,
+        deposit: updatedPost.deposit,
+        tags: updatedPost.tags, // ✅ 문자열 → 배열로 처리됨
+        likes: updatedPost.likes ?? 7, // 기본값
+      }
+    : {
+        postId,
+        title,
+        createdAt,
+        content: "뜨개질이 취미이신 분? \n초보여도 괜찮아요😊\n함께 정보 공유해요",
+        location: "서울 종로구",
+        memberMax: "10",
+        recruitmentStart: "2025.02.22",
+        recruitmentEnd: "2025.03.01",
+        activityStart: "2025.03.08",
+        activityEnd: "2025.04.08",
+        deposit: "5,000원",
+        tags: ["#취미", "#뜨개질", "#종로구"],
+        likes: 7,
+      };
+
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(7);
 
@@ -216,19 +213,19 @@ const MyPostDetail = () => {
   const handleEdit = () => {
     setMenuVisible(false);
     navigation.navigate("모임수정", {
-    postId: meeting.postId,
-    title: meeting.title,
-    description: meeting.content,
-    selectedCity: "서울", // 예시로 넣은 값
-    selectedDistrict: "종로구", // 예시로 넣은 값
-    category: "취미", // 실제로는 state나 API에서 받아야 함
-    maxParticipants: meeting.memberMax,
-    deposit: meeting.deposit,
-    tags: meeting.tags.join(" "),
-    recruitmentStart: meeting.recruitmentStart,
-    recruitmentEnd: meeting.recruitmentEnd,
-    activityStart: meeting.activityStart,
-    activityEnd: meeting.activityEnd,
+      postId: meeting.postId,
+      title: meeting.title,
+      description: meeting.content,
+      selectedCity: "서울", // 예시로 넣은 값
+      selectedDistrict: "종로구", // 예시로 넣은 값
+      category: "취미", // 실제로는 state나 API에서 받아야 함
+      maxParticipants: meeting.memberMax,
+      deposit: meeting.deposit,
+      tags: meeting.tags.join(" "),
+      recruitmentStart: meeting.recruitmentStart,
+      recruitmentEnd: meeting.recruitmentEnd,
+      activityStart: meeting.activityStart,
+      activityEnd: meeting.activityEnd,
     });
   };
 
@@ -261,38 +258,23 @@ const MyPostDetail = () => {
     setLikes(liked ? likes - 1 : likes + 1);
   };
 
-  
-
   // 작성자 더미 데이터
   const user = {
     name: "홍길동",
-    career:
-      "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
+    career: "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
     image: null, // 프로필 사진이 없을 경우 기본 아이콘 사용
   };
 
   return (
     <TouchableWithoutFeedback onPress={closeMenu}>
       <Container>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:100}}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           <Section>
-            <RowContainer
-              style={{ justifyContent: "space-between", alignItems: "center" }}
-            >
+            <RowContainer style={{ justifyContent: "space-between", alignItems: "center" }}>
               <Title>{meeting.title}</Title>
               <RowContainer>
-                <Ionicons
-                  style={{ marginRight: 10 }}
-                  name="share-outline"
-                  size={25}
-                  onPress={() => console.log("공유하기")}
-                />
-                <Feather
-                  name="more-horizontal"
-                  size={25}
-                  color="#000"
-                  onPress={toggleMenu}
-                />
+                <Ionicons style={{ marginRight: 10 }} name="share-outline" size={25} onPress={() => console.log("공유하기")} />
+                <Feather name="more-horizontal" size={25} color="#000" onPress={toggleMenu} />
               </RowContainer>
             </RowContainer>
 
@@ -310,31 +292,19 @@ const MyPostDetail = () => {
             <Date>{meeting.createdAt}</Date>
             <Content>{meeting.content}</Content>
             <RowContainer style={{ marginBottom: 10 }}>
-              <Ionicons
-                name="location-outline"
-                size={24}
-                color={theme.colors.grey}
-              />
+              <Ionicons name="location-outline" size={24} color={theme.colors.grey} />
               <Label style={{ marginRight: 40, marginLeft: 5 }}>지역</Label>
               <Info>{meeting.location}</Info>
             </RowContainer>
 
             <RowContainer style={{ marginBottom: 10 }}>
-              <Ionicons
-                name="people-outline"
-                size={24}
-                color={theme.colors.grey}
-              />
+              <Ionicons name="people-outline" size={24} color={theme.colors.grey} />
               <Label style={{ marginRight: 13, marginLeft: 5 }}>모집인원</Label>
               <Info>{meeting.memberMax}</Info>
             </RowContainer>
 
             <RowContainer style={{ marginBottom: 10 }}>
-              <Ionicons
-                name="calendar-outline"
-                size={24}
-                color={theme.colors.grey}
-              />
+              <Ionicons name="calendar-outline" size={24} color={theme.colors.grey} />
               <Label style={{ marginRight: 13, marginLeft: 5 }}>모집기간</Label>
               <Info>
                 {meeting.recruitmentStart} ~ {meeting.recruitmentEnd}
@@ -342,11 +312,7 @@ const MyPostDetail = () => {
             </RowContainer>
 
             <RowContainer style={{ marginBottom: 10 }}>
-              <Ionicons
-                name="timer-outline"
-                size={24}
-                color={theme.colors.grey}
-              />
+              <Ionicons name="timer-outline" size={24} color={theme.colors.grey} />
               <Label style={{ marginRight: 13, marginLeft: 5 }}>활동기간</Label>
               <Info>
                 {meeting.activityStart} ~ {meeting.activityEnd}
@@ -359,9 +325,7 @@ const MyPostDetail = () => {
               <Info>{meeting.deposit}</Info>
             </RowContainer>
 
-            <Info style={{ color: "#3386CA", marginTop: 10 }}>
-              {meeting.tags.join("  ")}
-            </Info>
+            <Info style={{ color: "#3386CA", marginTop: 10 }}>{meeting.tags.join("  ")}</Info>
 
             <Divider />
           </Section>
@@ -370,11 +334,7 @@ const MyPostDetail = () => {
           <ProfileContainer>
             <ProfileHeader>
               <ProfileImageContainer>
-                {user.image ? (
-                  <ProfileImage source={{ uri: user.image }} />
-                ) : (
-                  <Feather name="user" size={35} color="#888" />
-                )}
+                {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
               </ProfileImageContainer>
 
               <RowContainer>
@@ -384,28 +344,27 @@ const MyPostDetail = () => {
             </ProfileHeader>
             <ProfileIntro>{user.career}</ProfileIntro>
           </ProfileContainer>
-          
         </ScrollView>
         {/* 하단 좋아요 & 신청 버튼 고정 */}
         <Footer>
-            <LikeButton onPress={toggleLike}>
-              {liked ? (
-                <AntDesign name="heart" size={28} color="#FF6B6B" /> // 꽉 찬 하트
-              ) : (
-                <Feather name="heart" size={28} color="#000" /> // 빈 하트
-              )}
-              <LikeText liked={liked}>{likes}</LikeText>
-            </LikeButton>
-            <Button
-              title="신청 목록 확인"
-              onPress={() => console.log("신청 목록 확인")}
-              containerStyle={{ height: 50, width: 280 }}
-              textStyle={{ marginLeft: 0 }}
-              style={{ height: 50, width: 280 }}
-            />
-          </Footer>
-        </Container>
-        
+          <LikeButton onPress={toggleLike}>
+            {liked ? (
+              <AntDesign name="heart" size={28} color="#FF6B6B" /> // 꽉 찬 하트
+            ) : (
+              <Feather name="heart" size={28} color="#000" /> // 빈 하트
+            )}
+            <LikeText liked={liked}>{likes}</LikeText>
+          </LikeButton>
+          <Button
+            title="신청 목록 확인"
+            onPress={() => checkLogin("신청서 목록")}
+            containerStyle={{ height: 50, width: 280 }}
+            textStyle={{ marginLeft: 0 }}
+            style={{ height: 50, width: 280 }}
+          />
+          <LoginAlert />
+        </Footer>
+      </Container>
     </TouchableWithoutFeedback>
   );
 };
