@@ -1,8 +1,9 @@
 import React, { useState, useContext } from "react";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
+import { TouchableOpacity } from "react-native";
 import useRequireLogin from "../hooks/useRequireLogin";
 
 const Container = styled.View`
@@ -133,7 +134,10 @@ const PostDetail = () => {
   const { checkLogin, LoginAlert } = useRequireLogin();
   const theme = useContext(ThemeContext);
   const route = useRoute();
+
+  const navigation = useNavigation();
   const { postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
+
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(7);
 
@@ -161,6 +165,7 @@ const PostDetail = () => {
 
   // 작성자 더미 데이터
   const user = {
+    userId: 1,
     name: "홍길동",
     career: "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
     image: null, // 프로필 사진이 없을 경우 기본 아이콘 사용
@@ -216,19 +221,23 @@ const PostDetail = () => {
       </Section>
 
       {/* 작성자 정보 섹션 */}
-      <ProfileContainer>
-        <ProfileHeader>
-          <ProfileImageContainer>
-            {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
-          </ProfileImageContainer>
 
-          <RowContainer>
-            <Label>작성자</Label>
-            <ProfileName>{user.name}</ProfileName>
-          </RowContainer>
-        </ProfileHeader>
-        <ProfileIntro>{user.career}</ProfileIntro>
-      </ProfileContainer>
+      <TouchableOpacity onPress={() => navigation.navigate("공개프로필", { userId: user.userId })}>
+        <ProfileContainer>
+          <ProfileHeader>
+            <ProfileImageContainer>
+              {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
+            </ProfileImageContainer>
+
+            <RowContainer>
+              <Label>작성자</Label>
+              <ProfileName>{user.name}</ProfileName>
+            </RowContainer>
+          </ProfileHeader>
+          <ProfileIntro>{user.career}</ProfileIntro>
+        </ProfileContainer>
+      </TouchableOpacity>
+
       {/* 하단 좋아요 & 신청 버튼 고정 */}
       <Footer>
         <LikeButton onPress={toggleLike}>
