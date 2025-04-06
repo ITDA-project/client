@@ -36,10 +36,22 @@ const FindPw = () => {
   const [isAuthVerified, setIsAuthVerified] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const [isPwChanged, setIsPwChanged] = useState(false);
 
   useEffect(() => {
     setDisabled(!(email && authNum && password && passwordConfirm && !emailErrorMessage && !passwordConfirmErrorMessage && isAuthVerified));
   }, [email, authNum, password, passwordConfirm, emailErrorMessage, passwordConfirmErrorMessage, isAuthVerified]);
+
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const _handleEmailChange = (email) => {
     let changeEmail = removeWhitespace(email);
@@ -87,11 +99,11 @@ const FindPw = () => {
             onChangeText={_handleEmailChange}
             containerStyle={{
               marginRight: 7,
-              width: "77%",
+              width: "74%",
             }}
           />
           <Button
-            title="전송"
+            title={resendTimer > 0 ? `${resendTimer}초` : "전송"}
             onPress={async () => {
               try {
                 const response = await fetch("http://10.0.2.2:8080/api/auth/password/find", {
@@ -105,8 +117,9 @@ const FindPw = () => {
                 const result = await response.json();
 
                 if (response.ok) {
-                  setAlertMessage(result.message); // ex: "인증 번호가 전송되었습니다."
+                  setAlertMessage(result.message);
                   setAlertVisible(true);
+                  setResendTimer(180);
                 } else {
                   setAlertMessage("이메일 전송에 실패했습니다.");
                   setAlertVisible(true);
@@ -116,9 +129,9 @@ const FindPw = () => {
                 setAlertVisible(true);
               }
             }}
-            disabled={!email || !!emailErrorMessage}
+            disabled={!email || !!emailErrorMessage || resendTimer > 0}
             containerStyle={{
-              width: 70,
+              width: 80,
               alignItems: "center",
               justifyContents: "center",
               height: 50,
@@ -142,9 +155,10 @@ const FindPw = () => {
             returnKeyType="next"
             value={authNum}
             onChangeText={_handleAuthNumChange}
+            editable={!isAuthVerified}
             containerStyle={{
               marginRight: 7,
-              width: "77%",
+              width: "74%",
             }}
           />
           <Button
@@ -174,9 +188,9 @@ const FindPw = () => {
                 setAlertVisible(true);
               }
             }}
-            disabled={!email || !!emailErrorMessage || authNum.length !== 6}
+            disabled={isAuthVerified || !email || !!emailErrorMessage || authNum.length !== 6}
             containerStyle={{
-              width: 70,
+              width: 80,
               alignItems: "center",
               justifyContents: "center",
               height: 50,
@@ -235,9 +249,9 @@ const FindPw = () => {
               });
 
               if (response.ok) {
+                setIsPwChanged(true);
                 setAlertMessage("비밀번호 변경 성공");
                 setAlertVisible(true);
-                navigation.pop(1);
               } else {
                 setAlertMessage("비밀번호 변경 실패");
                 setAlertVisible(true);
@@ -254,7 +268,17 @@ const FindPw = () => {
           }}
           textStyle={{ marginLeft: 0 }}
         />
-        <AlertModal visible={alertVisible} message={alertMessage} onConfirm={() => setAlertVisible(false)} />
+        <AlertModal
+          visible={alertVisible}
+          message={alertMessage}
+          onConfirm={() => {
+            setAlertVisible(false);
+            if (isPwChanged) {
+              setIsPwChanged(false);
+              navigation.pop(1);
+            }
+          }}
+        />
       </Container>
     </KeyboardAwareScrollView>
   );
