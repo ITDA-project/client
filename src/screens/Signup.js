@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Button, ErrorMessage } from "../components";
+import { Button, ErrorMessage, AlertModal } from "../components";
 import Input from "../components/Input";
 import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -73,6 +73,8 @@ const Signup = ({ navigation }) => {
   const [emailErrorMessage, setEmailErrorMessage] = useState("");
   const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState("");
   const [disabled, setDisabled] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   useEffect(() => {
     setDisabled(!(email && name && password && passwordConfirm && phone && gender && !emailErrorMessage && !passwordConfirmErrorMessage));
@@ -96,17 +98,19 @@ const Signup = ({ navigation }) => {
       });
 
       if (response.data.data === true) {
-        alert("사용 가능한 이메일입니다!");
+        setModalMessage("사용 가능한 이메일입니다!");
+        setModalVisible(true);
       } else {
-        alert("이미 사용 중인 이메일입니다.");
+        setModalMessage("이미 사용 중인 이메일입니다");
+        setModalVisible(true);
       }
     } catch (error) {
       if (error.response) {
-        console.error("서버 오류:", error.response.data);
-        alert("이미 사용 중인 이메일입니다.");
+        setModalMessage("이미 사용 중인 이메일입니다");
+        setModalVisible(true);
       } else {
-        console.error("요청 실패:", error.message);
-        alert("이메일 확인 중 문제가 발생했습니다.");
+        setModalMessage("이메일 확인 중 문제가 발생했습니다.");
+        setModalVisible(true);
       }
     }
   };
@@ -287,6 +291,7 @@ const Signup = ({ navigation }) => {
           }}
           textStyle={{ marginLeft: 0 }}
         />
+        <AlertModal visible={modalVisible} message={modalMessage} onConfirm={() => setModalVisible(false)} />
       </Container>
     </KeyboardAwareScrollView>
   );
