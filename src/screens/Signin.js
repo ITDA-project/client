@@ -109,8 +109,8 @@ const Signin = ({ navigation }) => {
         await EncryptedStorage.setItem("accessToken", accessToken);
         setAccessToken(accessToken);
 
-        const storedAccessToeken = await EncryptedStorage.getItem("accessToken");
-        console.log("저장된 엑세스 토큰: ", storedAccessToeken);
+        const storedAccessToken = await EncryptedStorage.getItem("accessToken");
+        console.log("저장된 엑세스 토큰: ", storedAccessToken);
       } else {
         console.log("access가 존재하지 않습니다");
       }

@@ -49,11 +49,38 @@ export const AuthProvider = ({ children }) => {
     restoreSession();
   }, []);
 
-  // const signout = async () => {
-  //   await
-  // }
+  const signout = async () => {
+    try {
+      const storedAccessToken = await EncryptedStorage.getItem("accessToken");
+      const credentials = await Keychain.getGenericPassword();
+      const refreshToken = credentials ? credentials.password : null;
 
-  return <AuthContext.Provider value={{ user, setUser, accessToken, setAccessToken }}>{children}</AuthContext.Provider>;
+      if (storedAccessToken && refreshToken) {
+        // 백엔드에 로그아웃 요청
+        await axios.post(
+          "http://10.0.2.2:8080/auth/logout",
+          { refresh_token: refreshToken },
+          {
+            headers: {
+              Authorization: `Bearer ${storedAccessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      // 로컬 토큰 제거
+      await EncryptedStorage.removeItem("accessToken");
+      await Keychain.resetGenericPassword();
+      setAccessToken(null);
+      setUser(null);
+      console.log("로그아웃 완료");
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+    }
+  };
+
+  return <AuthContext.Provider value={{ user, setUser, accessToken, setAccessToken, signout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);

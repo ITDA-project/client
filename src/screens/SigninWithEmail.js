@@ -117,9 +117,9 @@ const SigninWithEmail = ({ navigation }) => {
       if (accessToken) {
         await EncryptedStorage.setItem("accessToken", accessToken);
 
-        const storedAccessToeken = await EncryptedStorage.getItem("accessToken");
-        setAccessToken(storedAccessToeken);
-        console.log("저장된 엑세스 토큰: ", storedAccessToeken);
+        const storedAccessToken = await EncryptedStorage.getItem("accessToken");
+        setAccessToken(storedAccessToken);
+        console.log("저장된 엑세스 토큰: ", storedAccessToken);
       } else {
         console.log("access가 존재하지 않습니다");
       }
