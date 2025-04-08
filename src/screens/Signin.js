@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Image, ActivityIndicator } from "react-native";
-import { Button } from "../components";
+import { Button, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -49,6 +49,8 @@ const Signin = ({ navigation }) => {
   const [success, setSuccessResponse] = useState(null);
   const [failure, setFailureResponse] = useState(null);
   const [getProfileRes, setGetProfileRes] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const { setUser, setAccessToken } = useAuth();
 
@@ -131,6 +133,10 @@ const Signin = ({ navigation }) => {
       // 6. 메인 화면 이동
       navigation.navigate("Home");
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
+        setModalVisible(true);
+      }
       console.error("카카오 로그인 실패", err);
     } finally {
       setLoading(false);
@@ -210,31 +216,13 @@ const Signin = ({ navigation }) => {
       // 6. 메인 화면 이동
       navigation.navigate("Home");
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
+        setModalVisible(true);
+      }
       console.error("네이버 로그인 실패", err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  //나중에 로그아웃 페이지로 옮겨
-  const logoutWithNaver = async () => {
-    try {
-      await NaverLogin.logout();
-      setSuccessResponse(null);
-      setFailureResponse(null);
-      setGetProfileRes(null);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-  const deleteToken = async () => {
-    try {
-      await NaverLogin.deleteToken();
-      setSuccessResponse(null);
-      setFailureResponse(null);
-      setGetProfileRes(null);
-    } catch (e) {
-      console.error(e);
     }
   };
 
@@ -303,6 +291,7 @@ const Signin = ({ navigation }) => {
           fontFamily: theme.fonts.bold,
         }}
       />
+      <AlertModal visible={modalVisible} message={modalMessage} onConfirm={() => setModalVisible(false)} />
     </Container>
   );
 };
