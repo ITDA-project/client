@@ -5,6 +5,7 @@ import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
 import Review from "../components/Review";
+import { useAuth } from "../contexts/AuthContext";
 
 // 스타일
 
@@ -138,6 +139,8 @@ const Profile = ({ navigation, route }) => {
   const theme = useContext(ThemeContext);
   const user = route?.params?.user || dummyUser; //더미데이터 사용용
 
+  const { signout } = useAuth();
+
   return (
     <Container>
       {/* 상단 프로필 */}
@@ -184,7 +187,10 @@ const Profile = ({ navigation, route }) => {
       <ButtonContainer>
         <Button
           title="로그아웃"
-          onPress={() => console.log("로그아웃")}
+          onPress={async () => {
+            await signout();
+            navigation.replace("Home");
+          }}
           containerStyle={{ height: 40, width: 95 }}
           textStyle={{ fontSize: 16, marginLeft: 0 }}
           style={{ height: 40, width: 95 }}
