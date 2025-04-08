@@ -8,6 +8,7 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { ScrollView } from "react-native-gesture-handler";
 import useRequireLogin from "../hooks/useRequireLogin";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -162,45 +163,55 @@ const MyPostDetail = () => {
   const navigation = useNavigation();
 
   const { checkLogin, LoginAlert } = useRequireLogin();
-  const { updatedPost, postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
+  const { postId } = route.params || {};
 
-  // 더미 데이터 (추후 API 연동 필요)
-  const meeting = updatedPost
-    ? {
-        postId: updatedPost.postId,
-        title: updatedPost.title,
-        createdAt: updatedPost.createdAt ?? new Date().toISOString().split("T")[0],
-        content: updatedPost.description, // ✅ description → content
-        location: `${updatedPost.selectedCity} ${updatedPost.selectedDistrict}`, // ✅ city + district
-        memberMax: updatedPost.memberMax, // ✅ 명칭 통일
-        recruitmentStart: updatedPost.recruitmentStart,
-        recruitmentEnd: updatedPost.recruitmentEnd,
-        activityStart: updatedPost.activityStart,
-        activityEnd: updatedPost.activityEnd,
-        deposit: updatedPost.deposit,
-        tags: updatedPost.tags, // ✅ 문자열 → 배열로 처리됨
-        likes: updatedPost.likes ?? 7, // 기본값
-      }
-    : {
-        postId,
-        title,
-        createdAt,
-        content: "뜨개질이 취미이신 분? \n초보여도 괜찮아요😊\n함께 정보 공유해요",
-        location: "서울 종로구",
-        memberMax: "10",
-        recruitmentStart: "2025.02.22",
-        recruitmentEnd: "2025.03.01",
-        activityStart: "2025.03.08",
-        activityEnd: "2025.04.08",
-        deposit: "5,000원",
-        tags: ["#취미", "#뜨개질", "#종로구"],
-        likes: 7,
-      };
-
+  const [meeting, setMeeting] = useState(null);
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(7);
-
+  const [likes, setLikes] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
+
+  const fetchMeeting = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      const response = await axios.get(`http://192.168.123.182:8080/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = response.data.data;
+      setMeeting(data);
+      setLiked(data.liked || false);
+      setLikes(data.likesCount);
+    } catch (error) {
+      console.error("게시글 상세 데이터 로드 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMeeting();
+  }, [postId]);
+
+  const toggleLike = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      if (!liked) {
+        await axios.post(`http://192.168.123.182:8080/posts/${postId}/likes`, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLiked(true);
+        setLikes((prev) => prev + 1);
+      } else {
+        await axios.delete(`http://192.168.123.182:8080/likes/${meeting.likeId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLiked(false);
+        setLikes((prev) => prev - 1);
+      }
+    } catch (error) {
+      console.error("좋아요 처리 실패:", error);
+    }
+  };
 
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
@@ -251,11 +262,6 @@ const MyPostDetail = () => {
       } 
     },*/
     ]);
-  };
-
-  const toggleLike = () => {
-    setLiked(!liked);
-    setLikes(liked ? likes - 1 : likes + 1);
   };
 
   // 작성자 더미 데이터

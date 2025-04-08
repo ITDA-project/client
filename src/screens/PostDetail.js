@@ -1,10 +1,12 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
+import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 import useRequireLogin from "../hooks/useRequireLogin";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -136,40 +138,97 @@ const PostDetail = () => {
   const route = useRoute();
 
   const navigation = useNavigation();
-  const { postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
+  const { postId } = route.params || {};
 
+  const [meeting, setMeeting] = useState(null);
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(7);
+  const [likeId, setLikeId] = useState(null);
+  const [likes, setLikes] = useState(0);
 
-  const toggleLike = () => {
-    setLiked(!liked);
-    setLikes(liked ? likes - 1 : likes + 1);
+  const [user, setUser] = useState(null);
+
+  const fetchDetail = async () => {
+    try {
+      const res = await axios.get(`http://192.168.123.182:8080/api/posts/${postId}`);
+      const data = res.data.data;
+
+      setMeeting({
+        postId: data.id,
+        title: data.title,
+        createdAt: data.createdAt.split("T")[0].split("-").join("."),
+        content: data.content,
+        location: data.location,
+        maxParticipants: data.membersMax,
+        recruitmentEnd: data.dueDate,
+        activityStart: data.activityStartDate,
+        activityEnd: data.activityEndDate,
+        deposit: data.warranty,
+        tags: [`#${data.category}`],
+        likes: data.likesCount,
+      });
+      setUser({
+        userId: data.userId,
+        name: data.userName,
+        career: data.userCareer,
+        image: data.userImage,
+      });
+
+      setLikes(data.likesCount);
+    } catch (e) {
+      console.error("상세 데이터 로딩 실패", e);
+    }
   };
 
-  // 더미 데이터 (추후 API 연동 필요)
-  const meeting = {
-    postId,
-    title,
-    createdAt,
-    content: "뜨개질이 취미이신 분? \n처음이지만 같이 해보실 분?\n모두모두 환영합니다! 😊",
-    location: "서울 종로구",
-    maxParticipants: "10",
-    recruitmentStart: "2025.02.22",
-    recruitmentEnd: "2025.03.01",
-    activityStart: "2025.03.08",
-    activityEnd: "202.04.08",
-    deposit: "5,000원",
-    tags: ["#취미", "#뜨개질", "#종로구"],
-    likes: 7,
+  const toggleLike = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+
+      if (!liked) {
+        console.log("📡 좋아요 요청 보내는 중...");
+        const res = await axios.post(
+          `http://192.168.123.182:8080/api/posts/${postId}/likes`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+        console.log("👍 좋아요 등록 성공:", res.data);
+
+        if (res.status === 201) {
+          setLikeId(res.data.data);
+          setLiked(true);
+          setLikes((prev) => prev + 1);
+        }
+      } else {
+        await axios.delete(`http://192.168.123.182:8080/api/likes/${likeId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        console.log("🗑️ 좋아요 삭제 성공:", res.data);
+        setLiked(false);
+        setLikes((prev) => prev - 1);
+        setLikeId(null);
+      }
+    } catch (error) {
+      console.error("❌ 좋아요 처리 중 오류 발생:", error?.message || error);
+      if (error.response) {
+        console.log("📡 서버 응답 상태 코드:", error.response.status);
+        console.log("📡 서버 응답 데이터:", error.response.data);
+      } else if (error.request) {
+        console.log("📡 요청은 갔지만 응답이 없음:", error.request);
+      } else {
+        console.log("📡 설정 중 오류:", error.message);
+      }
+      Alert.alert("오류", "좋아요 처리 중 문제가 발생했습니다.");
+    }
   };
 
-  // 작성자 더미 데이터
-  const user = {
-    userId: 1,
-    name: "홍길동",
-    career: "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
-    image: null, // 프로필 사진이 없을 경우 기본 아이콘 사용
-  };
+  useEffect(() => {
+    fetchDetail();
+  }, []);
+
+  if (!meeting || !user) {
+    return <Text>불러오는 중...</Text>; // 또는 ActivityIndicator
+  }
 
   return (
     <Container>
