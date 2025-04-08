@@ -5,7 +5,7 @@ import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { validateEmail, removeWhitespace } from "../utils";
+import { validateEmail, removeWhitespace } from "../utils/utils";
 
 const Container = styled.View`
   flex: 1;

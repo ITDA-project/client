@@ -24,12 +24,14 @@
     "expo": "52.0.38",
     "expo-app-loading": "^2.1.1",
     "expo-auth-session": "~6.0.3",
+    "expo-dev-client": "~5.0.19",
     "expo-font": "~13.0.4",
     "expo-image-picker": "^16.0.6",
     "expo-random": "^14.0.1",
     "expo-splash-screen": "^0.29.22",
     "expo-status-bar": "~2.0.1",
     "http-proxy-middleware": "^3.0.3",
+    "jwt-decode": "^4.0.0",
     "prop-types": "^15.8.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -51,8 +53,7 @@
     "react-native-svg": "^15.8.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "styled-components": "^6.1.15",
-    "expo-dev-client": "~5.0.19"
+    "styled-components": "^6.1.15"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
