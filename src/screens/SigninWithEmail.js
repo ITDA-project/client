@@ -6,7 +6,7 @@ import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { validateEmail, removeWhitespace } from "../utils";
+import { validateEmail, removeWhitespace } from "../utils/utils";
 import { Keyboard } from "react-native";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";

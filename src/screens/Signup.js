@@ -4,7 +4,7 @@ import Input from "../components/Input";
 import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { validateEmail, removeWhitespace } from "../utils";
+import { validateEmail, removeWhitespace } from "../utils/utils";
 import axios from "axios";
 
 const Container = styled.View`
