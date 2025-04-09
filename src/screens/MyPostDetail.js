@@ -173,7 +173,7 @@ const MyPostDetail = () => {
   const fetchMeeting = async () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
-      const response = await axios.get(`http://192.168.123.182:8080/api/posts/${postId}`, {
+      const response = await axios.get(`http://192.168.123.177:8080/api/posts/${postId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -196,13 +196,13 @@ const MyPostDetail = () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
       if (!liked) {
-        await axios.post(`http://192.168.123.182:8080/posts/${postId}/likes`, null, {
+        await axios.post(`http://192.168.123.177:8080/posts/${postId}/likes`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLiked(true);
         setLikes((prev) => prev + 1);
       } else {
-        await axios.delete(`http://192.168.123.182:8080/likes/${meeting.likeId}`, {
+        await axios.delete(`http://192.168.123.177:8080/likes/${meeting.likeId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLiked(false);

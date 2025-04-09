@@ -149,7 +149,7 @@ const PostDetail = () => {
 
   const fetchDetail = async () => {
     try {
-      const res = await axios.get(`http://192.168.123.182:8080/api/posts/${postId}`);
+      const res = await axios.get(`http://192.168.123.177:8080/api/posts/${postId}`);
       const data = res.data.data;
 
       setMeeting({
@@ -183,10 +183,15 @@ const PostDetail = () => {
     try {
       const accessToken = await EncryptedStorage.getItem("accessToken");
 
+      if (!accessToken) {
+        Alert.alert("로그인이 필요합니다");
+        return;
+      }
+
       if (!liked) {
         console.log("📡 좋아요 요청 보내는 중...");
         const res = await axios.post(
-          `http://192.168.123.182:8080/api/posts/${postId}/likes`,
+          `http://192.168.123.177:8080/api/posts/${postId}/likes`,
           {},
           {
             headers: { Authorization: `Bearer ${accessToken}` },
@@ -200,7 +205,7 @@ const PostDetail = () => {
           setLikes((prev) => prev + 1);
         }
       } else {
-        await axios.delete(`http://192.168.123.182:8080/api/likes/${likeId}`, {
+        await axios.delete(`http://192.168.123.177:8080/api/likes/${likeId}`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         console.log("🗑️ 좋아요 삭제 성공:", res.data);
