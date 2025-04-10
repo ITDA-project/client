@@ -6,6 +6,7 @@ import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
 import useRequireLogin from "../hooks/useRequireLogin";
 import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const AllPosts = ({ route }) => {
   const { checkLogin, LoginAlert } = useRequireLogin();
@@ -18,7 +19,31 @@ const AllPosts = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [cursor, setCursor] = useState(null);
-  const currentUser = { userId: 1 }; // 로그인한 사용자 ID
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      console.log("🔑 accessToken:", token);
+      const response = await axios.get(
+        "http://10.0.2.2:8080/api/mypage/me",
+
+        {
+          headers: {
+            access: `${token}`,
+          },
+        }
+      );
+
+      setCurrentUser(response.data);
+    } catch (error) {
+      console.error("유저 정보 가져오기 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
 
   const fetchMeetings = async (isInitial = false) => {
     if (loading || (!hasNextPage && !isInitial)) return;
@@ -35,7 +60,7 @@ const AllPosts = ({ route }) => {
 
       console.log("📡 axios 요청 파라미터:", params); // 디버깅용
       console.log("✅ 요청에 사용되는 category:", category);
-      const response = await axios.get("http://192.168.123.182:8080/api/posts/list", {
+      const response = await axios.get("http://10.0.2.2:8080/api/posts/list", {
         params,
       });
 
