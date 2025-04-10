@@ -149,8 +149,14 @@ const PostDetail = () => {
 
   const fetchDetail = async () => {
     try {
-      const res = await axios.get(`http://192.168.123.177:8080/api/posts/${postId}`);
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+
+      const headers = accessToken ? { access: accessToken } : {};
+
+      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
       const data = res.data.data;
+
+      console.log("❤️ 좋아요 여부:", data.liked);
 
       setMeeting({
         postId: data.id,
@@ -165,6 +171,7 @@ const PostDetail = () => {
         deposit: data.warranty,
         tags: [`#${data.category}`],
         likes: data.likesCount,
+        likeId: data.likeId,
       });
       setUser({
         userId: data.userId,
@@ -172,12 +179,15 @@ const PostDetail = () => {
         career: data.userCareer,
         image: data.userImage,
       });
-
       setLikes(data.likesCount);
+      setLiked(data.liked ?? false);
     } catch (e) {
       console.error("상세 데이터 로딩 실패", e);
     }
   };
+  useEffect(() => {
+    fetchDetail();
+  }, []);
 
   const toggleLike = async () => {
     try {
@@ -191,27 +201,31 @@ const PostDetail = () => {
       if (!liked) {
         console.log("📡 좋아요 요청 보내는 중...");
         const res = await axios.post(
-          `http://192.168.123.177:8080/api/posts/${postId}/likes`,
+          `http://10.0.2.2:8080/api/posts/${postId}/likes`,
           {},
           {
-            headers: { Authorization: `Bearer ${accessToken}` },
+            headers: { access: `${accessToken}` },
           }
         );
         console.log("👍 좋아요 등록 성공:", res.data);
 
         if (res.status === 201) {
-          setLikeId(res.data.data);
           setLiked(true);
           setLikes((prev) => prev + 1);
         }
       } else {
-        await axios.delete(`http://192.168.123.177:8080/api/likes/${likeId}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
+        const res = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}/likes`, {
+          headers: { access: `${accessToken}` },
         });
-        console.log("🗑️ 좋아요 삭제 성공:", res.data);
-        setLiked(false);
-        setLikes((prev) => prev - 1);
-        setLikeId(null);
+
+        if (res.status === 200) {
+          setLiked(false);
+          setLikes((prev) => prev - 1);
+
+          setTimeout(() => {
+            fetchDetail(); // 딜레이 후 동기화
+          }, 2000); // 1초 뒤에 데이터 재요청
+        }
       }
     } catch (error) {
       console.error("❌ 좋아요 처리 중 오류 발생:", error?.message || error);
@@ -226,10 +240,6 @@ const PostDetail = () => {
       Alert.alert("오류", "좋아요 처리 중 문제가 발생했습니다.");
     }
   };
-
-  useEffect(() => {
-    fetchDetail();
-  }, []);
 
   if (!meeting || !user) {
     return <Text>불러오는 중...</Text>; // 또는 ActivityIndicator

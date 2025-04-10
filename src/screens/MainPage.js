@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import Logo from "../../assets/logo.svg";
 import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const LogoContainer = styled.View`
   align-items: center;
@@ -20,26 +21,53 @@ const MainPage = () => {
   const [latestMeetings, setLatestMeetings] = useState([]);
   const [popularMeetings, setPopularMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const currentUser = { userId: 1 }; // 로그인된 유저 ID (예시)
+  const fetchUserInfo = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      console.log("🔑 accessToken:", token);
+      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+        headers: {
+          access: `${token}`,
+        },
+      });
+
+      setCurrentUser(response.data);
+    } catch (error) {
+      console.error("유저 정보 가져오기 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
 
   const fetchMainData = async () => {
     try {
       setLoading(true);
 
       const [latestRes, popularRes] = await Promise.all([
-        axios.get("http://192.168.123.182:8080/api/posts/list", {
+        axios.get("http://10.0.2.2:8080/api/posts/list", {
           params: { sort: "createdAt", size: 3 },
         }),
-        axios.get("http://192.168.123.182:8080/api/posts/list", {
+        axios.get("http://10.0.2.2:8080/api/posts/list", {
           params: { sort: "likesCount", size: 3 },
         }),
       ]);
 
-      setLatestMeetings(latestRes.data.dtoList);
-      setPopularMeetings(popularRes.data.dtoList);
+      const latestList = latestRes?.data?.dtoList ?? [];
+      const popularList = popularRes?.data?.dtoList ?? [];
+
+      console.log("📦 최신 모임:", latestRes.data);
+      console.log("📦 인기 모임:", popularRes.data);
+
+      setLatestMeetings(latestList);
+      setPopularMeetings(popularList);
     } catch (error) {
-      console.error("메인 페이지 데이터 로딩 실패:", error);
+      console.error("❌ 메인 페이지 데이터 로딩 실패:", error);
+      setLatestMeetings([]); // fallback
+      setPopularMeetings([]);
     } finally {
       setLoading(false);
     }
@@ -134,7 +162,7 @@ const MainPage = () => {
             key={item.postId}
             style={styles.listItem}
             onPress={() => {
-              const screen = item.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+              const screen = currentUser && item.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
               navigation.navigate(screen, item);
             }}
           >
