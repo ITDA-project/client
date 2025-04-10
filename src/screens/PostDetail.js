@@ -149,11 +149,14 @@ const PostDetail = () => {
 
   const fetchDetail = async () => {
     try {
-      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`);
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+
+      const headers = accessToken ? { access: accessToken } : {};
+
+      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
       const data = res.data.data;
 
-      console.log("🔍 게시글 상세 정보:", data);
-      console.log("❤️ 좋아요 여부:", data.liked, "likeId:", data.likeId);
+      console.log("❤️ 좋아요 여부:", data.liked);
 
       setMeeting({
         postId: data.id,
@@ -177,8 +180,7 @@ const PostDetail = () => {
         image: data.userImage,
       });
       setLikes(data.likesCount);
-      setLiked(data.liked);
-      setLikeId(data.likeId);
+      setLiked(data.liked ?? false);
     } catch (e) {
       console.error("상세 데이터 로딩 실패", e);
     }

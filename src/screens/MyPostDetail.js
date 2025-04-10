@@ -175,11 +175,13 @@ const MyPostDetail = () => {
 
   const fetchDetail = async () => {
     try {
-      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`);
-      const data = res.data.data;
+      const accessToken = await EncryptedStorage.getItem("accessToken");
 
-      console.log("🔍 게시글 상세 정보:", data);
-      console.log("❤️ 좋아요 여부:", data.liked, "likeId:", data.likeId);
+      const headers = accessToken ? { access: accessToken } : {};
+
+      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
+      const data = res.data.data;
+      console.log("❤️ 좋아요 여부:", data.liked);
 
       setMeeting({
         postId: data.id,
@@ -204,7 +206,6 @@ const MyPostDetail = () => {
       });
       setLikes(data.likesCount);
       setLiked(data.liked ?? false);
-      setLikeId(data.likeId ?? null);
     } catch (e) {
       console.error("상세 데이터 로딩 실패", e);
     }
@@ -241,14 +242,10 @@ const MyPostDetail = () => {
         const res = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}/likes`, {
           headers: { access: `${accessToken}` },
         });
-
+        console.log("🗑️ 좋아요 삭제 성공:", res.data);
         if (res.status === 200) {
           setLiked(false);
           setLikes((prev) => prev - 1);
-
-          setTimeout(() => {
-            fetchDetail(); // 딜레이 후 동기화
-          }, 2000); // 1초 뒤에 데이터 재요청
         }
       }
     } catch (error) {
