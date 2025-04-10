@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
-import { ScrollView, View, Platform, TextInput } from "react-native";
+import { Alert, ScrollView, View, Platform, TextInput, Text } from "react-native";
 import styled from "styled-components/native";
+import { useNavigation } from "@react-navigation/native";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -8,6 +9,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -318,6 +321,7 @@ export const districtData = {
 
 const CreatePost = () => {
   const theme = useContext(ThemeContext);
+  const navigation = useNavigation();
 
   const [category, setCategory] = useState(null);
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -341,20 +345,60 @@ const CreatePost = () => {
   const [activityStart, setActivityStart] = useState(new Date());
   const [activityEnd, setActivityEnd] = useState(new Date());
 
-  const handleSubmit = () => {
-    console.log({
-      title,
-      description,
-      selectedCity,
-      selectedDistrict,
-      maxParticipants,
-      deposit,
-      tags,
-      recruitmentStart,
-      recruitmentEnd,
-      activityStart,
-      activityEnd,
-    });
+  const categoryCodeMap = {
+    취미: "HOBBY",
+    운동: "EXERCISE",
+    또래: "PEERS",
+    공부: "STUDY",
+    음악: "MUSIC",
+    게임: "GAME",
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      if (!accessToken) {
+        Alert.alert("로그인 필요", "게시글 생성을 위해 로그인이 필요합니다.");
+        return;
+      }
+
+      const requestBody = {
+        title,
+        content: description,
+        category: categoryCodeMap[category],
+        membersMax: Number(maxParticipants),
+        location: `${selectedCity} ${selectedDistrict}`,
+        dueDate: recruitmentEnd.toISOString().split("T")[0],
+        warranty: deposit,
+        activityStartDate: activityStart.toISOString().split("T")[0],
+        activityEndDate: activityEnd.toISOString().split("T")[0],
+      };
+
+      console.log("📦 게시글 등록 요청:", requestBody);
+
+      const response = await axios.post("http://10.0.2.2:8080/api/posts/create", requestBody, {
+        headers: {
+          access: accessToken,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("✅ 게시글 생성 완료:", response.data);
+      const postIdFromHeader = response.headers["postid"] || response.headers["location"]?.split("/").pop();
+
+      console.log("📬 응답 헤더에서 postId 추출:", postIdFromHeader);
+
+      if (!postIdFromHeader) {
+        Alert.alert("에러", "게시글 ID를 찾을 수 없습니다.");
+        return;
+      }
+
+      Alert.alert("성공", "게시글이 성공적으로 등록되었습니다!");
+      navigation.navigate("MyPostDetail", { postId: postIdFromHeader });
+    } catch (error) {
+      console.error("❌ 게시글 등록 실패:", error.response?.data || error.message);
+      Alert.alert("에러", "게시글 생성 중 오류가 발생했습니다.");
+    }
   };
 
   const isFormValid = () => {
@@ -573,7 +617,12 @@ const CreatePost = () => {
 
           <Label>모집 기간</Label>
           <RowContainer>
-            <CalendarPicker date={recruitmentStart} setDate={setRecruitmentStart} />
+            {/* 모집 시작일 - 고정값 (오늘) */}
+            <DateInputContainer disabled={true}>
+              <DateText>{recruitmentStart.toLocaleDateString("ko-KR")}</DateText>
+              <Ionicons name="calendar-outline" size={20} color="#888" />
+            </DateInputContainer>
+            <Text>~</Text>
             <CalendarPicker
               date={recruitmentEnd}
               setDate={setRecruitmentEnd}
@@ -585,6 +634,7 @@ const CreatePost = () => {
           <Label>활동 기간</Label>
           <RowContainer>
             <CalendarPicker date={activityStart} setDate={setActivityStart} />
+            <Text>~</Text>
             <CalendarPicker
               date={activityEnd}
               setDate={setActivityEnd}
