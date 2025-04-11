@@ -348,7 +348,7 @@ const CreatePost = () => {
   const categoryCodeMap = {
     취미: "HOBBY",
     운동: "EXERCISE",
-    또래: "PEERS",
+    또래: "FRIEND",
     공부: "STUDY",
     음악: "MUSIC",
     게임: "GAME",
@@ -378,7 +378,7 @@ const CreatePost = () => {
 
       const response = await axios.post("http://10.0.2.2:8080/api/posts/create", requestBody, {
         headers: {
-          access: accessToken,
+          access: `${accessToken}`,
           "Content-Type": "application/json",
         },
       });
