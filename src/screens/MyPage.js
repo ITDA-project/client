@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components/native";
 import { FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { jwtDecode } from "jwt-decode";
@@ -73,6 +73,8 @@ const Section = styled.View`
   margin-top: 10px;
   margin-left: 10px;
   margin-bottom: 15px;
+  min-height: 160px;
+  justify-content: center;
 `;
 
 const SectionTitle = styled.Text`
@@ -98,14 +100,25 @@ const MeetingDate = styled.Text`
   margin-top: 4px;
 `;
 
+const PlaceholderWrapper = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  height: 130px;
+`;
+
+const Placeholder = styled.Text`
+  font-size: 16px;
+  color: ${(props) => props.theme.colors.grey};
+  font-family: ${({ theme }) => theme.fonts.regular};
+  text-align: center;
+`;
+
 const LoadingContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
 `;
-
-// 현재 로그인한 사용자 (예시: user.id가 1이라고 가정)
-const currentUser = { userId: 6, name: "홍길동" }; // ✅ 백엔드에서 가져오는 정보
 
 const MyPage = () => {
   const navigation = useNavigation();
@@ -114,6 +127,23 @@ const MyPage = () => {
   const [user, setUser] = useState(null);
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      console.log("🔑 accessToken:", token);
+      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+        headers: {
+          access: `${token}`,
+        },
+      });
+
+      setCurrentUser(response.data);
+    } catch (error) {
+      console.error("유저 정보 가져오기 실패:", error);
+    }
+  };
 
   const fetchProfileData = async () => {
     console.log("🚀 fetchProfileData 실행됨");
@@ -125,12 +155,12 @@ const MyPage = () => {
       const decoded = jwtDecode(accessToken);
       console.log("🧩 decoded token:", decoded);
 
-      const response = await axios.get("http://192.168.123.182:8080/api/mypage/full", {
+      const response = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          access: `${accessToken}`,
         },
       });
-      const resData = response.data.dtoList;
+      const resData = response.data.data;
       console.log("📦 마이페이지 데이터 응답:", resData);
 
       const formatDate = (isoDate) => {
@@ -141,27 +171,35 @@ const MyPage = () => {
       const meetingsData = [
         {
           title: "신청한 모임",
-          data: resData.joinedPosts.map((post) => ({
-            ...post,
-            createdAt: formatDate(post.createdAt),
-          })),
+          data: resData.joinedPosts?.length
+            ? resData.joinedPosts.map((post) => ({
+                ...post,
+                postId: post.id,
+                createdAt: formatDate(post.createdAt),
+              }))
+            : [],
         },
         {
           title: "좋아한 모임",
-          data: resData.likedPosts.map((post) => ({
-            ...post,
-            createdAt: formatDate(post.createdAt),
-          })),
+          data: resData.likedPosts?.length
+            ? resData.likedPosts.map((post) => ({
+                ...post,
+                postId: post.id,
+                createdAt: formatDate(post.createdAt),
+              }))
+            : [],
         },
         {
           title: "내가 만든 모임",
-          data: resData.createdPosts.map((post) => ({
-            ...post,
-            createdAt: formatDate(post.createdAt),
-          })),
+          data: resData.createdPosts?.length
+            ? resData.createdPosts.map((post) => ({
+                ...post,
+                postId: post.id,
+                createdAt: formatDate(post.createdAt),
+              }))
+            : [],
         },
       ];
-
       setUser({
         name: resData.name,
         totalStar: resData.ratingAverage,
@@ -175,11 +213,12 @@ const MyPage = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    console.log("👀 useEffect 실행됨 - 마이페이지");
-    fetchProfileData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+      fetchProfileData();
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -217,31 +256,25 @@ const MyPage = () => {
         renderItem={({ item }) => (
           <Section>
             <SectionTitle>{item.title}</SectionTitle>
-            {item.data.map((meeting) => (
-              <MeetingItem
-                key={`${meeting.postId}-${meeting.title}`} // ✅ 중복 방지를 위해 id + title 조합
-                onPress={() => {
-                  if (meeting.userId === currentUser.userId) {
-                    // ✅ 내가 작성한 게시글이면 MyPostDetail로 이동
-                    navigation.navigate("MyPostDetail", {
-                      postId: meeting.postId,
-                      title: meeting.title,
-                      createdAt: meeting.createdAt,
-                    });
-                  } else {
-                    // ✅ 다른 사람이 작성한 게시글이면 PostDetail로 이동
-                    navigation.navigate("PostDetail", {
-                      postId: meeting.postId,
-                      title: meeting.title,
-                      createdAt: meeting.createdAt,
-                    });
-                  }
-                }}
-              >
-                <MeetingTitle>{meeting.title}</MeetingTitle>
-                <MeetingDate>{meeting.createdAt}</MeetingDate>
-              </MeetingItem>
-            ))}
+
+            {item.data.length === 0 ? (
+              <PlaceholderWrapper>
+                <Placeholder>모임이 없습니다</Placeholder>
+              </PlaceholderWrapper>
+            ) : (
+              item.data.map((meeting) => (
+                <MeetingItem
+                  key={`${meeting.postId}-${meeting.title}`}
+                  onPress={() => {
+                    const screen = currentUser && meeting.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+                    navigation.navigate(screen, meeting);
+                  }}
+                >
+                  <MeetingTitle>{meeting.title}</MeetingTitle>
+                  <MeetingDate>{meeting.createdAt}</MeetingDate>
+                </MeetingItem>
+              ))
+            )}
           </Section>
         )}
       />
