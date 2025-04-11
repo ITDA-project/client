@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Image, View, Text, TextInput, FlatList, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView } from "react-native";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { Image, View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { ThemeContext, styled } from "styled-components/native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import Logo from "../../assets/logo.svg";
 import axios from "axios";
@@ -39,10 +39,6 @@ const MainPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUserInfo();
-  }, []);
-
   const fetchMainData = async () => {
     try {
       setLoading(true);
@@ -72,9 +68,12 @@ const MainPage = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchMainData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+      fetchMainData();
+    }, [])
+  );
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#fff", padding: 20 },

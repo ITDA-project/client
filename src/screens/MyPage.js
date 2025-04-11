@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components/native";
 import { FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
-
+import EncryptedStorage from "react-native-encrypted-storage";
+import { jwtDecode } from "jwt-decode";
 // 스타일 정의
 const Container = styled.View`
   flex: 1;
@@ -16,7 +17,7 @@ const MyPageSection = styled.View`
   flex-direction: row;
   align-items: center;
   margin-top: 50px;
-  margin-bottom:20px;
+  margin-bottom: 20px;
   padding-bottom: 10px;
   border-bottom-width: 1px;
   border-bottom-color: #ddd;
@@ -72,6 +73,8 @@ const Section = styled.View`
   margin-top: 10px;
   margin-left: 10px;
   margin-bottom: 15px;
+  min-height: 160px;
+  justify-content: center;
 `;
 
 const SectionTitle = styled.Text`
@@ -97,14 +100,25 @@ const MeetingDate = styled.Text`
   margin-top: 4px;
 `;
 
+const PlaceholderWrapper = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  height: 130px;
+`;
+
+const Placeholder = styled.Text`
+  font-size: 16px;
+  color: ${(props) => props.theme.colors.grey};
+  font-family: ${({ theme }) => theme.fonts.regular};
+  text-align: center;
+`;
+
 const LoadingContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
 `;
-
-// 현재 로그인한 사용자 (예시: user.id가 1이라고 가정)
-const currentUser = { userId: 6, name: "홍길동" }; // ✅ 백엔드에서 가져오는 정보
 
 const MyPage = () => {
   const navigation = useNavigation();
@@ -113,169 +127,98 @@ const MyPage = () => {
   const [user, setUser] = useState(null);
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // 백엔드에서 데이터 가져오는 함수 (현재는 가짜 데이터 사용)
-  const fetchProfileData = async () => {
+  const fetchUserInfo = async () => {
     try {
-      // 더미 데이터 (백엔드 연결 시 삭제)
-      const data = {
-        user: {
-          name: "홍길동",
-          totalStar: 4.5,
-          profileImage: "https://via.placeholder.com/50", // 프로필 이미지 (테스트용)
+      const token = await EncryptedStorage.getItem("accessToken");
+      console.log("🔑 accessToken:", token);
+      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+        headers: {
+          access: `${token}`,
         },
-        meetings: [
-          {
-            title: "신청한 모임",
-            data: [
-              {
-                creatorId: 1,
-                postId: "1",
-                title: "함께 뜨개질해요!",
-                createdAt: "2025.02.17",
-              },
-              {
-                creatorId: 2,
-                postId: "2",
-                title: "퇴근 후 한강 런닝 크루 모집",
-                createdAt: "2025.02.11",
-              },
-              {
-                creatorId: 3,
-                postId: "3",
-                title: "볼링 동호회 회원 모집",
-                createdAt: "2025.01.25",
-              },
-              {
-                creatorId: 4,
-                postId: "7",
-                title: "요가 클래스 모집",
-                createdAt: "2025.02.22",
-              },
-              {
-                creatorId: 5,
-                postId: "8",
-                title: "뮤지컬 관람 모임",
-                createdAt: "2025.02.28",
-              },
-              {
-                creatorId: 7,
-                postId: "9",
-                title: "영화 감상 모임",
-                createdAt: "2025.03.02",
-              },
-            ],
-          },
-          {
-            title: "좋아한 모임",
-            data: [
-              {
-                userId: 8,
-                postId: "4",
-                title: "돈까스 맛집 탐방",
-                createdAt: "2025.01.20",
-              },
-              {
-                userId: 9,
-                postId: "5",
-                title: "함께 뜨개질해요!",
-                createdAt: "2025.02.17",
-              },
-              {
-                userId: 10,
-                postId: "10",
-                title: "보드게임 밤",
-                createdAt: "2025.02.15",
-              },
-              {
-                userId: 11,
-                postId: "11",
-                title: "주말 등산 모임",
-                createdAt: "2025.02.24",
-              },
-              {
-                userId: 12,
-                postId: "12",
-                title: "스페인어 스터디",
-                createdAt: "2025.03.05",
-              },
-              {
-                userId: 13,
-                postId: "13",
-                title: "커피 원두 공유회",
-                createdAt: "2025.03.10",
-              },
-            ],
-          },
-          {
-            title: "내가 만든 모임",
-            data: [
-              {
-                userId: 6,
-                postId: "6",
-                title: "함께 뜨개질해요!",
-                createdAt: "2025.02.17",
-              },
-              {
-                userId: 6,
-                postId: "14",
-                title: "캠핑 동호회",
-                createdAt: "2025.03.12",
-              },
-              {
-                userId: 6,
-                postId: "15",
-                title: "프랑스어 회화 모임",
-                createdAt: "2025.03.18",
-              },
-              {
-                userId: 6,
-                postId: "16",
-                title: "다이어트 챌린지",
-                createdAt: "2025.03.20",
-              },
-              {
-                userId: 6,
-                postId: "17",
-                title: "독서 토론회",
-                createdAt: "2025.03.25",
-              },
-              {
-                userId: 6,
-                postId: "18",
-                title: "사진 촬영 동호회",
-                createdAt: "2025.03.28",
-              },
-            ],
-          },
-        ],
+      });
+
+      setCurrentUser(response.data);
+    } catch (error) {
+      console.error("유저 정보 가져오기 실패:", error);
+    }
+  };
+
+  const fetchProfileData = async () => {
+    console.log("🚀 fetchProfileData 실행됨");
+
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      console.log("🔑 accessToken:", accessToken);
+
+      const decoded = jwtDecode(accessToken);
+      console.log("🧩 decoded token:", decoded);
+
+      const response = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
+        headers: {
+          access: `${accessToken}`,
+        },
+      });
+      const resData = response.data.data;
+      console.log("📦 마이페이지 데이터 응답:", resData);
+
+      const formatDate = (isoDate) => {
+        const date = new Date(isoDate);
+        return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
       };
 
-      setUser(data.user);
-      setMeetings(data.meetings);
+      const meetingsData = [
+        {
+          title: "신청한 모임",
+          data: resData.joinedPosts?.length
+            ? resData.joinedPosts.map((post) => ({
+                ...post,
+                postId: post.id,
+                createdAt: formatDate(post.createdAt),
+              }))
+            : [],
+        },
+        {
+          title: "좋아한 모임",
+          data: resData.likedPosts?.length
+            ? resData.likedPosts.map((post) => ({
+                ...post,
+                postId: post.id,
+                createdAt: formatDate(post.createdAt),
+              }))
+            : [],
+        },
+        {
+          title: "내가 만든 모임",
+          data: resData.createdPosts?.length
+            ? resData.createdPosts.map((post) => ({
+                ...post,
+                postId: post.id,
+                createdAt: formatDate(post.createdAt),
+              }))
+            : [],
+        },
+      ];
+      setUser({
+        name: resData.name,
+        totalStar: resData.ratingAverage,
+        image: resData.image,
+      });
+
+      setMeetings(meetingsData);
     } catch (error) {
       console.error("데이터 불러오기 실패:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  /*
-  const fetchProfileData = async () => {
-  try {
-    const response = await axios.get("https://your-api.com/profile");
-    setUser(response.data.user);
-    setMeetings(response.data.meetings);
-  } catch (error) {
-    console.error("데이터 불러오기 실패:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-  */
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+      fetchProfileData();
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -290,14 +233,14 @@ const MyPage = () => {
       {/* 프로필 영역 */}
       <MyPageSection>
         <ProfileImageContainer>
-          {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
+          {user?.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
         </ProfileImageContainer>
         <UserInfo>
           <UserRow>
-            <UserName>{user.name}</UserName>
+            <UserName>{user?.name || "사용자"}</UserName>
             <StarContainer>
               <MaterialIcons name="star" size={18} color="#FFC107" />
-              <StarText>{user.totalStar}</StarText>
+              <StarText>{user?.totalStar || 0.0}</StarText>
             </StarContainer>
           </UserRow>
         </UserInfo>
@@ -313,31 +256,25 @@ const MyPage = () => {
         renderItem={({ item }) => (
           <Section>
             <SectionTitle>{item.title}</SectionTitle>
-            {item.data.map((meeting) => (
-              <MeetingItem
-                key={`${meeting.postId}-${meeting.title}`} // ✅ 중복 방지를 위해 id + title 조합
-                onPress={() => {
-                  if (meeting.userId === currentUser.userId) {
-                    // ✅ 내가 작성한 게시글이면 MyPostDetail로 이동
-                    navigation.navigate("MyPostDetail", {
-                      postId: meeting.postId,
-                      title: meeting.title,
-                      createdAt: meeting.createdAt,
-                    });
-                  } else {
-                    // ✅ 다른 사람이 작성한 게시글이면 PostDetail로 이동
-                    navigation.navigate("PostDetail", {
-                      postId: meeting.postId,
-                      title: meeting.title,
-                      createdAt: meeting.createdAt,
-                    });
-                  }
-                }}
-              >
-                <MeetingTitle>{meeting.title}</MeetingTitle>
-                <MeetingDate>{meeting.createdAt}</MeetingDate>
-              </MeetingItem>
-            ))}
+
+            {item.data.length === 0 ? (
+              <PlaceholderWrapper>
+                <Placeholder>모임이 없습니다</Placeholder>
+              </PlaceholderWrapper>
+            ) : (
+              item.data.map((meeting) => (
+                <MeetingItem
+                  key={`${meeting.postId}-${meeting.title}`}
+                  onPress={() => {
+                    const screen = currentUser && meeting.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+                    navigation.navigate(screen, meeting);
+                  }}
+                >
+                  <MeetingTitle>{meeting.title}</MeetingTitle>
+                  <MeetingDate>{meeting.createdAt}</MeetingDate>
+                </MeetingItem>
+              ))
+            )}
           </Section>
         )}
       />
