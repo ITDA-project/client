@@ -8,6 +8,7 @@ const useRequireLogin = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
+  const tabScreens = ["MyPage", "Chat", "Notifications"];
 
   const checkLogin = (nextScreen, params = {}) => {
     console.log("이동 요청:", nextScreen);
@@ -19,7 +20,11 @@ const useRequireLogin = () => {
     }
 
     console.log("로그인 상태! 네비게이션 이동: ", nextScreen);
-    navigation.navigate(nextScreen, params);
+    if (tabScreens.includes(nextScreen)) {
+      navigation.navigate("Home", { screen: nextScreen });
+    } else {
+      navigation.navigate(nextScreen, params);
+    }
     return true;
   };
 
