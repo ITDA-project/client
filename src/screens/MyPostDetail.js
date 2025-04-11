@@ -1,5 +1,5 @@
-import React, { useState, useContext } from "react";
-import { TouchableWithoutFeedback, Alert } from "react-native";
+import React, { useState, useContext, useEffect } from "react";
+import { TouchableWithoutFeedback, Alert, Text } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
@@ -168,48 +168,97 @@ const MyPostDetail = () => {
   const [meeting, setMeeting] = useState(null);
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
+  const [likeId, setLikeId] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const fetchMeeting = async () => {
-    try {
-      const token = await EncryptedStorage.getItem("accessToken");
-      const response = await axios.get(`http://192.168.123.177:8080/api/posts/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  const [user, setUser] = useState(null);
 
-      const data = response.data.data;
-      setMeeting(data);
-      setLiked(data.liked || false);
+  const fetchDetail = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+
+      const headers = accessToken ? { access: accessToken } : {};
+
+      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
+      const data = res.data.data;
+      console.log("❤️ 좋아요 여부:", data.liked);
+
+      setMeeting({
+        postId: data.id,
+        title: data.title,
+        createdAt: data.createdAt.split("T")[0].split("-").join("."),
+        content: data.content,
+        location: data.location,
+        memberMax: data.membersMax,
+        recruitmentEnd: data.dueDate,
+        activityStart: data.activityStartDate,
+        activityEnd: data.activityEndDate,
+        deposit: data.warranty,
+        tags: [`#${data.category}`],
+        likes: data.likesCount,
+        likeId: data.likeId,
+      });
+      setUser({
+        userId: data.userId,
+        name: data.userName,
+        career: data.userCareer,
+        image: data.userImage,
+      });
       setLikes(data.likesCount);
-    } catch (error) {
-      console.error("게시글 상세 데이터 로드 실패:", error);
+      setLiked(data.liked ?? false);
+    } catch (e) {
+      console.error("상세 데이터 로딩 실패", e);
     }
   };
-
   useEffect(() => {
-    fetchMeeting();
-  }, [postId]);
+    fetchDetail();
+  }, []);
 
   const toggleLike = async () => {
     try {
-      const token = await EncryptedStorage.getItem("accessToken");
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        Alert.alert("로그인이 필요합니다");
+        return;
+      }
+
       if (!liked) {
-        await axios.post(`http://192.168.123.177:8080/posts/${postId}/likes`, null, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setLiked(true);
-        setLikes((prev) => prev + 1);
+        console.log("📡 좋아요 요청 보내는 중...");
+        const res = await axios.post(
+          `http://10.0.2.2:8080/api/posts/${postId}/likes`,
+          {},
+          {
+            headers: { access: `${accessToken}` },
+          }
+        );
+        console.log("👍 좋아요 등록 성공:", res.data);
+
+        if (res.status === 201) {
+          setLiked(true);
+          setLikes((prev) => prev + 1);
+        }
       } else {
-        await axios.delete(`http://192.168.123.177:8080/likes/${meeting.likeId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}/likes`, {
+          headers: { access: `${accessToken}` },
         });
-        setLiked(false);
-        setLikes((prev) => prev - 1);
+        console.log("🗑️ 좋아요 삭제 성공:", res.data);
+        if (res.status === 200) {
+          setLiked(false);
+          setLikes((prev) => prev - 1);
+        }
       }
     } catch (error) {
-      console.error("좋아요 처리 실패:", error);
+      console.error("❌ 좋아요 처리 중 오류 발생:", error?.message || error);
+      if (error.response) {
+        console.log("📡 서버 응답 상태 코드:", error.response.status);
+        console.log("📡 서버 응답 데이터:", error.response.data);
+      } else if (error.request) {
+        console.log("📡 요청은 갔지만 응답이 없음:", error.request);
+      } else {
+        console.log("📡 설정 중 오류:", error.message);
+      }
+      Alert.alert("오류", "좋아요 처리 중 문제가 발생했습니다.");
     }
   };
 
@@ -264,13 +313,9 @@ const MyPostDetail = () => {
     ]);
   };
 
-  // 작성자 더미 데이터
-  const user = {
-    name: "홍길동",
-    career: "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
-    image: null, // 프로필 사진이 없을 경우 기본 아이콘 사용
-  };
-
+  if (!meeting || !user) {
+    return <Text> 불러오는 중 ...</Text>;
+  }
   return (
     <TouchableWithoutFeedback onPress={closeMenu}>
       <Container>
