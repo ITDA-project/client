@@ -1,8 +1,10 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import Review from "../components/Review";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -14,7 +16,7 @@ const Container = styled.View`
 const ProfileContainer = styled.View`
   flex-direction: row;
   align-items: center;
-  margin-bottom:15px;
+  margin-bottom: 15px;
 `;
 
 const ProfileImageContainer = styled.View`
@@ -69,7 +71,7 @@ const SectionTitle = styled.Text`
 const ScrollSection = styled.View`
   flex: ${Platform.OS === "ios" ? 2 : 2};
   margin-top: 20px;
-  max-height:180px;
+  max-height: 180px;
 `;
 
 const ScrollArea = styled.ScrollView`
@@ -80,6 +82,13 @@ const CareerText = styled.Text`
   font-size: 15px;
   font-family: ${({ theme }) => theme.fonts.regular};
   color: ${({ theme }) => theme.colors.black};
+`;
+
+const PlaceholderWrapper = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  height: 120px;
 `;
 
 const Placeholder = styled.Text`
@@ -99,43 +108,93 @@ const Divider = styled.View`
 const ReviewSection = styled.View`
   flex: ${Platform.OS === "ios" ? 3 : 3};
   margin-top: 20px;
-  margin-bottom:50px;
+  margin-bottom: 50px;
 `;
-
-const dummyUser = {
-  name: "홍길동",
-  career: `안녕하세요~ 홍길동입니다\n저는 2024년도에 독서 모임장으로 활동하며 \n어쩌구저쩌구\n외라라리라랄라라란 살라살라\n이상입니다! 감사합니다!`,
-  reviews: [
-    { star: 4.5, sentence: "책임감 있게 모임을 이끌어줬어요!", createdAt: "2025.02.28" },
-    { star: 5.0, sentence: "모두가 참여할 수 있는 재밌는 모임을 만들어 주셨어요 👍", createdAt: "2025.02.28" },
-    { star: 4.0, sentence: "정말 유익한 시간이었습니다.", createdAt: "2025.02.27" },
-    { star: 4.8, sentence: "참여자들과 원활한 소통이 인상적이었어요.", createdAt: "2025.02.26" },
-    { star: 5.0, sentence: "친절하고 배려심 넘치는 진행이었어요.", createdAt: "2025.02.25" },
-    { star: 3.5, sentence: "조금 아쉬운 점도 있었지만, 전반적으로 만족합니다.", createdAt: "2025.02.24" },
-    { star: 4.2, sentence: "재밌는 활동들 덕분에 시간 가는 줄 몰랐어요!", createdAt: "2025.02.23" },
-    { star: 4.7, sentence: "다음에도 참여하고 싶어요!", createdAt: "2025.02.22" }
-  ]
-};
-
-dummyUser.totalStar =
-  dummyUser.reviews.length > 0
-    ? (dummyUser.reviews.reduce((acc, review) => acc + review.star, 0) / dummyUser.reviews.length).toFixed(1)
-    : "0.0";
 
 const PublicProfile = ({ route }) => {
   const theme = useContext(ThemeContext);
-  const user = route?.params?.user || dummyUser;
+
+  const userId = route?.params?.userId;
+  const [user, setUser] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchUserProfile = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      if (!accessToken) return;
+
+      const res = await axios.get(`http://10.0.2.2:8080/api/profile/${userId}`, {
+        headers: { access: accessToken },
+      });
+
+      const { data } = res.data;
+
+      setUser({
+        name: data.name,
+        image: data.image,
+        career: data.career,
+        totalStar: data.ratingAverage?.toFixed(1) ?? "0.0",
+      });
+    } catch (error) {
+      console.error("❌ 프로필 불러오기 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      if (!accessToken) return;
+
+      const res = await axios.get(`http://10.0.2.2:8080/api/review/${userId}`, {
+        headers: { access: accessToken },
+      });
+
+      const reviewList = res.data.dtoList || [];
+      const mapped = reviewList.map((item) => ({
+        star: item.star,
+        sentence: item.sentence,
+        createdAt: item.createdAt?.split("T")[0].split("-").join("."),
+      }));
+
+      setReviews(mapped);
+    } catch (error) {
+      console.error("❌ 리뷰 불러오기 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) fetchUserProfile();
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) fetchReviews();
+  }, [userId]);
+
+  if (isLoading) {
+    return (
+      <Container>
+        <Placeholder>로딩 중...</Placeholder>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container>
+        <Placeholder>유저 정보를 불러올 수 없습니다</Placeholder>
+      </Container>
+    );
+  }
 
   return (
     <Container>
       {/* 프로필 영역 */}
       <ProfileContainer>
         <ProfileImageContainer>
-          {user.image ? (
-            <ProfileImage source={{ uri: user.image }} />
-          ) : (
-            <Feather name="user" size={30} color="#888" />
-          )}
+          {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
         </ProfileImageContainer>
         <UserInfo>
           <UserName>{user.name}</UserName>
@@ -153,7 +212,9 @@ const PublicProfile = ({ route }) => {
           {user.career ? (
             <CareerText>{user.career}</CareerText>
           ) : (
-            <Placeholder>등록되지 않았습니다</Placeholder>
+            <PlaceholderWrapper>
+              <Placeholder>등록되지 않았습니다</Placeholder>
+            </PlaceholderWrapper>
           )}
         </ScrollArea>
       </ScrollSection>
@@ -164,12 +225,12 @@ const PublicProfile = ({ route }) => {
       <ReviewSection>
         <SectionTitle>리뷰</SectionTitle>
         <ScrollArea>
-          {user.reviews.length > 0 ? (
-            user.reviews.map((review, index) => (
-              <Review key={index} {...review} />
-            ))
+          {reviews.length > 0 ? (
+            reviews.map((review, index) => <Review key={index} {...review} />)
           ) : (
-            <Placeholder>등록되지 않았습니다</Placeholder>
+            <PlaceholderWrapper>
+              <Placeholder>등록되지 않았습니다</Placeholder>
+            </PlaceholderWrapper>
           )}
         </ScrollArea>
       </ReviewSection>
