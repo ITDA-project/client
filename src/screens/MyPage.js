@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import styled from "styled-components/native";
 import { FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
@@ -6,6 +6,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { jwtDecode } from "jwt-decode";
+
 // 스타일 정의
 const Container = styled.View`
   flex: 1;
@@ -129,97 +130,87 @@ const MyPage = () => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
 
-  const fetchUserInfo = async () => {
-    try {
-      const token = await EncryptedStorage.getItem("accessToken");
-      console.log("🔑 accessToken:", token);
-      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
-        headers: {
-          access: `${token}`,
-        },
-      });
-
-      setCurrentUser(response.data);
-    } catch (error) {
-      console.error("유저 정보 가져오기 실패:", error);
-    }
-  };
-
-  const fetchProfileData = async () => {
-    console.log("🚀 fetchProfileData 실행됨");
-
-    try {
-      const accessToken = await EncryptedStorage.getItem("accessToken");
-      console.log("🔑 accessToken:", accessToken);
-
-      const decoded = jwtDecode(accessToken);
-      console.log("🧩 decoded token:", decoded);
-
-      const response = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
-        headers: {
-          access: `${accessToken}`,
-        },
-      });
-      const resData = response.data.data;
-      console.log("📦 마이페이지 데이터 응답:", resData);
-
-      const formatDate = (isoDate) => {
-        const date = new Date(isoDate);
-        return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
-      };
-
-      const meetingsData = [
-        {
-          title: "신청한 모임",
-          data: resData.joinedPosts?.length
-            ? resData.joinedPosts.map((post) => ({
-                ...post,
-                postId: post.id,
-                createdAt: formatDate(post.createdAt),
-              }))
-            : [],
-        },
-        {
-          title: "좋아한 모임",
-          data: resData.likedPosts?.length
-            ? resData.likedPosts.map((post) => ({
-                ...post,
-                postId: post.id,
-                createdAt: formatDate(post.createdAt),
-              }))
-            : [],
-        },
-        {
-          title: "내가 만든 모임",
-          data: resData.createdPosts?.length
-            ? resData.createdPosts.map((post) => ({
-                ...post,
-                postId: post.id,
-                createdAt: formatDate(post.createdAt),
-              }))
-            : [],
-        },
-      ];
-      setUser({
-        name: resData.name,
-        totalStar: resData.ratingAverage,
-        image: resData.image,
-      });
-
-      setMeetings(meetingsData);
-    } catch (error) {
-      console.error("데이터 불러오기 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
   useFocusEffect(
     useCallback(() => {
-      fetchUserInfo();
-      fetchProfileData();
+      const load = async () => {
+        try {
+          const token = await EncryptedStorage.getItem("accessToken");
+          if (!token) throw new Error("토큰 없음");
+
+          const userInfoRes = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+            headers: { access: token },
+          });
+
+          const userId = userInfoRes.data.data;
+          setCurrentUser({ userId });
+
+          const profileRes = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
+            headers: { access: token },
+          });
+
+          const resData = profileRes.data.data;
+
+          const formatDate = (isoDate) => {
+            const date = new Date(isoDate);
+            return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
+          };
+
+          const myPostIds = resData.createdPosts?.map((post) => post.id) || [];
+
+          setUser({
+            name: resData.name,
+            totalStar: resData.ratingAverage,
+            image: resData.image,
+          });
+
+          setMeetings([
+            {
+              title: "신청한 모임",
+              data:
+                resData.joinedPosts?.map((post) => ({
+                  ...post,
+                  postId: post.id,
+                  createdAt: formatDate(post.createdAt),
+                  userId: post.userId,
+                })) || [],
+            },
+            {
+              title: "좋아한 모임",
+              data:
+                resData.likedPosts?.map((post) => ({
+                  ...post,
+                  postId: post.id,
+                  createdAt: formatDate(post.createdAt),
+                  userId: myPostIds.includes(post.id) ? userId : post.userId,
+                })) || [],
+            },
+            {
+              title: "내가 만든 모임",
+              data:
+                resData.createdPosts?.map((post) => ({
+                  ...post,
+                  postId: post.id,
+                  createdAt: formatDate(post.createdAt),
+                  userId: userId,
+                })) || [],
+            },
+          ]);
+        } catch (e) {
+          console.warn("📛 마이페이지 정보 로딩 실패:", e);
+          setUser({ name: "사용자", totalStar: 0 });
+          setMeetings([
+            { title: "신청한 모임", data: [] },
+            { title: "좋아한 모임", data: [] },
+            { title: "내가 만든 모임", data: [] },
+          ]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      load();
     }, [])
   );
-
   if (loading) {
     return (
       <LoadingContainer>
@@ -244,7 +235,16 @@ const MyPage = () => {
             </StarContainer>
           </UserRow>
         </UserInfo>
-        <TouchableOpacity onPress={() => navigation.navigate("프로필")}>
+        <TouchableOpacity
+          onPress={() => {
+            if (currentUser && currentUser.userId) {
+              navigation.navigate("프로필", { userId: currentUser.userId });
+            } else {
+              // fallback: 유저 ID 없이 기본 프로필 보여주기
+              navigation.navigate("프로필", { fallback: true });
+            }
+          }}
+        >
           <Feather name="chevron-right" size={24} color="#999" />
         </TouchableOpacity>
       </MyPageSection>
@@ -266,7 +266,12 @@ const MyPage = () => {
                 <MeetingItem
                   key={`${meeting.postId}-${meeting.title}`}
                   onPress={() => {
-                    const screen = currentUser && meeting.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+                    console.log("🆔 meeting.userId:", meeting.userId);
+                    console.log("🧑 currentUser.userId:", currentUser.userId);
+
+                    const isMine = String(meeting.userId) === String(currentUser.userId);
+                    const screen = isMine ? "MyPostDetail" : "PostDetail";
+
                     navigation.navigate(screen, meeting);
                   }}
                 >
