@@ -12,6 +12,11 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const clearTokens = async () => {
+    await EncryptedStorage.removeItem("accessToken");
+    await Keychain.resetGenericPassword();
+  };
+
   useEffect(() => {
     const restoreSession = async () => {
       console.log("🔄 앱 시작 - 세션 복원 시도 중...");
@@ -62,6 +67,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signout = async () => {
+    //await clearTokens(); // 토큰 삭제 안됐을때 살려서 실행
     try {
       const storedAccessToken = await EncryptedStorage.getItem("accessToken");
       const credentials = await Keychain.getGenericPassword();
