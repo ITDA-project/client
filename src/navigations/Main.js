@@ -73,6 +73,7 @@ const Main = () => {
       <Stack.Screen name="신청서 확인" component={Screens.ApplicationDecision} />
 
       <Stack.Screen name="리뷰 등록" component={Screens.ReviewForm} />
+      <Stack.Screen name="채팅방" component={Screens.Chat} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };
