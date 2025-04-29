@@ -5,7 +5,7 @@ import { Image, TouchableOpacity, View } from "react-native";
 import { ThemeContext } from "styled-components/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
-import { MainPage, Search, Chat, Notifications, MyPage } from "../screens";
+import { MainPage, Search, ChatList, Notifications, MyPage } from "../screens";
 import useRequireLogin from "../hooks/useRequireLogin";
 import homeIcon from "../../assets/icons/homeIcon.png";
 import searchIcon from "../../assets/icons/searchIcon.png";
@@ -77,8 +77,8 @@ const Home = () => {
           }}
         />
         <Tab.Screen
-          name="Chat"
-          component={Chat}
+          name="ChatList"
+          component={ChatList}
           options={{
             tabBarIcon: ({ focused }) => (
               <Image
