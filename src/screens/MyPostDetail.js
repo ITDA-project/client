@@ -190,10 +190,12 @@ const MyPostDetail = () => {
         content: data.content,
         location: data.location,
         memberMax: data.membersMax,
+        recruitmentStart: data.createdAt.split("T")[0].split("-").join("."),
         recruitmentEnd: data.dueDate,
         activityStart: data.activityStartDate,
         activityEnd: data.activityEndDate,
         deposit: data.warranty,
+        category: data.category,
         tags: [`#${data.category}`],
         likes: data.likesCount,
         likeId: data.likeId,
@@ -272,13 +274,16 @@ const MyPostDetail = () => {
 
   const handleEdit = () => {
     setMenuVisible(false);
+
+    const [city, district] = meeting.location.split(" ");
+
     navigation.navigate("모임수정", {
       postId: meeting.postId,
       title: meeting.title,
       description: meeting.content,
-      selectedCity: "서울", // 예시로 넣은 값
-      selectedDistrict: "종로구", // 예시로 넣은 값
-      category: "취미", // 실제로는 state나 API에서 받아야 함
+      selectedCity: city,
+      selectedDistrict: district,
+      category: meeting.category,
       maxParticipants: meeting.memberMax,
       deposit: meeting.deposit,
       tags: meeting.tags.join(" "),
@@ -289,27 +294,38 @@ const MyPostDetail = () => {
     });
   };
 
-  /*const deletePost = async (postId) => {
-  const response = await axios.delete(`https://your-api-url.com/posts/${postId}`);
-  return response.data;
-};*/
-
   const handleDelete = () => {
     setMenuVisible(false);
     Alert.alert("게시글 삭제", "정말 삭제하시겠습니까?", [
       { text: "취소", style: "cancel" },
-      { text: "삭제", onPress: () => console.log("게시글 삭제") },
-      /*async () => {
-        try {
-          await deletePost(postId); // 삭제 API 호출
-          Alert.alert("삭제 완료", "게시글이 삭제되었습니다.");
-          navigation.goBack(); // 이전 화면으로 이동 (또는 원하는 화면으로)
-        } catch (error) {
-          console.error("게시글 삭제 실패", error);
-          Alert.alert("삭제 실패", "게시글 삭제 중 오류가 발생했습니다.");
-        }
-      } 
-    },*/
+      {
+        text: "삭제",
+        onPress: async () => {
+          try {
+            const accessToken = await EncryptedStorage.getItem("accessToken");
+            if (!accessToken) {
+              Alert.alert("로그인 필요", "삭제를 위해 로그인해주세요.");
+              return;
+            }
+
+            const response = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}`, {
+              headers: {
+                access: `${accessToken}`,
+              },
+            });
+
+            if (response.status === 200) {
+              Alert.alert("삭제 완료", "게시글이 성공적으로 삭제되었습니다.");
+              navigation.navigate("Home", { screen: "MainPage" });
+            } else {
+              Alert.alert("삭제 실패", "서버 응답이 올바르지 않습니다.");
+            }
+          } catch (error) {
+            console.error("게시글 삭제 실패", error);
+            Alert.alert("삭제 실패", "게시글 삭제 중 오류가 발생했습니다.");
+          }
+        },
+      },
     ]);
   };
 

@@ -165,6 +165,7 @@ const PostDetail = () => {
         content: data.content,
         location: data.location,
         maxParticipants: data.membersMax,
+        recruitmentStart: data.createdAt.split("T")[0].split("-").join("."),
         recruitmentEnd: data.dueDate,
         activityStart: data.activityStartDate,
         activityEnd: data.activityEndDate,
