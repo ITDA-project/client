@@ -21,7 +21,7 @@ import ApplicationDecision from "./ApplicationDecision";
 import ApplicationForm from "./ApplicationForm";
 import DeleteAccount from "./DeleteAccount";
 import PublicProfile from "./PublicProfile";
-
+import ChatList from "./ChatList";
 
 export {
   AllPosts,
@@ -47,4 +47,5 @@ export {
   Signup,
   SignupDone,
   EditPost,
+  ChatList,
 };

@@ -364,6 +364,7 @@ const CreatePost = () => {
 
       const requestBody = {
         title,
+        category,
         content: description,
         category: categoryCodeMap[category],
         membersMax: Number(maxParticipants),
@@ -413,7 +414,8 @@ const CreatePost = () => {
       recruitmentStart &&
       recruitmentEnd &&
       activityStart &&
-      activityEnd
+      activityEnd &&
+      category
     );
   };
 
