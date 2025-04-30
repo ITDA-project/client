@@ -102,10 +102,11 @@ const Signin = ({ navigation }) => {
       });
 
       // 5. JWT 저장 (access token은 헤더, refresh token은 응답 데이터)
-      const accessToken = response.headers.authorization;
+      const accessToken = response.headers.access;
       const refreshToken = response.data.refresh_token;
 
-      console.log("백엔드 응답", response.data);
+      console.log("백엔드 access 응답:", accessToken);
+      console.log("백엔드 refresh 응답", response.data);
 
       if (accessToken) {
         await EncryptedStorage.setItem("accessToken", accessToken);

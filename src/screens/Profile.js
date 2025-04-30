@@ -276,13 +276,19 @@ const Profile = ({ navigation, route }) => {
         <Button
           title="로그아웃"
           onPress={async () => {
-            await signout();
-            navigation.replace("Home");
+            try {
+              await signout();
+              navigation.replace("Home"); // 성공했을 때만 이동
+            } catch (error) {
+              console.error("로그아웃 에러 발생, 페이지 이동 안 함:", error);
+              // 실패하면 아무것도 하지 않음
+            }
           }}
           containerStyle={{ height: 40, width: 95 }}
           textStyle={{ fontSize: 16, marginLeft: 0 }}
           style={{ height: 40, width: 95 }}
         />
+
         <Button
           title="회원탈퇴"
           onPress={() => navigation.navigate("회원탈퇴")}

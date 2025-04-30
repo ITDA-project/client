@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       console.log("로그아웃 완료");
     } catch (error) {
-      console.error("로그아웃 실패:", error);
+      throw error; // 추가: 실패하면 에러를 위로 던진다
     }
   };
 
