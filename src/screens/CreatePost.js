@@ -364,15 +364,15 @@ const CreatePost = () => {
 
       const requestBody = {
         title,
-        category,
         content: description,
         category: categoryCodeMap[category],
         membersMax: Number(maxParticipants),
         location: `${selectedCity} ${selectedDistrict}`,
         dueDate: recruitmentEnd.toISOString().split("T")[0],
-        warranty: deposit,
+        warranty: Number(deposit),
         activityStartDate: activityStart.toISOString().split("T")[0],
         activityEndDate: activityEnd.toISOString().split("T")[0],
+        tags: tags.trim().split(" "), // ✅ 필수 추가
       };
 
       console.log("📦 게시글 등록 요청:", requestBody);

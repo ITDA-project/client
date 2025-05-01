@@ -141,14 +141,18 @@ const MyPage = () => {
             headers: { access: token },
           });
 
+          console.log("userInfoRes:", userInfoRes.data);
+
           const userId = userInfoRes.data.data;
           setCurrentUser({ userId });
+          console.log("🧑 currentUser.userId:", userId);
 
           const profileRes = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
             headers: { access: token },
           });
 
           const resData = profileRes.data.data;
+          console.log("📜 마이페이지 정보:", resData);
 
           const formatDate = (isoDate) => {
             const date = new Date(isoDate);
