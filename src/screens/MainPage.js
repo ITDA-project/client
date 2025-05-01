@@ -21,7 +21,7 @@ const MainPage = () => {
   const [latestMeetings, setLatestMeetings] = useState([]);
   const [popularMeetings, setPopularMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const fetchUserInfo = async () => {
     try {
@@ -32,8 +32,7 @@ const MainPage = () => {
           access: `${token}`,
         },
       });
-
-      setCurrentUser(response.data);
+      setCurrentUserId(response.data.data);
     } catch (error) {
       console.error("유저 정보 가져오기 실패:", error);
     }
@@ -161,7 +160,9 @@ const MainPage = () => {
             key={item.postId}
             style={styles.listItem}
             onPress={() => {
-              const screen = currentUser && item.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+              console.log("📌 postId:", item.postId, "item.userId:", item.userId, "currentUserId:", currentUserId);
+
+              const screen = currentUserId && String(item.userId) === String(currentUserId) ? "MyPostDetail" : "PostDetail";
               navigation.navigate(screen, item);
             }}
           >

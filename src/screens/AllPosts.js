@@ -19,7 +19,7 @@ const AllPosts = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [cursor, setCursor] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const fetchUserInfo = async () => {
     try {
@@ -35,7 +35,7 @@ const AllPosts = ({ route }) => {
         }
       );
 
-      setCurrentUser(response.data);
+      setCurrentUserId(response.data.data);
     } catch (error) {
       console.error("유저 정보 가져오기 실패:", error);
     }
@@ -200,7 +200,11 @@ const AllPosts = ({ route }) => {
             <TouchableOpacity
               style={styles.postItem}
               onPress={() => {
-                const screen = item.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+                console.log("📌 postId:", item.postId, "item.userId:", item.userId, "currentUserId:", currentUserId);
+
+                const isMine = String(item.userId) === String(currentUserId);
+                const screen = isMine ? "MyPostDetail" : "PostDetail";
+
                 navigation.navigate(screen, item);
               }}
             >
