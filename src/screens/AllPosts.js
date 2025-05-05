@@ -1,6 +1,6 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
@@ -41,10 +41,6 @@ const AllPosts = ({ route }) => {
     }
   };
 
-  useEffect(() => {
-    fetchUserInfo();
-  }, []);
-
   const fetchMeetings = async (isInitial = false) => {
     if (loading || (!hasNextPage && !isInitial)) return;
     setLoading(true);
@@ -80,12 +76,15 @@ const AllPosts = ({ route }) => {
     }
   };
 
-  useEffect(() => {
-    setMeetings([]);
-    setCursor(null);
-    setHasNextPage(true);
-    fetchMeetings(true);
-  }, [selectedSort, category]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+      setMeetings([]);
+      setCursor(null);
+      setHasNextPage(true);
+      fetchMeetings(true);
+    }, [selectedSort, category])
+  );
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
