@@ -195,7 +195,7 @@ const Signin = ({ navigation }) => {
 
       console.log("백엔드 응답", response.data);
 
-      const accessToken = response.headers.authorization;
+      const accessToken = response.headers["access"];
       const refreshToken = response.data.refresh_token;
 
       if (accessToken) {
