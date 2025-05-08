@@ -141,7 +141,10 @@ const MyPage = () => {
             headers: { access: token },
           });
 
+          console.log("userInfoRes:", userInfoRes.data);
+
           const userId = userInfoRes.data.data;
+          console.log("🧑 currentUser.userId:", userId);
           setCurrentUserId({ userId });
 
           const profileRes = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
@@ -149,7 +152,8 @@ const MyPage = () => {
           });
 
           const resData = profileRes.data.data;
-          console.log("마이페이지 data: ", resData);
+          console.log("📜 마이페이지 정보:", resData);
+
           const formatDate = (isoDate) => {
             const date = new Date(isoDate);
             return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
