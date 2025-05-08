@@ -1,6 +1,6 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
@@ -19,7 +19,7 @@ const AllPosts = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [cursor, setCursor] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const fetchUserInfo = async () => {
     try {
@@ -35,15 +35,11 @@ const AllPosts = ({ route }) => {
         }
       );
 
-      setCurrentUser(response.data);
+      setCurrentUserId(response.data.data);
     } catch (error) {
       console.error("유저 정보 가져오기 실패:", error);
     }
   };
-
-  useEffect(() => {
-    fetchUserInfo();
-  }, []);
 
   const fetchMeetings = async (isInitial = false) => {
     if (loading || (!hasNextPage && !isInitial)) return;
@@ -80,12 +76,15 @@ const AllPosts = ({ route }) => {
     }
   };
 
-  useEffect(() => {
-    setMeetings([]);
-    setCursor(null);
-    setHasNextPage(true);
-    fetchMeetings(true);
-  }, [selectedSort, category]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+      setMeetings([]);
+      setCursor(null);
+      setHasNextPage(true);
+      fetchMeetings(true);
+    }, [selectedSort, category])
+  );
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
@@ -200,7 +199,11 @@ const AllPosts = ({ route }) => {
             <TouchableOpacity
               style={styles.postItem}
               onPress={() => {
-                const screen = item.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+                console.log("📌 postId:", item.postId, "item.userId:", item.userId, "currentUserId:", currentUserId);
+
+                const isMine = String(item.userId) === String(currentUserId);
+                const screen = isMine ? "MyPostDetail" : "PostDetail";
+
                 navigation.navigate(screen, item);
               }}
             >

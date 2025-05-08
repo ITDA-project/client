@@ -128,7 +128,7 @@ const MyPage = () => {
   const [user, setUser] = useState(null);
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -144,8 +144,8 @@ const MyPage = () => {
           console.log("userInfoRes:", userInfoRes.data);
 
           const userId = userInfoRes.data.data;
-          setCurrentUser({ userId });
           console.log("🧑 currentUser.userId:", userId);
+          setCurrentUserId({ userId });
 
           const profileRes = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
             headers: { access: token },
@@ -241,8 +241,8 @@ const MyPage = () => {
         </UserInfo>
         <TouchableOpacity
           onPress={() => {
-            if (currentUser && currentUser.userId) {
-              navigation.navigate("프로필", { userId: currentUser.userId });
+            if (currentUserId && currentUserId.userId) {
+              navigation.navigate("프로필", { userId: currentUserId.userId });
             } else {
               // fallback: 유저 ID 없이 기본 프로필 보여주기
               navigation.navigate("프로필", { fallback: true });
@@ -270,10 +270,9 @@ const MyPage = () => {
                 <MeetingItem
                   key={`${meeting.postId}-${meeting.title}`}
                   onPress={() => {
-                    console.log("🆔 meeting.userId:", meeting.userId);
-                    console.log("🧑 currentUser.userId:", currentUser.userId);
+                    console.log("🆔 meeting.userId:", meeting.userId, "🧑 currentUser.userId:", currentUserId.userId);
 
-                    const isMine = String(meeting.userId) === String(currentUser.userId);
+                    const isMine = String(meeting.userId) === String(currentUserId.userId);
                     const screen = isMine ? "MyPostDetail" : "PostDetail";
 
                     navigation.navigate(screen, meeting);
