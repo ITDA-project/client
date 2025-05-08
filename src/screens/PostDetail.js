@@ -327,7 +327,7 @@ const PostDetail = () => {
         </LikeButton>
         <Button
           title="신청하기"
-          onPress={() => checkLogin("신청서 작성")}
+          onPress={() => checkLogin("신청서 작성", { postId })}
           containerStyle={{ height: 50, width: 280 }}
           textStyle={{ marginLeft: 0 }}
           style={{ height: 50, width: 280 }}
