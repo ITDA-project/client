@@ -1,7 +1,10 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { Alert } from "react-native";
 import { Button } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -50,22 +53,61 @@ const ApplicationDecision = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
 
-  const { name, image } = route.params;
+  const { formId, postId } = route.params;
+
+  const [formData, setFormData] = useState(null);
+
+  const fetchForm = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      const response = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}/form/${formId}`, {
+        headers: { access: token },
+      });
+
+      setFormData(response.data.data); // content, userName, userImage
+    } catch (e) {
+      console.error("신청폼 조회 실패", e);
+      Alert.alert("신청서를 불러오는 데 실패했습니다.");
+    }
+  };
+  const updateFormStatus = async (status) => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+
+      await axios.patch(
+        `http://10.0.2.2:8080/api/posts/${postId}/form/${formId}/status/${status}`,
+        {},
+        {
+          headers: { access: token },
+        }
+      );
+
+      Alert.alert(`신청서가 ${status === "accept" ? "수락" : "거절"}되었습니다.`);
+      navigation.goBack(); // 목록으로 이동
+    } catch (e) {
+      console.error(`신청서 ${status} 실패`, e);
+      Alert.alert("처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  useEffect(() => {
+    fetchForm();
+  }, []);
+  if (!formData) return null; // 혹은 로딩 인디케이터
 
   return (
     <Container insets={insets}>
       <ProfileContainer>
-        <ProfileImage source={image} />
-        <NameText>{name}</NameText>
+        <ProfileImage source={{ uri: formData.userImage || "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+        <NameText>{formData.userName}</NameText>
       </ProfileContainer>
-      <Form>
-        안녕하세요 저는 {name}입니다.{"\n"}쉬는 날 뜨개질을 하며 쉬는 게 취미인데{"\n"}다른 분들과 함께 공유하며 하고 싶어서{"\n"}신청했어요!
-      </Form>
+
+      <Form>{formData.content}</Form>
 
       <ButtonContainer>
         <Button
           title="수락"
-          onPress={() => console.log("수락")}
+          onPress={() => updateFormStatus("accept")}
           containerStyle={{
             width: 82,
             height: 35,
@@ -79,7 +121,7 @@ const ApplicationDecision = ({ route, navigation }) => {
         />
         <Button
           title="거절"
-          onPress={() => console.log("거절")}
+          onPress={() => updateFormStatus("refuse")}
           containerStyle={{
             width: 82,
             height: 35,
