@@ -193,7 +193,7 @@ const MyPostDetail = () => {
         content: data.content,
         location: data.location,
         memberMax: data.membersMax,
-        recruitmentStart: data.createdAt.split("T")[0].split("-").join("."),
+        recruitmentStart: data.createdAt.split("T")[0].split("-").join("-"),
         recruitmentEnd: data.dueDate,
         activityStart: data.activityStartDate,
         activityEnd: data.activityEndDate,
@@ -427,7 +427,12 @@ const MyPostDetail = () => {
           </LikeButton>
           <Button
             title="신청 목록 확인"
-            onPress={() => checkLogin("신청서 목록")}
+            onPress={async () => {
+              const isLoggedIn = await checkLogin();
+              if (isLoggedIn) {
+                navigation.navigate("신청서 목록", { postId });
+              }
+            }}
             containerStyle={{ height: 50, width: 280 }}
             textStyle={{ marginLeft: 0 }}
             style={{ height: 50, width: 280 }}

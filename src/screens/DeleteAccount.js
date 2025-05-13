@@ -67,23 +67,21 @@ const DeleteAccount = ({ navigation }) => {
             refresh_token: refreshToken,
           },
         });
+
+        // 로컬 토큰 제거
+        await EncryptedStorage.removeItem("accessToken");
+        await Keychain.resetGenericPassword();
+        setAccessToken(null);
+        setUser(null);
+
+        Alert.alert("탈퇴 완료", "회원 탈퇴가 완료되었습니다.");
+        navigation.reset({ index: 0, routes: [{ name: "Home" }] }); // 또는 로그인 화면 등으로 이동
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.log("❌ 응답 코드:", error.response?.status);
-          console.log("❌ 응답 메시지:", error.response?.data); // 여기에 에러 메시지 나올 수 있음
+          console.log("❌ 탈퇴 실패. 응답 코드:", error.response?.status);
         }
       }
-
-      // 로컬 토큰 제거
-      await EncryptedStorage.removeItem("accessToken");
-      await Keychain.resetGenericPassword();
-      setAccessToken(null);
-      setUser(null);
-
-      Alert.alert("탈퇴 완료", "회원 탈퇴가 완료되었습니다.");
-      navigation.reset({ index: 0, routes: [{ name: "Home" }] }); // 또는 로그인 화면 등으로 이동
     } catch (error) {
-      console.error("회원 탈퇴 실패:", error);
       Alert.alert("탈퇴 실패", "알 수 없는 오류가 발생했습니다.");
     }
   };
