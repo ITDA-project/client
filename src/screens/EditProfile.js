@@ -102,15 +102,30 @@ const EditProfile = ({ navigation, route }) => {
 
   // 사진 선택 함수
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.IMAGE,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    console.log("갤러리 권한 상태:", status);
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+    if (status !== "granted") {
+      Alert.alert("권한 필요", "갤러리 접근 권한이 필요합니다.");
+      return;
+    }
+
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: "Images",
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      console.log("📦 이미지 선택 결과:", result);
+
+      if (!result.canceled && result.assets?.length > 0) {
+        console.log("✅ 이미지 선택 성공:", result.assets[0].uri);
+        setImage(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.error("❌ 이미지 선택 중 오류:", e);
     }
   };
 
