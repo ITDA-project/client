@@ -428,7 +428,7 @@ const MyPostDetail = () => {
           <Button
             title="신청 목록 확인"
             onPress={async () => {
-              const isLoggedIn = await checkLogin();
+              const isLoggedIn = await checkLogin("신청서 목록", { postId });
               if (isLoggedIn) {
                 navigation.navigate("신청서 목록", { postId });
               }

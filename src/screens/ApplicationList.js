@@ -35,7 +35,7 @@ const ProfileImage = styled.Image`
   width: 40px;
   height: 40px;
   border-radius: 20px;
-  margin-right: 10px;
+  margin-right: 20px;
 `;
 const NameText = styled.Text`
   flex: 1;
@@ -57,6 +57,7 @@ const ApplicationList = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("postId:", postId);
     const fetchApplications = async () => {
       try {
         const accessToken = await EncryptedStorage.getItem("accessToken");
@@ -70,9 +71,10 @@ const ApplicationList = ({ navigation }) => {
           headers: { access: accessToken },
         });
 
-        const { dtoList } = response.data.data;
+        const formList = response.data.data.forms;
+        console.log("신청서 목록: ", formList);
 
-        setApplications(dtoList);
+        setApplications(formList);
       } catch (error) {
         console.error("신청서 불러오기 실패: ", error);
         Alert.alert("신청서를 불러오는 데 실패했습니다.");
@@ -85,8 +87,17 @@ const ApplicationList = ({ navigation }) => {
   }, []);
 
   const renderItem = ({ item }) => (
-    <ListItem onPress={() => navigation.navigate("신청서 확인", { formId: item.formId })}>
-      <ProfileImage source={{ uri: item.userImage || "https://via.placeholder.com/40" }} />
+    <ListItem
+      onPress={() =>
+        navigation.navigate("신청서 확인", {
+          postId,
+          formId: item.formId,
+          name: item.userName,
+          image: { uri: item.userImage || "https://ssl.pstatic.net/static/pwe/address/img_profile.png" },
+        })
+      }
+    >
+      <ProfileImage source={{ uri: item.userImage || "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
       <NameText>{item.userName}</NameText>
       <AntDesign name="right" size={20} style={{ color: theme.colors.grey }} />
     </ListItem>
@@ -95,8 +106,13 @@ const ApplicationList = ({ navigation }) => {
   // 타이틀 나중에 수정
   return (
     <Container insets={insets}>
-      <Title>함께 뜨개질해요!</Title>
-      <StyledFlatList data={applications} keyExtractor={(item) => item.id.toString()} renderItem={renderItem} />
+      {loading ? (
+        <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 20 }} />
+      ) : applications.length === 0 ? (
+        <NameText style={{ alignSelf: "center", marginTop: 350 }}>신청서가 없습니다.</NameText>
+      ) : (
+        <StyledFlatList data={applications} keyExtractor={(item) => item.formId.toString()} renderItem={renderItem} />
+      )}
     </Container>
   );
 };
