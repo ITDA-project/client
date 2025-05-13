@@ -1,5 +1,5 @@
-import React, { useState, useContext } from "react";
-import { View, TextInput, FlatList, KeyboardAvoidingView, Platform, Modal, TouchableOpacity } from "react-native";
+import React, { useState, useContext, useEffect } from "react";
+import { View, Text, FlatList, KeyboardAvoidingView, Platform, Modal } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import styled from "styled-components/native";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
@@ -34,6 +34,14 @@ const Chat = () => {
   ]);
   const [input, setInput] = useState("");
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
+  const [participantStatus, setParticipantStatus] = useState({});
+  const [meetingActive, setMeetingActive] = useState(false);
+
+  useEffect(() => {
+    // 기본값에서 모임 시작 버튼 보이도록 보장
+    setMeetingActive(false);
+    setParticipantStatus({});
+  }, []);
 
   const sendMessage = () => {
     if (input.trim()) {
@@ -46,6 +54,27 @@ const Chat = () => {
       setMessages([...messages, newMessage]);
       setInput("");
     }
+  };
+
+  const handleStartMeeting = () => {
+    console.log("결제 요청 전송됨"); //결제 페이지 이동
+    const updatedStatus = {};
+    participants.forEach((name) => {
+      updatedStatus[name] = "불참";
+    });
+    setParticipantStatus(updatedStatus);
+    setMeetingActive(true);
+  };
+
+  const handlePaymentSuccess = (name) => {
+    if (meetingActive) {
+      setParticipantStatus((prev) => ({ ...prev, [name]: "참여" }));
+    }
+  }; //결제 완료 후 호출
+
+  const handleEndMeeting = () => {
+    setMeetingActive(false);
+    setParticipantStatus({});
   };
 
   const renderItem = ({ item, index }) => {
@@ -127,26 +156,40 @@ const Chat = () => {
                     <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
                   )}
                   <ParticipantItem>{name}</ParticipantItem>
+
+                  {meetingActive && participantStatus[name] && (
+                    <StatusBadge>
+                      <StatusDot>
+                        <Text style={{ color: "#FFD000" }}>{participantStatus[name] === "참여" ? "●" : "○"}</Text>
+                      </StatusDot>
+                      <StatusText>{participantStatus[name]}</StatusText>
+                    </StatusBadge>
+                  )}
                 </ParticipantRow>
               ))}
             </ParticipantList>
 
-            <ButtonContainer>
-              <Button
-                title="모임시작"
-                onPress={() => console.log("모임시작")}
-                containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
-                textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
-                style={{ height: 40, width: 95 }}
-              />
-              <Button
-                title="모임종료"
-                onPress={() => console.log("모임종료")}
-                containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
-                textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
-                style={{ height: 40, width: 95 }}
-              />
-            </ButtonContainer>
+            {meetingActive ? (
+              <ButtonContainer>
+                <Button
+                  title="모임종료"
+                  onPress={handleEndMeeting}
+                  containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
+                  textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
+                  style={{ height: 40, width: 95 }}
+                />
+              </ButtonContainer>
+            ) : (
+              <ButtonContainer>
+                <Button
+                  title="모임시작"
+                  onPress={handleStartMeeting}
+                  containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
+                  textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
+                  style={{ height: 40, width: 95 }}
+                />
+              </ButtonContainer>
+            )}
           </SideMenuContainer>
         </Overlay>
       </Modal>
@@ -315,4 +358,24 @@ const Overlay = styled.View`
   background-color: rgba(0, 0, 0, 0.3); /* 검은색 + 30% 투명도 */
   flex-direction: row;
   justify-content: flex-end;
+`;
+
+const StatusBadge = styled.View`
+  flex-direction: row;
+  align-items: center;
+  background-color: ${({ theme }) => theme.colors.lightBlue};
+  padding: 0.5px 7px;
+  border-radius: 12px;
+  margin-left: 10px;
+`;
+
+const StatusDot = styled.View`
+  margin-right: 3px;
+  margin-bottom: 2px;
+`;
+
+const StatusText = styled.Text`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.black};
+  font-family: ${({ theme }) => theme.fonts.regular};
 `;
