@@ -1,51 +1,9 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import styled from "styled-components/native";
 import { Feather } from "@expo/vector-icons";
+import theme from "../theme";
 
-const Container = styled.View`
-  flex: 1;
-  background-color: white;
-  padding: 5px;
-`;
-
-const Header = styled.Text`
-  font-size: 18px;
-  text-align: center;
-  font-family: ${({ theme }) => theme.fonts.extraBold};
-  padding: 5px;
-  margin-top: 40px;
-  margin-bottom: 10px;
-`;
-
-const NotificationItem = styled.TouchableOpacity`
-  padding: 15px;
-  border-bottom-width: 1px;
-  border-bottom-color: #eee;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const MessageBox = styled.View`
-  flex: 1;
-`;
-
-const PostTitle = styled.Text`
-  font-size: 16px;
-  font-family: ${({ theme }) => theme.fonts.bold};
-
-  margin-bottom: 5px;
-`;
-
-const MessageText = styled.Text`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.grey};
-  font-family: ${({ theme }) => theme.fonts.regular};
-`;
-
-// 알림 더미 데이터
 const notifications = [
   {
     id: 1,
@@ -65,13 +23,26 @@ const notifications = [
     message: "결제가 완료되었어요! 모임을 즐길 준비가 되었어요.",
     postTitle: "일본어 스터디",
   },
+  {
+    id: 4,
+    type: "payment_required",
+    message: "새로운 결제 요청이 있어요! 참여하시겠어요?",
+    postTitle: "일본어 스터디",
+  },
 ];
 
-const NotificationScreen = () => {
+const Notification = () => {
   const navigation = useNavigation();
 
-  const handlePress = (type) => {
-    switch (type) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalData, setModalData] = useState({
+    title: "",
+    date: "",
+    amount: 0,
+  });
+
+  const handlePress = (item) => {
+    switch (item.type) {
       case "application":
         navigation.navigate("신청서 목록");
         break;
@@ -79,37 +50,168 @@ const NotificationScreen = () => {
         navigation.navigate("전체글");
         break;
       case "payment_complete":
-        console.log("결제완료!");
-        //navigation.navigate("MyPostDetail");
+        console.log("결제 완료!");
         break;
       case "payment_required":
-        console.log("결제요청! 결제페이지로 이동");
-        //navigation.navigate("PaymentScreen");
+        setModalData({
+          title: item.postTitle,
+          date: "2025/05/26", // 예시 값
+          amount: 10000, // 예시 값
+        });
+        setModalVisible(true);
         break;
       default:
-        console.warn("Unknown type:", type);
+        console.warn("Unknown type:", item.type);
         break;
     }
   };
 
   return (
-    <Container>
-      <Header>알림</Header>
+    <View style={styles.container}>
+      <Text style={styles.header}>알림</Text>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <NotificationItem onPress={() => handlePress(item.type)}>
-            <MessageBox>
-              <PostTitle>{item.postTitle}</PostTitle>
-              <MessageText>{item.message}</MessageText>
-            </MessageBox>
+          <TouchableOpacity style={styles.notificationItem} onPress={() => handlePress(item)}>
+            <View style={styles.messageBox}>
+              <Text style={styles.postTitle}>{item.postTitle}</Text>
+              <Text style={styles.messageText}>{item.message}</Text>
+            </View>
             <Feather name="chevron-right" size={20} color="#999" />
-          </NotificationItem>
+          </TouchableOpacity>
         )}
       />
-    </Container>
+
+      {/* 결제 요청 모달 */}
+      <Modal transparent animationType="fade" visible={modalVisible}>
+        <View style={styles.overlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.title}>{modalData.title}</Text>
+            <Text style={styles.date}>{modalData.date}</Text>
+            <Text style={styles.amount}>{modalData.amount.toLocaleString()}원</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => {
+                  setModalVisible(false);
+                  // 수락 처리 로직
+                }}
+              >
+                <Text style={styles.confirmText}>수락</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  setModalVisible(false);
+                  // 거절 처리 로직
+                }}
+              >
+                <Text style={styles.cancelText}>거절</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 };
 
-export default NotificationScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 5,
+  },
+  header: {
+    fontSize: 18,
+    textAlign: "center",
+    fontFamily: theme.fonts.extraBold,
+    padding: 5,
+    marginTop: 40,
+    marginBottom: 10,
+  },
+  notificationItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  messageBox: {
+    flex: 1,
+  },
+  postTitle: {
+    fontSize: 16,
+    fontFamily: theme.fonts.bold,
+    marginBottom: 5,
+  },
+  messageText: {
+    fontSize: 14,
+    color: theme.colors.grey,
+    fontFamily: theme.fonts.regular,
+  },
+  // 모달 관련
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalBox: {
+    width: 300,
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  title: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  date: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 14,
+    color: "gray",
+    marginBottom: 6,
+  },
+  amount: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 15,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+  },
+  confirmButton: {
+    width: "30%",
+    backgroundColor: theme.colors.mainBlue,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginRight: 25,
+  },
+  cancelButton: {
+    width: "30%",
+    backgroundColor: "#e6f0fa",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginLeft: 25,
+  },
+  confirmText: {
+    fontFamily: theme.fonts.bold,
+    color: "white",
+  },
+  cancelText: {
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.mainBlue,
+  },
+});
+
+export default Notification;
