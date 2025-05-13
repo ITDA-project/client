@@ -95,7 +95,7 @@ const Notification = () => {
                 style={styles.confirmButton}
                 onPress={() => {
                   setModalVisible(false);
-                  //결제페이지로 이동
+                  // 수락 처리 로직
                 }}
               >
                 <Text style={styles.confirmText}>수락</Text>
