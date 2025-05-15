@@ -13,7 +13,7 @@ const PaymentScreen = ({ route }) => {
       <script>
         document.addEventListener("DOMContentLoaded", function () {
           var IMP = window.IMP;
-          IMP.init("imp57080566");
+          IMP.init("imp35072674");
 
           IMP.request_pay({
             pg: "${pg}",
