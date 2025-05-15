@@ -22,6 +22,7 @@ import ApplicationForm from "./ApplicationForm";
 import DeleteAccount from "./DeleteAccount";
 import PublicProfile from "./PublicProfile";
 import ChatList from "./ChatList";
+import PaymentScreen from "./PaymentScreen";
 
 export {
   AllPosts,
@@ -48,4 +49,5 @@ export {
   SignupDone,
   EditPost,
   ChatList,
+  PaymentScreen,
 };
