@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import theme from "../theme";
@@ -33,13 +33,8 @@ const notifications = [
 
 const Notification = () => {
   const navigation = useNavigation();
-
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalData, setModalData] = useState({
-    title: "",
-    date: "",
-    amount: 0,
-  });
+  const [modalData, setModalData] = useState({ title: "", date: "", amount: 0 });
 
   const handlePress = (item) => {
     switch (item.type) {
@@ -53,11 +48,7 @@ const Notification = () => {
         console.log("결제 완료!");
         break;
       case "payment_required":
-        setModalData({
-          title: item.postTitle,
-          date: "2025/05/26", // 예시 값
-          amount: 10000, // 예시 값
-        });
+        setModalData({ title: item.postTitle, date: "2025/05/26", amount: 10000 });
         setModalVisible(true);
         break;
       default:
@@ -83,7 +74,7 @@ const Notification = () => {
         )}
       />
 
-      {/* 결제 요청 모달 */}
+      {/* 결제 정보 확인 모달 */}
       <Modal transparent animationType="fade" visible={modalVisible}>
         <View style={styles.overlay}>
           <View style={styles.modalBox}>
@@ -95,18 +86,16 @@ const Notification = () => {
                 style={styles.confirmButton}
                 onPress={() => {
                   setModalVisible(false);
-                  // 수락 처리 로직
+                  navigation.navigate("결제", {
+                    pg: "html5_inicis",
+                    amount: modalData.amount,
+                    title: modalData.title,
+                  });
                 }}
               >
                 <Text style={styles.confirmText}>수락</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => {
-                  setModalVisible(false);
-                  // 거절 처리 로직
-                }}
-              >
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
                 <Text style={styles.cancelText}>거절</Text>
               </TouchableOpacity>
             </View>
@@ -118,11 +107,7 @@ const Notification = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-    padding: 5,
-  },
+  container: { flex: 1, backgroundColor: "white", padding: 5 },
   header: {
     fontSize: 18,
     textAlign: "center",
@@ -139,9 +124,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  messageBox: {
-    flex: 1,
-  },
+  messageBox: { flex: 1 },
   postTitle: {
     fontSize: 16,
     fontFamily: theme.fonts.bold,
@@ -152,7 +135,6 @@ const styles = StyleSheet.create({
     color: theme.colors.grey,
     fontFamily: theme.fonts.regular,
   },
-  // 모달 관련
   overlay: {
     flex: 1,
     justifyContent: "center",
@@ -170,6 +152,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bold,
     fontSize: 16,
     marginBottom: 6,
+    textAlign: "center",
   },
   date: {
     fontFamily: theme.fonts.regular,
@@ -189,20 +172,20 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   confirmButton: {
-    width: "30%",
+    width: "40%",
     backgroundColor: theme.colors.mainBlue,
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
-    marginRight: 25,
+    margin: 5,
   },
   cancelButton: {
-    width: "30%",
+    width: "40%",
     backgroundColor: "#e6f0fa",
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
-    marginLeft: 25,
+    margin: 5,
   },
   confirmText: {
     fontFamily: theme.fonts.bold,

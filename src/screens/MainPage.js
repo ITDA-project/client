@@ -34,7 +34,7 @@ const MainPage = () => {
       });
       setCurrentUserId(response.data.data);
     } catch (error) {
-      console.error("유저 정보 가져오기 실패:", error);
+      console.log("유저 정보 가져오기 실패:", error);
     }
   };
 
