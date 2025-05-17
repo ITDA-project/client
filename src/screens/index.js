@@ -23,6 +23,7 @@ import DeleteAccount from "./DeleteAccount";
 import PublicProfile from "./PublicProfile";
 import ChatList from "./ChatList";
 import PaymentScreen from "./PaymentScreen";
+import CheckParticipants from "./CheckParticipants";
 
 export {
   AllPosts,
@@ -50,4 +51,5 @@ export {
   EditPost,
   ChatList,
   PaymentScreen,
+  CheckParticipants,
 };

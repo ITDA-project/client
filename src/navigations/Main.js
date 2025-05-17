@@ -75,6 +75,7 @@ const Main = () => {
       <Stack.Screen name="리뷰 등록" component={Screens.ReviewForm} />
       <Stack.Screen name="채팅방" component={Screens.Chat} options={{ headerShown: false }} />
       <Stack.Screen name="결제" component={Screens.PaymentScreen} />
+      <Stack.Screen name="참여확인" component={Screens.CheckParticipants} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };
