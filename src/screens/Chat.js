@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { View, Text, FlatList, KeyboardAvoidingView, Platform, Modal } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import styled from "styled-components/native";
-import { MaterialIcons, Feather } from "@expo/vector-icons";
+import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button } from "../components";
 import { ThemeContext } from "styled-components/native";
 
@@ -75,6 +75,8 @@ const Chat = () => {
   const handleEndMeeting = () => {
     setMeetingActive(false);
     setParticipantStatus({});
+    //navigation.navigaate("모임참가자 확인 페이지");
+    //console.log("모임 참가자 확인 페이지에서 참가한 사람들");
   };
 
   const renderItem = ({ item, index }) => {
@@ -147,30 +149,32 @@ const Chat = () => {
             </HeaderButton>
 
             <SideMenuTitle>참가 중인 사람</SideMenuTitle>
-            <ParticipantList>
-              {participants?.map((name, i) => (
-                <ParticipantRow key={i}>
-                  {participantImages[name] ? (
-                    <ParticipantImage source={{ uri: participantImages[name] }} />
-                  ) : (
-                    <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
-                  )}
-                  <ParticipantItem>{name}</ParticipantItem>
+            <ParticipantListContainer>
+              <ParticipantList>
+                {participants?.map((name, i) => (
+                  <ParticipantRow key={i}>
+                    {participantImages[name] ? (
+                      <ParticipantImage source={{ uri: participantImages[name] }} />
+                    ) : (
+                      <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
+                    )}
+                    <ParticipantItem>{name}</ParticipantItem>
 
-                  {meetingActive && participantStatus[name] && (
-                    <StatusBadge>
-                      <StatusDot>
-                        <Text style={{ color: "#FFD000" }}>{participantStatus[name] === "참여" ? "●" : "○"}</Text>
-                      </StatusDot>
-                      <StatusText>{participantStatus[name]}</StatusText>
-                    </StatusBadge>
-                  )}
-                </ParticipantRow>
-              ))}
-            </ParticipantList>
+                    {meetingActive && participantStatus[name] && (
+                      <StatusBadge>
+                        <StatusDot>
+                          <Text style={{ color: "#FFD000" }}>{participantStatus[name] === "참여" ? "●" : "○"}</Text>
+                        </StatusDot>
+                        <StatusText>{participantStatus[name]}</StatusText>
+                      </StatusBadge>
+                    )}
+                  </ParticipantRow>
+                ))}
+              </ParticipantList>
+            </ParticipantListContainer>
 
-            {meetingActive ? (
-              <ButtonContainer>
+            <ButtonContainer>
+              {meetingActive ? (
                 <Button
                   title="모임종료"
                   onPress={handleEndMeeting}
@@ -178,9 +182,7 @@ const Chat = () => {
                   textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
                   style={{ height: 40, width: 95 }}
                 />
-              </ButtonContainer>
-            ) : (
-              <ButtonContainer>
+              ) : (
                 <Button
                   title="모임시작"
                   onPress={handleStartMeeting}
@@ -188,8 +190,11 @@ const Chat = () => {
                   textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
                   style={{ height: 40, width: 95 }}
                 />
-              </ButtonContainer>
-            )}
+              )}
+            </ButtonContainer>
+            <HeaderButton style={{ alignSelf: "flex-end", position: "absolute", bottom: 20, right: 20 }} onPress={() => console.log("채팅방 나가기")}>
+              <Ionicons name="exit-outline" size={28} color="#FF2E2E" />
+            </HeaderButton>
           </SideMenuContainer>
         </Overlay>
       </Modal>
@@ -214,7 +219,9 @@ const ChatTitleCentered = styled.Text`
   font-family: ${({ theme }) => theme.fonts.extraBold};
 `;
 
-const HeaderButton = styled.TouchableOpacity``;
+const HeaderButton = styled.TouchableOpacity.attrs((props) => ({
+  style: props.style,
+}))``;
 
 const ChatArea = styled.View`
   flex: 1;
@@ -305,7 +312,7 @@ const SendButton = styled.TouchableOpacity`
 `;
 
 const SideMenuContainer = styled.View`
-  position: absolute;
+  position: relative;
   right: 0;
   top: 0;
   width: 50%;
@@ -324,10 +331,13 @@ const SideMenuTitle = styled.Text`
   font-family: ${({ theme }) => theme.fonts.extraBold};
 `;
 
-const ParticipantList = styled.ScrollView`
+const ParticipantListContainer = styled.View`
+  max-height: 300px;
   margin-top: 20px;
-  flex: 1;
+  margin-bottom: 20px;
 `;
+
+const ParticipantList = styled.ScrollView``;
 
 const ParticipantRow = styled.View`
   flex-direction: row;
@@ -348,8 +358,6 @@ const ParticipantItem = styled.Text`
 `;
 
 const ButtonContainer = styled.View`
-  flex-direction: column;
-  justify-content: space-between;
   padding-bottom: 20px;
 `;
 
