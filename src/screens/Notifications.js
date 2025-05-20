@@ -48,7 +48,7 @@ const Notification = () => {
         console.log("결제 완료!");
         break;
       case "payment_required":
-        setModalData({ title: item.postTitle, date: "2025/05/26", amount: 10000 });
+        setModalData({ title: item.postTitle, date: "2025/05/26", amount: 1 });
         setModalVisible(true);
         break;
       default:
@@ -87,7 +87,6 @@ const Notification = () => {
                 onPress={() => {
                   setModalVisible(false);
                   navigation.navigate("결제", {
-                    pg: "html5_inicis",
                     amount: modalData.amount,
                     title: modalData.title,
                   });
