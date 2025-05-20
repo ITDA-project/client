@@ -68,17 +68,39 @@ const EmptyText = styled.Text`
 const chatRooms = [
   {
     id: "1",
+    postId: "101", // 게시글 ID 추가
+    writerId: "user123", // 게시글 작성자 ID 추가
     title: "함께 뜨개질해요!",
     lastMessage: "오늘 정말 재밌었어요!",
     time: "17:25",
-    participants: ["신짱구", "김철수", "이훈이"],
+    participants: [
+      {
+        name: "신짱구",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQAdcZk8Uxff8hva1DX0f78gtUgkGuLDjlyUCBFbD-S7EEQx2DAQ&s=10&ec=72940544",
+        status: "참여",
+      },
+      {
+        name: "김철수",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJyyKfN-ICpUK3cQfrRkLvbF2yKXebXx6RqwLuhMlTiy8qtmF_rw&s=10&ec=72940544",
+        status: "참여",
+      },
+      { name: "이훈이", image: null, status: null },
+      { name: "이훈삼", image: null, status: null },
+      { name: "이훈사", image: null, status: null },
+      { name: "이훈오", image: null, status: null },
+    ],
   },
   {
     id: "2",
+    postId: "102",
+    writerId: "user456",
     title: "볼링 모임",
     lastMessage: "알겠습니다~",
     time: "11:53",
-    participants: ["최지훈", "박영희", "홍길동"],
+    participants: [
+      { name: "홍길동", image: null, status: null },
+      { name: "최지훈", image: null, status: "참여" },
+    ],
   },
 ];
 
@@ -89,9 +111,10 @@ const ChatList = () => {
     <ChatItem
       onPress={() =>
         navigation.navigate("채팅방", {
-          roomId: item.id,
           title: item.title,
           participants: item.participants,
+          postId: item.postId,
+          writerId: item.writerId,
         })
       }
     >
