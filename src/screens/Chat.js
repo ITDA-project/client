@@ -10,11 +10,8 @@ const Chat = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { title, participants } = route.params;
-  const participantImages = {
-    신짱구: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQAdcZk8Uxff8hva1DX0f78gtUgkGuLDjlyUCBFbD-S7EEQx2DAQ&s=10&ec=72940544",
-    김철수: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJyyKfN-ICpUK3cQfrRkLvbF2yKXebXx6RqwLuhMlTiy8qtmF_rw&s=10&ec=72940544",
-  };
+  const { title, participants, writerId } = route.params;
+  const [currentUserId, setCurrentUserId] = useState(null); //현재 사용자의 ID
   const [messages, setMessages] = useState([
     {
       id: "1",
@@ -38,7 +35,7 @@ const Chat = () => {
   const [meetingActive, setMeetingActive] = useState(false);
 
   useEffect(() => {
-    // 기본값에서 모임 시작 버튼 보이도록 보장
+    setCurrentUserId("user123"); //임시 currentUserId 백 연결 시 대체
     setMeetingActive(false);
     setParticipantStatus({});
   }, []);
@@ -57,10 +54,10 @@ const Chat = () => {
   };
 
   const handleStartMeeting = () => {
-    console.log("결제 요청 전송됨"); //결제 페이지 이동
+    //결제페이지 코드 추가
     const updatedStatus = {};
-    participants.forEach((name) => {
-      updatedStatus[name] = "불참";
+    participants.forEach((p) => {
+      updatedStatus[p.name] = p.status ?? "불참";
     });
     setParticipantStatus(updatedStatus);
     setMeetingActive(true);
@@ -75,7 +72,14 @@ const Chat = () => {
   const handleEndMeeting = () => {
     setMeetingActive(false);
     setParticipantStatus({});
-    //navigation.navigaate("모임참가자 확인 페이지");
+
+    const participantStatus = {};
+    participants.forEach((p) => {
+      if (p.status) {
+        participantStatus[p.name] = p.status;
+      }
+    });
+    navigation.navigate("참여확인", { participants, participantStatus });
     //console.log("모임 참가자 확인 페이지에서 참가한 사람들");
   };
 
@@ -151,21 +155,17 @@ const Chat = () => {
             <SideMenuTitle>참가 중인 사람</SideMenuTitle>
             <ParticipantListContainer>
               <ParticipantList>
-                {participants?.map((name, i) => (
+                {participants?.map((p, i) => (
                   <ParticipantRow key={i}>
-                    {participantImages[name] ? (
-                      <ParticipantImage source={{ uri: participantImages[name] }} />
-                    ) : (
-                      <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
-                    )}
-                    <ParticipantItem>{name}</ParticipantItem>
+                    {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
+                    <ParticipantItem>{p.name}</ParticipantItem>
 
-                    {meetingActive && participantStatus[name] && (
+                    {meetingActive && participantStatus[p.name] && (
                       <StatusBadge>
                         <StatusDot>
-                          <Text style={{ color: "#FFD000" }}>{participantStatus[name] === "참여" ? "●" : "○"}</Text>
+                          <Text style={{ color: "#FFD000" }}>{participantStatus[p.name] === "참여" ? "●" : "○"}</Text>
                         </StatusDot>
-                        <StatusText>{participantStatus[name]}</StatusText>
+                        <StatusText>{participantStatus[p.name]}</StatusText>
                       </StatusBadge>
                     )}
                   </ParticipantRow>
@@ -173,25 +173,28 @@ const Chat = () => {
               </ParticipantList>
             </ParticipantListContainer>
 
-            <ButtonContainer>
-              {meetingActive ? (
-                <Button
-                  title="모임종료"
-                  onPress={handleEndMeeting}
-                  containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
-                  textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
-                  style={{ height: 40, width: 95 }}
-                />
-              ) : (
-                <Button
-                  title="모임시작"
-                  onPress={handleStartMeeting}
-                  containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
-                  textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
-                  style={{ height: 40, width: 95 }}
-                />
-              )}
-            </ButtonContainer>
+            {writerId === currentUserId && (
+              <ButtonContainer>
+                {meetingActive ? (
+                  <Button
+                    title="모임종료"
+                    onPress={handleEndMeeting}
+                    containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
+                    textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
+                    style={{ height: 40, width: 95 }}
+                  />
+                ) : (
+                  <Button
+                    title="모임시작"
+                    onPress={handleStartMeeting}
+                    containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
+                    textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
+                    style={{ height: 40, width: 95 }}
+                  />
+                )}
+              </ButtonContainer>
+            )}
+
             <HeaderButton style={{ alignSelf: "flex-end", position: "absolute", bottom: 20, right: 20 }} onPress={() => console.log("채팅방 나가기")}>
               <Ionicons name="exit-outline" size={28} color="#FF2E2E" />
             </HeaderButton>
