@@ -24,7 +24,7 @@ const Title = styled.Text`
   font-family: ${({ theme }) => theme.fonts.extraBold};
   margin-top: 10px;
 `;
-const Date = styled.Text`
+const DateText = styled.Text`
   color: ${({ theme }) => theme.colors.grey};
   font-size: 14px;
   font-family: ${({ theme }) => theme.fonts.regular};
@@ -247,6 +247,8 @@ const PostDetail = () => {
   if (!meeting || !user) {
     return <Text>불러오는 중...</Text>; // 또는 ActivityIndicator
   }
+  const recruitmentDeadline = new Date(`${meeting.recruitmentEnd}T23:59:59`);
+  const isRecruitmentClosed = recruitmentDeadline < new Date();
 
   return (
     <Container>
@@ -256,7 +258,7 @@ const PostDetail = () => {
           <Ionicons name="share-outline" size={25} onPress={() => console.log("공유하기")} />
         </RowContainer>
 
-        <Date>{meeting.createdAt}</Date>
+        <DateText>{meeting.createdAt}</DateText>
         <Content>{meeting.content}</Content>
         <RowContainer style={{ marginBottom: 10 }}>
           <Ionicons name="location-outline" size={24} color={theme.colors.grey} />
@@ -326,9 +328,16 @@ const PostDetail = () => {
           <LikeText liked={liked}>{likes}</LikeText>
         </LikeButton>
         <Button
-          title="신청하기"
-          onPress={() => checkLogin("신청서 작성", { postId })}
-          containerStyle={{ height: 50, width: 280 }}
+          title={isRecruitmentClosed ? "모집마감" : "신청하기"}
+          onPress={() => {
+            if (!isRecruitmentClosed) checkLogin("신청서 작성", { postId });
+          }}
+          disabled={isRecruitmentClosed}
+          containerStyle={{
+            height: 50,
+            width: 280,
+            backgroundColor: theme.colors.mainBlue,
+          }}
           textStyle={{ marginLeft: 0 }}
           style={{ height: 50, width: 280 }}
         />
