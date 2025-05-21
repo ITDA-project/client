@@ -5,42 +5,53 @@ import styled from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button } from "../components";
 import { ThemeContext } from "styled-components/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Chat = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { title, participants, writerId } = route.params;
+  const insets = useSafeAreaInsets();
+
+  const { title, participants, writerId, userId } = route.params;
   const [currentUserId, setCurrentUserId] = useState(null); //현재 사용자의 ID
   const [messages, setMessages] = useState([
     {
-      id: "1",
+      id: 1,
       name: "신짱구",
       image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQAdcZk8Uxff8hva1DX0f78gtUgkGuLDjlyUCBFbD-S7EEQx2DAQ&s=10&ec=72940544",
       text: "방장님 모임 만들어 주셔서 감사합니다!",
       time: "16:03",
     },
     {
-      id: "2",
+      id: 2,
       name: "김철수",
       image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJyyKfN-ICpUK3cQfrRkLvbF2yKXebXx6RqwLuhMlTiy8qtmF_rw&s=10&ec=72940544",
       text: "뜨린이였는데 많이 배워갑니다 ㅎㅎ 짱구님 덕분에 많이 도움이 됐어요",
       time: "17:23",
     },
-    { id: "3", name: "김철수", text: "오늘 정말 재밌었어요!", time: "17:25" },
+    { id: 3, name: "김철수", text: "오늘 정말 재밌었어요!", time: "17:25" },
   ]);
   const [input, setInput] = useState("");
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
   const [participantStatus, setParticipantStatus] = useState({});
   const [meetingActive, setMeetingActive] = useState(false);
+  const [hostExists, setHostExists] = useState(true); //모임장 채팅방 내 존재 여부
 
   useEffect(() => {
-    setCurrentUserId("user123"); //임시 currentUserId 백 연결 시 대체
+    setCurrentUserId(1); //임시 currentUserId 백 연결 시 대체
     setMeetingActive(false);
     setParticipantStatus({});
   }, []);
 
+  useEffect(() => {
+    const exists = participants.some((p) => p.userId === writerId);
+    setHostExists(exists);
+  }, [participants, writerId]);
+
   const sendMessage = () => {
+    if (!hostExists) return; // 방장이 없으면 전송 차단
+
     if (input.trim()) {
       const newMessage = {
         id: Date.now().toString(),
@@ -80,7 +91,6 @@ const Chat = () => {
       }
     });
     navigation.navigate("참여확인", { participants, participantStatus });
-    //console.log("모임 참가자 확인 페이지에서 참가한 사람들");
   };
 
   const renderItem = ({ item, index }) => {
@@ -137,11 +147,20 @@ const Chat = () => {
 
       <ChatArea>
         <FlatList data={messages.slice().reverse()} renderItem={renderItem} keyExtractor={(item) => item.id} inverted />
-        <InputContainer>
-          <ChatInput placeholder="메세지를 입력해보세요!" value={input} onChangeText={setInput} />
-          <SendButton onPress={sendMessage}>
-            <MaterialIcons name="send" size={24} />
-          </SendButton>
+        <InputContainer insets={insets} style={{ backgroundColor: hostExists ? "#fff" : "#ccc", justifyContent: "center", alignItems: "center" }}>
+          {hostExists ? (
+            <>
+              <ChatInput placeholder="메세지를 입력해보세요!" value={input} onChangeText={setInput} editable />
+              <SendButton onPress={sendMessage}>
+                <MaterialIcons name="send" size={24} />
+              </SendButton>
+            </>
+          ) : (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MaterialIcons name="error-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
+              <Text style={{ color: "#fff", fontSize: 16, marginBottom: 5 }}>종료된 채팅입니다</Text>
+            </View>
+          )}
         </InputContainer>
       </ChatArea>
 
@@ -298,6 +317,7 @@ const InputContainer = styled.View`
   border-top-width: 1px;
   border-top-color: #ddd;
   background-color: white;
+  padding-bottom: ${(props) => props.insets?.bottom || 12}px;
 `;
 
 const ChatInput = styled.TextInput`
