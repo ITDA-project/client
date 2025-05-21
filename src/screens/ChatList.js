@@ -69,37 +69,39 @@ const chatRooms = [
   {
     id: "1",
     postId: "101", // 게시글 ID 추가
-    writerId: "user123", // 게시글 작성자 ID 추가
+    writerId: 1, // 게시글 작성자 ID 추가
     title: "함께 뜨개질해요!",
     lastMessage: "오늘 정말 재밌었어요!",
     time: "17:25",
     participants: [
       {
+        userId: 1,
         name: "신짱구",
         image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQAdcZk8Uxff8hva1DX0f78gtUgkGuLDjlyUCBFbD-S7EEQx2DAQ&s=10&ec=72940544",
         status: "참여",
       },
       {
+        userId: 2,
         name: "김철수",
         image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJyyKfN-ICpUK3cQfrRkLvbF2yKXebXx6RqwLuhMlTiy8qtmF_rw&s=10&ec=72940544",
         status: "참여",
       },
-      { name: "이훈이", image: null, status: null },
-      { name: "이훈삼", image: null, status: null },
-      { name: "이훈사", image: null, status: null },
-      { name: "이훈오", image: null, status: null },
+      { userId: 3, name: "이훈이", image: null, status: null },
+      { userId: 4, name: "이훈삼", image: null, status: null },
+      { userId: 5, name: "이훈사", image: null, status: null },
+      { userId: 6, name: "이훈오", image: null, status: null },
     ],
   },
   {
     id: "2",
     postId: "102",
-    writerId: "user456",
+    writerId: 5,
     title: "볼링 모임",
     lastMessage: "알겠습니다~",
     time: "11:53",
     participants: [
-      { name: "홍길동", image: null, status: null },
-      { name: "최지훈", image: null, status: "참여" },
+      { userId: 7, name: "홍길동", image: null, status: null },
+      { userId: 8, name: "최지훈", image: null, status: "참여" },
     ],
   },
 ];
@@ -115,6 +117,7 @@ const ChatList = () => {
           participants: item.participants,
           postId: item.postId,
           writerId: item.writerId,
+          userId: item.userId,
         })
       }
     >
