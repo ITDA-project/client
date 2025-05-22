@@ -49,7 +49,7 @@ const MenuText = styled.Text`
   color: ${({ danger }) => (danger ? "red" : "#000")};
 `;
 
-const Date = styled.Text`
+const DateText = styled.Text`
   color: ${({ theme }) => theme.colors.grey};
   font-size: 14px;
   font-family: ${({ theme }) => theme.fonts.regular};
@@ -335,6 +335,13 @@ const MyPostDetail = () => {
   if (!meeting || !user) {
     return <Text> 불러오는 중 ...</Text>;
   }
+  /* 테스트용 시간 설정
+  const fakeNow = new Date("2025-05-21T12:00:00");
+  const recruitmentDeadline = new Date(`${meeting.recruitmentEnd}T23:59:59`);
+  const isRecruitmentClosed = recruitmentDeadline < fakeNow; */
+  const recruitmentDeadline = new Date(`${meeting.recruitmentEnd}T23:59:59`);
+  const isRecruitmentClosed = recruitmentDeadline < new Date();
+
   return (
     <TouchableWithoutFeedback onPress={closeMenu}>
       <Container>
@@ -359,7 +366,7 @@ const MyPostDetail = () => {
                 </MenuItem>
               </MoreMenu>
             )}
-            <Date>{meeting.createdAt}</Date>
+            <DateText>{meeting.createdAt}</DateText>
             <Content>{meeting.content}</Content>
             <RowContainer style={{ marginBottom: 10 }}>
               <Ionicons name="location-outline" size={24} color={theme.colors.grey} />
@@ -426,11 +433,31 @@ const MyPostDetail = () => {
             <LikeText liked={liked}>{likes}</LikeText>
           </LikeButton>
           <Button
-            title="신청 목록 확인"
+            title={isRecruitmentClosed ? "모임 재생성하기" : "신청 목록 확인"}
             onPress={async () => {
-              const isLoggedIn = await checkLogin("신청서 목록", { postId });
-              if (isLoggedIn) {
-                navigation.navigate("신청서 목록", { postId });
+              if (isRecruitmentClosed) {
+                const [city, district] = meeting.location.split(" ");
+                navigation.navigate("모임수정", {
+                  postId: meeting.postId,
+                  title: meeting.title,
+                  description: meeting.content,
+                  selectedCity: city,
+                  selectedDistrict: district,
+                  category: meeting.category,
+                  maxParticipants: meeting.memberMax,
+                  deposit: meeting.deposit,
+                  tags: meeting.tags.join(" "),
+                  recruitmentStart: meeting.recruitmentStart,
+                  recruitmentEnd: meeting.recruitmentEnd,
+                  activityStart: meeting.activityStart,
+                  activityEnd: meeting.activityEnd,
+                  isRecreate: true, //재생성하기임을 명시(일반 게시글 수정과 헷갈리지 않게게)
+                });
+              } else {
+                const isLoggedIn = await checkLogin("신청서 목록", { postId });
+                if (isLoggedIn) {
+                  navigation.navigate("신청서 목록", { postId });
+                }
               }
             }}
             containerStyle={{ height: 50, width: 280 }}

@@ -130,9 +130,10 @@ const EditPost = () => {
     recruitmentEnd,
     activityStart,
     activityEnd,
+    isRecreate = false,
   } = params;
   console.log("params: ", params);
-  // 📦 State
+
   const [title, setTitle] = useState(initialTitle || "");
   const [description, setDescription] = useState(initialDesc || "");
   const [inputHeight, setInputHeight] = useState(120);
@@ -159,7 +160,7 @@ const EditPost = () => {
     }
     return new Date();
   };
-
+  const originalRecruitEnd = safeParseDate(recruitmentEnd); //기존의 마감일
   const [recruitStart, setRecruitStart] = useState(safeParseDate(recruitmentStart));
   const [recruitEnd, setRecruitEnd] = useState(safeParseDate(recruitmentEnd));
   const [activityStartDate, setActivityStartDate] = useState(safeParseDate(activityStart));
@@ -186,10 +187,14 @@ const EditPost = () => {
 
   // 📡 게시글 수정 요청
   const handleUpdate = async () => {
-    const formatDate = (date) => {
-      return date instanceof Date ? date.toISOString().split("T")[0] : "";
-    };
+    const formatDate = (date) => date.toISOString().split("T")[0];
+    const originalEndStr = formatDate(originalRecruitEnd);
+    const currentEndStr = formatDate(recruitEnd);
 
+    if (isRecreate && originalEndStr === currentEndStr) {
+      Alert.alert("모집 마감일 수정 필요", "모임을 재생성하려면 모집 마감일을 변경해주세요.");
+      return;
+    }
     const requestBody = {
       title,
       content: description,
