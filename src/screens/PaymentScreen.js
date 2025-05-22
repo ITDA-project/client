@@ -20,7 +20,6 @@ const PaymentScreen = ({ route, navigation }) => {
       IMP.init("imp35072674");
 
       function requestPay() {
-        console.log("결제 요청");
         IMP.request_pay({
           pg: "html5_inicis",
           pay_method: "card",
