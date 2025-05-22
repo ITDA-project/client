@@ -79,9 +79,9 @@ const CheckParticipants = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { participants } = route.params;
+  const { participants, participantStatus } = route.params ?? {};
 
-  //결제여부 상태 저장
+  //체크박스 선택 여부 상태 저장
   const [Status, setStatus] = useState(participants.map((p) => ({ ...p, attended: false })));
 
   const toggleCheck = (index) => {
@@ -91,8 +91,15 @@ const CheckParticipants = () => {
   };
 
   const handleSubmit = () => {
-    const selected = actualStatus.filter((p) => p.attended);
-    console.log("✅ 실제 참석한 사람:", selected);
+    const actualParticipants = Status.filter((p) => p.attended) //체크된 사람만 필터링
+      .map((p) => p.name); //이름만 추출
+    const expectedParticipants = Object.entries(participantStatus ?? {})
+      .filter(([_, status]) => status === "참여") //값이 "참여"인 항목만 필터링
+      .map(([name]) => name); //이름만 추출
+
+    //참여 예정자 중 실제 참석한 사람
+    const matchedParticipants = actualParticipants.filter((name) => expectedParticipants.includes(name));
+    console.log("💸 보증금 환불 대상:", matchedParticipants);
     navigation.goBack();
   };
 
@@ -108,7 +115,7 @@ const CheckParticipants = () => {
             {participants.map((p, i) => (
               <ParticipantRow key={i}>
                 <MaterialIcons
-                  name={checked[i] ? "check-box" : "check-box-outline-blank"}
+                  name={Status[i].attended ? "check-box" : "check-box-outline-blank"}
                   size={24}
                   color={theme.colors.black}
                   onPress={() => toggleCheck(i)}

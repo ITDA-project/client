@@ -5,45 +5,53 @@ import styled from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button } from "../components";
 import { ThemeContext } from "styled-components/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Chat = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { title, participants } = route.params;
-  const participantImages = {
-    신짱구: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQAdcZk8Uxff8hva1DX0f78gtUgkGuLDjlyUCBFbD-S7EEQx2DAQ&s=10&ec=72940544",
-    김철수: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJyyKfN-ICpUK3cQfrRkLvbF2yKXebXx6RqwLuhMlTiy8qtmF_rw&s=10&ec=72940544",
-  };
+  const insets = useSafeAreaInsets();
+
+  const { title, participants, writerId, userId } = route.params;
+  const [currentUserId, setCurrentUserId] = useState(null); //현재 사용자의 ID
   const [messages, setMessages] = useState([
     {
-      id: "1",
+      id: 1,
       name: "신짱구",
       image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQAdcZk8Uxff8hva1DX0f78gtUgkGuLDjlyUCBFbD-S7EEQx2DAQ&s=10&ec=72940544",
       text: "방장님 모임 만들어 주셔서 감사합니다!",
       time: "16:03",
     },
     {
-      id: "2",
+      id: 2,
       name: "김철수",
       image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJyyKfN-ICpUK3cQfrRkLvbF2yKXebXx6RqwLuhMlTiy8qtmF_rw&s=10&ec=72940544",
       text: "뜨린이였는데 많이 배워갑니다 ㅎㅎ 짱구님 덕분에 많이 도움이 됐어요",
       time: "17:23",
     },
-    { id: "3", name: "김철수", text: "오늘 정말 재밌었어요!", time: "17:25" },
+    { id: 3, name: "김철수", text: "오늘 정말 재밌었어요!", time: "17:25" },
   ]);
   const [input, setInput] = useState("");
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
   const [participantStatus, setParticipantStatus] = useState({});
   const [meetingActive, setMeetingActive] = useState(false);
+  const [hostExists, setHostExists] = useState(true); //모임장 채팅방 내 존재 여부
 
   useEffect(() => {
-    // 기본값에서 모임 시작 버튼 보이도록 보장
+    setCurrentUserId(1); //임시 currentUserId 백 연결 시 대체
     setMeetingActive(false);
     setParticipantStatus({});
   }, []);
 
+  useEffect(() => {
+    const exists = participants.some((p) => p.userId === writerId);
+    setHostExists(exists);
+  }, [participants, writerId]);
+
   const sendMessage = () => {
+    if (!hostExists) return; // 방장이 없으면 전송 차단
+
     if (input.trim()) {
       const newMessage = {
         id: Date.now().toString(),
@@ -57,10 +65,10 @@ const Chat = () => {
   };
 
   const handleStartMeeting = () => {
-    console.log("결제 요청 전송됨"); //결제 페이지 이동
+    //결제페이지 코드 추가
     const updatedStatus = {};
-    participants.forEach((name) => {
-      updatedStatus[name] = "불참";
+    participants.forEach((p) => {
+      updatedStatus[p.name] = p.status ?? "불참";
     });
     setParticipantStatus(updatedStatus);
     setMeetingActive(true);
@@ -75,8 +83,14 @@ const Chat = () => {
   const handleEndMeeting = () => {
     setMeetingActive(false);
     setParticipantStatus({});
-    //navigation.navigaate("모임참가자 확인 페이지");
-    //console.log("모임 참가자 확인 페이지에서 참가한 사람들");
+
+    const participantStatus = {};
+    participants.forEach((p) => {
+      if (p.status) {
+        participantStatus[p.name] = p.status;
+      }
+    });
+    navigation.navigate("참여확인", { participants, participantStatus });
   };
 
   const renderItem = ({ item, index }) => {
@@ -133,11 +147,20 @@ const Chat = () => {
 
       <ChatArea>
         <FlatList data={messages.slice().reverse()} renderItem={renderItem} keyExtractor={(item) => item.id} inverted />
-        <InputContainer>
-          <ChatInput placeholder="메세지를 입력해보세요!" value={input} onChangeText={setInput} />
-          <SendButton onPress={sendMessage}>
-            <MaterialIcons name="send" size={24} />
-          </SendButton>
+        <InputContainer insets={insets} style={{ backgroundColor: hostExists ? "#fff" : "#ccc", justifyContent: "center", alignItems: "center" }}>
+          {hostExists ? (
+            <>
+              <ChatInput placeholder="메세지를 입력해보세요!" value={input} onChangeText={setInput} editable />
+              <SendButton onPress={sendMessage}>
+                <MaterialIcons name="send" size={24} />
+              </SendButton>
+            </>
+          ) : (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MaterialIcons name="error-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
+              <Text style={{ color: "#fff", fontSize: 16, marginBottom: 5 }}>종료된 채팅입니다</Text>
+            </View>
+          )}
         </InputContainer>
       </ChatArea>
 
@@ -151,21 +174,17 @@ const Chat = () => {
             <SideMenuTitle>참가 중인 사람</SideMenuTitle>
             <ParticipantListContainer>
               <ParticipantList>
-                {participants?.map((name, i) => (
+                {participants?.map((p, i) => (
                   <ParticipantRow key={i}>
-                    {participantImages[name] ? (
-                      <ParticipantImage source={{ uri: participantImages[name] }} />
-                    ) : (
-                      <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
-                    )}
-                    <ParticipantItem>{name}</ParticipantItem>
+                    {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
+                    <ParticipantItem>{p.name}</ParticipantItem>
 
-                    {meetingActive && participantStatus[name] && (
+                    {meetingActive && participantStatus[p.name] && (
                       <StatusBadge>
                         <StatusDot>
-                          <Text style={{ color: "#FFD000" }}>{participantStatus[name] === "참여" ? "●" : "○"}</Text>
+                          <Text style={{ color: "#FFD000" }}>{participantStatus[p.name] === "참여" ? "●" : "○"}</Text>
                         </StatusDot>
-                        <StatusText>{participantStatus[name]}</StatusText>
+                        <StatusText>{participantStatus[p.name]}</StatusText>
                       </StatusBadge>
                     )}
                   </ParticipantRow>
@@ -173,25 +192,28 @@ const Chat = () => {
               </ParticipantList>
             </ParticipantListContainer>
 
-            <ButtonContainer>
-              {meetingActive ? (
-                <Button
-                  title="모임종료"
-                  onPress={handleEndMeeting}
-                  containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
-                  textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
-                  style={{ height: 40, width: 95 }}
-                />
-              ) : (
-                <Button
-                  title="모임시작"
-                  onPress={handleStartMeeting}
-                  containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
-                  textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
-                  style={{ height: 40, width: 95 }}
-                />
-              )}
-            </ButtonContainer>
+            {writerId === currentUserId && (
+              <ButtonContainer>
+                {meetingActive ? (
+                  <Button
+                    title="모임종료"
+                    onPress={handleEndMeeting}
+                    containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
+                    textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
+                    style={{ height: 40, width: 95 }}
+                  />
+                ) : (
+                  <Button
+                    title="모임시작"
+                    onPress={handleStartMeeting}
+                    containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
+                    textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
+                    style={{ height: 40, width: 95 }}
+                  />
+                )}
+              </ButtonContainer>
+            )}
+
             <HeaderButton style={{ alignSelf: "flex-end", position: "absolute", bottom: 20, right: 20 }} onPress={() => console.log("채팅방 나가기")}>
               <Ionicons name="exit-outline" size={28} color="#FF2E2E" />
             </HeaderButton>
@@ -295,6 +317,7 @@ const InputContainer = styled.View`
   border-top-width: 1px;
   border-top-color: #ddd;
   background-color: white;
+  padding-bottom: ${(props) => props.insets?.bottom || 12}px;
 `;
 
 const ChatInput = styled.TextInput`
