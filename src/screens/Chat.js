@@ -6,6 +6,7 @@ import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button } from "../components";
 import { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { TouchableOpacity } from "react-native";
 
 const Chat = () => {
   const theme = useContext(ThemeContext);
@@ -175,19 +176,31 @@ const Chat = () => {
             <ParticipantListContainer>
               <ParticipantList>
                 {participants?.map((p, i) => (
-                  <ParticipantRow key={i}>
-                    {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
-                    <ParticipantItem>{p.name}</ParticipantItem>
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => {
+                      navigation.navigate("리뷰 등록", {
+                        userId: p.userId,
+                        name: p.name,
+                        image: p.image,
+                      });
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <ParticipantRow key={i}>
+                      {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
+                      <ParticipantItem>{p.name}</ParticipantItem>
 
-                    {meetingActive && participantStatus[p.name] && (
-                      <StatusBadge>
-                        <StatusDot>
-                          <Text style={{ color: "#FFD000" }}>{participantStatus[p.name] === "참여" ? "●" : "○"}</Text>
-                        </StatusDot>
-                        <StatusText>{participantStatus[p.name]}</StatusText>
-                      </StatusBadge>
-                    )}
-                  </ParticipantRow>
+                      {meetingActive && participantStatus[p.name] && (
+                        <StatusBadge>
+                          <StatusDot>
+                            <Text style={{ color: "#FFD000" }}>{participantStatus[p.name] === "참여" ? "●" : "○"}</Text>
+                          </StatusDot>
+                          <StatusText>{participantStatus[p.name]}</StatusText>
+                        </StatusBadge>
+                      )}
+                    </ParticipantRow>
+                  </TouchableOpacity>
                 ))}
               </ParticipantList>
             </ParticipantListContainer>
