@@ -2,28 +2,13 @@ import React, { useState, useRef } from "react";
 import { WebView } from "react-native-webview";
 import { Alert, Linking, Platform } from "react-native";
 import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const PaymentScreen = ({ route, navigation }) => {
   const { amount, title } = route.params;
 
   const [paymentData, setPaymentData] = useState(null);
   const hasProcessedPayment = useRef(false);
-
-  const processPaymentSuccess = (imp_uid, merchant_uid) => {
-    if (hasProcessedPayment.current) return;
-
-    hasProcessedPayment.current = true;
-
-    console.log("💫 결제 성공 처리 시작", { imp_uid, merchant_uid });
-
-    const paymentInfo = {
-      imp_uid,
-      merchant_uid,
-      success: true,
-    };
-
-    sendPaymentDataToServer(paymentInfo);
-  };
 
   const handleUrlScheme = (event) => {
     const url = event.url;
@@ -63,43 +48,50 @@ const PaymentScreen = ({ route, navigation }) => {
     return true;
   };
 
+  const processPaymentSuccess = (imp_uid, merchant_uid) => {
+    if (hasProcessedPayment.current) return;
+
+    hasProcessedPayment.current = true;
+
+    console.log("💫 결제 성공 처리 시작", { imp_uid, merchant_uid });
+
+    const paymentInfo = {
+      imp_uid,
+      merchant_uid,
+      success: true,
+    };
+
+    sendPaymentDataToServer(paymentInfo);
+  };
+
   const sendPaymentDataToServer = async (data) => {
     try {
       const { imp_uid, merchant_uid } = data;
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      console.log(accessToken);
 
-      const response = await axios.post("http://10.0.0.2:8080/api/payments/verify", {
-        impUid: imp_uid,
-        merchantUid: merchant_uid,
-      });
+      if (!accessToken) {
+        console.log("인증 오류! 로그인이 필요합니다.");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://10.0.2.2:8080/api/payments/verify",
+        {
+          impUid: imp_uid,
+          merchantUid: merchant_uid,
+        },
+        {
+          headers: {
+            access: accessToken,
+          },
+        }
+      );
 
       Alert.alert("결제 성공", "서버에 결제 정보가 전달되었습니다.", [{ text: "확인", onPress: () => navigation.goBack() }]);
     } catch (err) {
       console.error("❌ 서버 전송 실패:", err.response?.data || err.message);
       Alert.alert("전송 실패", "서버로 결제 정보를 전달하는 데 실패했습니다.");
-    }
-  };
-
-  const handleMessage = async (e) => {
-    console.log("📩 수신 메시지 (원본):", e.nativeEvent.data);
-
-    try {
-      const data = JSON.parse(e.nativeEvent.data);
-      console.log("🔍 파싱된 결제 데이터:", JSON.stringify(data, null, 2));
-
-      if (data.success) {
-        // 결제 성공 시 받을 수 있는 모든 데이터 로깅
-
-        setPaymentData(data);
-      } else {
-        console.log("❌ 결제 실패 정보:", {
-          error_code: data.error_code,
-          error_msg: data.error_msg,
-        });
-        Alert.alert("결제 실패", data.error_msg || "알 수 없는 오류");
-      }
-    } catch (err) {
-      console.log("🔵 메시지 파싱 오류 또는 비정상 데이터:", e.nativeEvent.data);
-      console.error("파싱 에러:", err);
     }
   };
 
@@ -137,16 +129,7 @@ const PaymentScreen = ({ route, navigation }) => {
   </html>
   `;
 
-  return (
-    <WebView
-      originWhitelist={["*"]}
-      source={{ html }}
-      onMessage={handleMessage}
-      onShouldStartLoadWithRequest={handleUrlScheme}
-      javaScriptEnabled={true}
-      domStorageEnabled={true}
-    />
-  );
+  return <WebView originWhitelist={["*"]} source={{ html }} onShouldStartLoadWithRequest={handleUrlScheme} javaScriptEnabled={true} domStorageEnabled={true} />;
 };
 
 export default PaymentScreen;
