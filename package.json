@@ -30,6 +30,7 @@
     "expo-splash-screen": "^0.29.22",
     "expo-status-bar": "~2.0.1",
     "http-proxy-middleware": "^3.0.3",
+    "iamport-react-native": "^2.0.14",
     "jwt-decode": "^4.0.0",
     "prop-types": "^15.8.1",
     "react": "18.3.1",
