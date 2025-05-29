@@ -84,6 +84,7 @@ const Chat = () => {
   const handleEndMeeting = () => {
     setMeetingActive(false);
     setParticipantStatus({});
+    setSideMenuVisible(false);
 
     const participantStatus = {};
     participants.forEach((p) => {
