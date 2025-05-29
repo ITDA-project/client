@@ -45,7 +45,7 @@ const Notification = () => {
         navigation.navigate("전체글");
         break;
       case "payment_complete":
-        console.log("결제 완료!");
+        Alert.alert("결제완료", "모아모아와 함께 모임에 참여해주세요!", [{ text: "확인" }]);
         break;
       case "payment_required":
         setModalData({ title: item.postTitle, date: "2025/05/26", amount: 1 });
