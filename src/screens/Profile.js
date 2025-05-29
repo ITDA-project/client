@@ -15,7 +15,7 @@ const Container = styled.View`
   flex: 1;
   background-color: #fff;
   padding: 0 20px;
-  padding-top: 20px;
+  padding-top: 10px;
 `;
 
 const ProfileContainer = styled.View`
@@ -235,7 +235,7 @@ const Profile = ({ navigation, route }) => {
         <Button
           title="사진 / 경력 수정"
           onPress={() => navigation.navigate("사진/경력 수정")}
-          containerStyle={{ height: 40, width: 340 }}
+          containerStyle={{ height: 40, width: "100%" }}
           textStyle={{ fontSize: 16 }}
           style={{ height: 40, width: 340 }}
         />
