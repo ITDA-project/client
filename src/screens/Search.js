@@ -1,8 +1,8 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import { Keyboard, ScrollView, TouchableOpacity } from "react-native";
 import { styled, ThemeContext } from "styled-components/native";
 import { Feather } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 
@@ -74,7 +74,7 @@ const ResultDate = styled.Text`
 const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
@@ -88,7 +88,7 @@ const Search = () => {
         },
       });
 
-      setCurrentUser(response.data);
+      setCurrentUserId(response.data.data);
     } catch (error) {
       console.error("유저 정보 가져오기 실패:", error);
     }
@@ -118,7 +118,13 @@ const Search = () => {
       setResults([]);
     }
   };
-
+  useFocusEffect(
+    useCallback(() => {
+      // 화면에 진입했을 때 초기화
+      setQuery("");
+      setResults([]);
+    }, [])
+  );
   return (
     <Container>
       <SearchBox>
@@ -148,7 +154,9 @@ const Search = () => {
                 <TouchableOpacity
                   key={item.postId}
                   onPress={() => {
-                    const screen = currentUser && item.userId === currentUser.userId ? "MyPostDetail" : "PostDetail";
+                    const isMine = String(item.userId) === String(currentUserId);
+                    const screen = isMine ? "MyPostDetail" : "PostDetail";
+
                     navigation.navigate(screen, item);
                   }}
                 >
