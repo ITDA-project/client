@@ -1,6 +1,5 @@
-import React, { useContext } from "react";
-import { Alert } from "react-native";
-import { Button } from "../components";
+import React, { useContext, useState } from "react";
+import { Input, Button, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -44,16 +43,20 @@ const DeleteAccount = ({ navigation }) => {
   const theme = useContext(ThemeContext);
   const { setAccessToken, setUser } = useAuth();
 
+  // ✅ 상태는 컴포넌트 최상단에
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
+
   const handleDeleteAccount = async () => {
     try {
       const accessToken = await EncryptedStorage.getItem("accessToken");
       const credentials = await Keychain.getGenericPassword();
       const refreshToken = credentials?.password;
 
-      console.log("📦 accessToken: ", accessToken);
-
       if (!accessToken || !refreshToken) {
-        Alert.alert("오류", "토큰 정보가 없습니다. 다시 로그인해주세요.");
+        setAlertMessage("토큰 정보가 없습니다. 다시 로그인해주세요.");
+        setAlertVisible(true);
         return;
       }
 
@@ -68,21 +71,22 @@ const DeleteAccount = ({ navigation }) => {
           },
         });
 
-        // 로컬 토큰 제거
         await EncryptedStorage.removeItem("accessToken");
         await Keychain.resetGenericPassword();
         setAccessToken(null);
         setUser(null);
 
-        Alert.alert("탈퇴 완료", "회원 탈퇴가 완료되었습니다.");
-        navigation.reset({ index: 0, routes: [{ name: "Home" }] }); // 또는 로그인 화면 등으로 이동
+        setAlertMessage("회원 탈퇴가 완료되었습니다.");
+        setOnConfirmAction(() => () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }));
+        setAlertVisible(true);
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log("❌ 탈퇴 실패. 응답 코드:", error.response?.status);
-        }
+        console.error("❌ 탈퇴 실패:", error);
+        setAlertMessage("탈퇴 중 오류가 발생했습니다.");
+        setAlertVisible(true);
       }
     } catch (error) {
-      Alert.alert("탈퇴 실패", "알 수 없는 오류가 발생했습니다.");
+      setAlertMessage("알 수 없는 오류가 발생했습니다.");
+      setAlertVisible(true);
     }
   };
 
@@ -111,6 +115,15 @@ const DeleteAccount = ({ navigation }) => {
           textStyle={{ marginLeft: 0 }}
         />
       </FooterContainer>
+      {/* ✅ AlertModal 삽입 */}
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (onConfirmAction) onConfirmAction();
+        }}
+      />
     </KeyboardAwareScrollView>
   );
 };

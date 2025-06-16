@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TouchableOpacity, ActivityIndicator, FlatList, Alert } from "react-native";
+import { AlertModal } from "../components";
 import { AntDesign } from "@expo/vector-icons";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
@@ -55,6 +56,9 @@ const ApplicationList = ({ navigation }) => {
 
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
 
   useEffect(() => {
     console.log("postId:", postId);
@@ -63,7 +67,10 @@ const ApplicationList = ({ navigation }) => {
         const accessToken = await EncryptedStorage.getItem("accessToken");
 
         if (!accessToken) {
-          Alert.alert("로그인 해주세요.");
+          setAlertMessage("로그인이 필요합니다.");
+          setOnConfirmAction(() => () => navigation.navigate("Login"));
+          setAlertVisible(true);
+
           return;
         }
 
@@ -77,7 +84,9 @@ const ApplicationList = ({ navigation }) => {
         setApplications(formList);
       } catch (error) {
         console.error("신청서 불러오기 실패: ", error);
-        Alert.alert("신청서를 불러오는 데 실패했습니다.");
+        setAlertMessage("신청서를 불러오는 데 실패했습니다.");
+        setOnConfirmAction(null);
+        setAlertVisible(true);
       } finally {
         setLoading(false);
       }
@@ -113,6 +122,14 @@ const ApplicationList = ({ navigation }) => {
       ) : (
         <StyledFlatList data={applications} keyExtractor={(item) => item.formId.toString()} renderItem={renderItem} />
       )}
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (onConfirmAction) onConfirmAction();
+        }}
+      />
     </Container>
   );
 };

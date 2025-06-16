@@ -5,8 +5,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Input from "../components/Input";
-import Button from "../components/Button";
+import { Input, Button, AlertModal } from "../components";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { categoryData, cityData, districtData } from "./CreatePost"; // 👈 이렇게 임시 해결
 import axios from "axios";
@@ -146,6 +145,8 @@ const EditPost = () => {
   const [districtList, setDistrictList] = useState([]);
   const [cityOpen, setCityOpen] = useState(false);
   const [districtOpen, setDistrictOpen] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const [max, setMax] = useState(maxParticipants?.toString() || "");
   const [money, setMoney] = useState(deposit || "");
@@ -223,11 +224,11 @@ const EditPost = () => {
       });
 
       console.log("✅ 수정 성공:", response.data);
-      Alert.alert("수정 완료", "게시글이 성공적으로 수정되었습니다.");
       navigation.replace("MyPostDetail", { postId });
     } catch (error) {
       console.error("❌ 게시글 수정 실패:", error.response?.data || error.message);
-      Alert.alert("에러", "게시글 수정 중 오류가 발생했습니다.");
+      setAlertMessage("게시글 수정 중 오류가 발생했습니다.");
+      setAlertVisible(true);
     }
   };
 
@@ -343,6 +344,13 @@ const EditPost = () => {
             />
           </ButtonContainer>
         </ScrollView>
+        <AlertModal
+          visible={alertVisible}
+          message={alertMessage}
+          onConfirm={() => {
+            setAlertVisible(false);
+          }}
+        />
       </Container>
     </KeyboardAwareScrollView>
   );

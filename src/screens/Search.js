@@ -1,6 +1,7 @@
 import React, { useState, useContext, useCallback, useEffect } from "react";
 import { Keyboard, ScrollView, TouchableOpacity } from "react-native";
 import { styled, ThemeContext } from "styled-components/native";
+import { AlertModal } from "../components";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
@@ -75,9 +76,12 @@ const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
+
   const fetchUserInfo = async () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
@@ -114,7 +118,8 @@ const Search = () => {
       setResults(dtoList);
     } catch (error) {
       console.error("❌ 검색 실패:", error);
-      Alert.alert("검색 실패", "다시 시도해주세요.");
+      setAlertMessage("검색 실패. 다시 시도해주세요.");
+      setAlertVisible(true);
       setResults([]);
     }
   };
@@ -172,6 +177,7 @@ const Search = () => {
           </ScrollView>
         </>
       )}
+      <AlertModal visible={alertVisible} message={alertMessage} onConfirm={() => setAlertVisible(false)} />
     </Container>
   );
 };

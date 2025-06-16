@@ -3,7 +3,7 @@ import { TouchableWithoutFeedback, Alert, Text } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
-import Button from "../components/Button";
+import { Button, AlertModal } from "../components";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { ScrollView } from "react-native-gesture-handler";
@@ -170,6 +170,10 @@ const MyPostDetail = () => {
   const [likes, setLikes] = useState(0);
   const [likeId, setLikeId] = useState(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
 
   const [user, setUser] = useState(null);
 
@@ -224,7 +228,8 @@ const MyPostDetail = () => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
 
       if (!accessToken) {
-        Alert.alert("로그인이 필요합니다");
+        setAlertMessage("로그인이 필요합니다.");
+        setAlertVisible(true);
         return;
       }
 
@@ -263,7 +268,8 @@ const MyPostDetail = () => {
       } else {
         console.log("📡 설정 중 오류:", error.message);
       }
-      Alert.alert("오류", "좋아요 처리 중 문제가 발생했습니다.");
+      setAlertMessage("좋아요 처리 중 문제가 발생했습니다.");
+      setAlertVisible(true);
     }
   };
 
@@ -299,37 +305,37 @@ const MyPostDetail = () => {
 
   const handleDelete = () => {
     setMenuVisible(false);
-    Alert.alert("게시글 삭제", "정말 삭제하시겠습니까?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "삭제",
-        onPress: async () => {
-          try {
-            const accessToken = await EncryptedStorage.getItem("accessToken");
-            if (!accessToken) {
-              Alert.alert("로그인 필요", "삭제를 위해 로그인해주세요.");
-              return;
-            }
+    setConfirmVisible(true); // ✅ Alert 대신 모달 표시
+  };
 
-            const response = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}`, {
-              headers: {
-                access: `${accessToken}`,
-              },
-            });
+  const confirmDelete = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      if (!accessToken) {
+        setAlertMessage("삭제를 위해 로그인해주세요.");
+        setAlertVisible(true);
+        return;
+      }
 
-            if (response.status === 200) {
-              Alert.alert("삭제 완료", "게시글이 성공적으로 삭제되었습니다.");
-              navigation.navigate("Home", { screen: "MainPage" });
-            } else {
-              Alert.alert("삭제 실패", "서버 응답이 올바르지 않습니다.");
-            }
-          } catch (error) {
-            console.error("게시글 삭제 실패", error);
-            Alert.alert("삭제 실패", "게시글 삭제 중 오류가 발생했습니다.");
-          }
-        },
-      },
-    ]);
+      const response = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}`, {
+        headers: { access: `${accessToken}` },
+      });
+
+      if (response.status === 200) {
+        setAlertMessage("게시글이 성공적으로 삭제되었습니다.");
+        setOnConfirmAction(() => () => navigation.navigate("Home", { screen: "MainPage" }));
+        setAlertVisible(true);
+      } else {
+        setAlertMessage("서버 응답이 올바르지 않습니다.");
+        setAlertVisible(true);
+      }
+    } catch (error) {
+      console.error("게시글 삭제 실패", error);
+      setAlertMessage("게시글 삭제 중 오류가 발생했습니다.");
+      setAlertVisible(true);
+    } finally {
+      setConfirmVisible(false);
+    }
   };
 
   if (!meeting || !user) {
@@ -466,6 +472,21 @@ const MyPostDetail = () => {
           />
           <LoginAlert />
         </Footer>
+        <AlertModal
+          visible={alertVisible}
+          message={alertMessage}
+          onConfirm={() => {
+            setAlertVisible(false);
+            if (onConfirmAction) onConfirmAction();
+          }}
+        />
+
+        <AlertModal
+          visible={confirmVisible}
+          message="정말 삭제하시겠습니까?"
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmVisible(false)} // ✅ 취소 시 모달 닫기만
+        />
       </Container>
     </TouchableWithoutFeedback>
   );

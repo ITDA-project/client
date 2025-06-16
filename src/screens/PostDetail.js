@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
-import Button from "../components/Button";
+import { Button, AlertModal } from "../components";
 import { TouchableOpacity, Text } from "react-native";
 import useRequireLogin from "../hooks/useRequireLogin";
 import axios from "axios";
@@ -144,8 +144,9 @@ const PostDetail = () => {
   const [liked, setLiked] = useState(false);
   const [likeId, setLikeId] = useState(null);
   const [likes, setLikes] = useState(0);
-
   const [user, setUser] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const fetchDetail = async () => {
     try {
@@ -197,7 +198,8 @@ const PostDetail = () => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
 
       if (!accessToken) {
-        Alert.alert("로그인이 필요합니다");
+        setAlertMessage("로그인이 필요합니다");
+        setAlertVisible(true);
         return;
       }
 
@@ -240,7 +242,8 @@ const PostDetail = () => {
       } else {
         console.log("📡 설정 중 오류:", error.message);
       }
-      Alert.alert("오류", "좋아요 처리 중 문제가 발생했습니다.");
+      setAlertMessage("좋아요 처리 중 문제가 발생했습니다.");
+      setAlertVisible(true);
     }
   };
 
@@ -343,6 +346,13 @@ const PostDetail = () => {
         />
         <LoginAlert />
       </Footer>
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+        }}
+      />
     </Container>
   );
 };

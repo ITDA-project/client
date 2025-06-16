@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Alert } from "react-native";
-import { Input, Button } from "../components";
+import { Input, Button, AlertModal } from "../components";
 import styled from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import axios from "axios";
@@ -23,6 +23,9 @@ const ApplicationForm = ({ navigation }) => {
 
   const [form, setForm] = useState("");
   const [disabled, setDisabled] = useState(true);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
 
   useEffect(() => {
     setDisabled(form.trim().length === 0);
@@ -35,7 +38,10 @@ const ApplicationForm = ({ navigation }) => {
       console.log("Access Token:", accessToken);
 
       if (!accessToken) {
-        Alert.alert("로그인 필요", "로그인이 필요합니다.", [{ text: "확인", onPress: () => navigation.navigate("Login") }]);
+        setAlertMessage("로그인이 필요합니다.");
+        setOnConfirmAction(() => () => navigation.navigate("Login"));
+        setAlertVisible(true);
+
         return;
       }
       const response = await axios.post(
@@ -49,16 +55,22 @@ const ApplicationForm = ({ navigation }) => {
         }
       );
 
-      Alert.alert("지원서 제출 완료", "지원서가 성공적으로 제출되었습니다.", [{ text: "확인", onPress: () => navigation.goBack() }]);
+      setAlertMessage("지원서가 성공적으로 제출되었습니다.");
+      setOnConfirmAction(() => () => navigation.goBack());
+      setAlertVisible(true);
     } catch (error) {
       const message = error?.response?.data?.message || error.message;
 
       console.error("신청서 제출 실패:", message);
 
       if (message.includes("이미 신청폼을 제출")) {
-        Alert.alert("중복 제출", "이미 해당 모임에 신청서를 제출하셨습니다.");
+        setAlertMessage("이미 해당 모임에 신청서를 제출하셨습니다.");
+        setOnConfirmAction(null); // 또는 생략
+        setAlertVisible(true);
       } else {
-        Alert.alert("에러", "제출 중 문제가 발생했습니다.");
+        setAlertMessage("제출 중 문제가 발생했습니다.");
+        setOnConfirmAction(null); // 또는 생략
+        setAlertVisible(true);
       }
     }
   };
@@ -88,6 +100,14 @@ const ApplicationForm = ({ navigation }) => {
           paddingBottom: 0,
         }}
         textStyle={{ marginLeft: 0, fontSize: 16 }}
+      />
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (onConfirmAction) onConfirmAction();
+        }}
       />
     </Container>
   );
