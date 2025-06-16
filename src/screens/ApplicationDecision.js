@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { Button } from "../components";
+import { Button, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import axios from "axios";
@@ -56,6 +56,9 @@ const ApplicationDecision = ({ route, navigation }) => {
   const { formId, postId } = route.params;
 
   const [formData, setFormData] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
 
   const fetchForm = async () => {
     try {
@@ -67,7 +70,8 @@ const ApplicationDecision = ({ route, navigation }) => {
       setFormData(response.data.data); // content, userName, userImage
     } catch (e) {
       console.error("신청폼 조회 실패", e);
-      Alert.alert("신청서를 불러오는 데 실패했습니다.");
+      setAlertMessage("신청서를 불러오는 데 실패했습니다.");
+      setAlertVisible(true);
     }
   };
   const updateFormStatus = async (status) => {
@@ -82,11 +86,13 @@ const ApplicationDecision = ({ route, navigation }) => {
         }
       );
 
-      Alert.alert(`신청서가 ${status === "accept" ? "수락" : "거절"}되었습니다.`);
-      navigation.goBack(); // 목록으로 이동
+      setAlertMessage(`신청서가 ${status === "accept" ? "수락" : "거절"}되었습니다.`);
+      setOnConfirmAction(() => () => navigation.goBack());
+      setAlertVisible(true);
     } catch (e) {
       console.error(`신청서 ${status} 실패`, e);
-      Alert.alert("처리 중 오류가 발생했습니다.");
+      setAlertMessage("처리 중 오류가 발생했습니다.");
+      setAlertVisible(true);
     }
   };
 
@@ -134,6 +140,14 @@ const ApplicationDecision = ({ route, navigation }) => {
           textStyle={{ marginLeft: 0, fontSize: 16, color: theme.colors.black }}
         />
       </ButtonContainer>
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (onConfirmAction) onConfirmAction();
+        }}
+      />
     </Container>
   );
 };

@@ -2,8 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Alert, ScrollView, View, Platform, TextInput, Text } from "react-native";
 import styled from "styled-components/native";
 import { useNavigation } from "@react-navigation/native";
-import Input from "../components/Input";
-import Button from "../components/Button";
+import { Input, Button, AlertModal } from "../components";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -345,6 +344,10 @@ const CreatePost = () => {
   const [activityStart, setActivityStart] = useState(new Date());
   const [activityEnd, setActivityEnd] = useState(new Date());
 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
+
   const categoryCodeMap = {
     취미: "HOBBY",
     운동: "EXERCISE",
@@ -358,7 +361,9 @@ const CreatePost = () => {
     try {
       const accessToken = await EncryptedStorage.getItem("accessToken");
       if (!accessToken) {
-        Alert.alert("로그인 필요", "게시글 생성을 위해 로그인이 필요합니다.");
+        setAlertMessage("게시글 생성을 위해 로그인이 필요합니다.");
+        setOnConfirmAction(null);
+        setAlertVisible(true);
         return;
       }
 
@@ -372,10 +377,8 @@ const CreatePost = () => {
         warranty: Number(deposit),
         activityStartDate: activityStart.toISOString().split("T")[0],
         activityEndDate: activityEnd.toISOString().split("T")[0],
-        tags: tags.trim().split(" "), // ✅ 필수 추가
+        tags: tags.trim().split(" "),
       };
-
-      console.log("📦 게시글 등록 요청:", requestBody);
 
       const response = await axios.post("http://10.0.2.2:8080/api/posts/create", requestBody, {
         headers: {
@@ -384,21 +387,23 @@ const CreatePost = () => {
         },
       });
 
-      console.log("✅ 게시글 생성 완료:", response.data);
       const postIdFromHeader = response.headers["postid"] || response.headers["location"]?.split("/").pop();
 
-      console.log("📬 응답 헤더에서 postId 추출:", postIdFromHeader);
-
       if (!postIdFromHeader) {
-        Alert.alert("에러", "게시글 ID를 찾을 수 없습니다.");
+        setAlertMessage("게시글 ID를 찾을 수 없습니다.");
+        setOnConfirmAction(null);
+        setAlertVisible(true);
         return;
       }
 
-      Alert.alert("성공", "게시글이 성공적으로 등록되었습니다!");
-      navigation.navigate("MyPostDetail", { postId: postIdFromHeader });
+      setAlertMessage("게시글이 성공적으로 등록되었습니다.");
+      setOnConfirmAction(() => () => navigation.navigate("MyPostDetail", { postId: postIdFromHeader }));
+      setAlertVisible(true);
     } catch (error) {
       console.error("❌ 게시글 등록 실패:", error.response?.data || error.message);
-      Alert.alert("에러", "게시글 생성 중 오류가 발생했습니다.");
+      setAlertMessage("게시글 생성 중 오류가 발생했습니다.");
+      setOnConfirmAction(null);
+      setAlertVisible(true);
     }
   };
 
@@ -662,6 +667,14 @@ const CreatePost = () => {
             />
           </ButtonContainer>
         </ScrollView>
+        <AlertModal
+          visible={alertVisible}
+          message={alertMessage}
+          onConfirm={() => {
+            setAlertVisible(false);
+            if (onConfirmAction) onConfirmAction();
+          }}
+        />
       </Container>
     </KeyboardAwareScrollView>
   );

@@ -4,8 +4,7 @@ import styled from "styled-components/native";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import Button from "../components/Button";
-import Input from "../components/Input";
+import { Button, Input, AlertModal } from "../components";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 
@@ -62,6 +61,9 @@ const EditProfile = ({ navigation, route }) => {
   const [career, setCareer] = useState(route.params?.user?.career || "");
   const [disabled, setDisabled] = useState(true);
 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
   // 기존 경력 불러오기
   useEffect(() => {
     const fetchCareer = async () => {
@@ -106,7 +108,8 @@ const EditProfile = ({ navigation, route }) => {
     console.log("갤러리 권한 상태:", status);
 
     if (status !== "granted") {
-      Alert.alert("권한 필요", "갤러리 접근 권한이 필요합니다.");
+      setAlertMessage("갤러리 접근 권한이 필요합니다.");
+      setAlertVisible(true);
       return;
     }
 
@@ -155,11 +158,11 @@ const EditProfile = ({ navigation, route }) => {
 
       console.log("✅ 저장 성공:", res.data);
 
-      Alert.alert("수정 완료", "프로필이 성공적으로 수정되었습니다.");
       navigation.goBack();
     } catch (error) {
       console.error("❌ 저장 실패:", error);
-      Alert.alert("오류", "프로필 저장에 실패했습니다.");
+      setAlertMessage("프로필 저장에 실패했습니다.");
+      setAlertVisible(true);
     }
   };
 
@@ -197,6 +200,13 @@ const EditProfile = ({ navigation, route }) => {
           style={{ height: 40, width: 100 }}
         />
       </ButtonContainer>
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+        }}
+      />
     </Container>
   );
 };

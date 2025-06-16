@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { WebView } from "react-native-webview";
 import { Alert, Linking, Platform } from "react-native";
+import { AlertModal } from "../components";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 
@@ -8,6 +9,10 @@ const PaymentScreen = ({ route, navigation }) => {
   const { amount, title } = route.params;
 
   const [paymentData, setPaymentData] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null); // goBack 등을 지정할 수 있는 콜백
+
   const hasProcessedPayment = useRef(false);
 
   const handleUrlScheme = (event) => {
@@ -39,7 +44,8 @@ const PaymentScreen = ({ route, navigation }) => {
           Linking.openURL(url);
         } catch (e) {
           console.error("❌ 앱 실행 에러:", e);
-          Alert.alert("앱 실행 실패", "필요한 앱이 설치되지 않았습니다.");
+          setAlertMessage("필요한 앱이 설치되지 않았습니다.");
+          setAlertVisible(true);
         }
         return false;
       }
@@ -88,10 +94,14 @@ const PaymentScreen = ({ route, navigation }) => {
         }
       );
 
-      Alert.alert("결제 성공", "서버에 결제 정보가 전달되었습니다.", [{ text: "확인", onPress: () => navigation.goBack() }]);
+      setAlertMessage("결제가 성공적으로 완료되었습니다.");
+      setOnConfirmAction(() => () => navigation.goBack()); // 확인 시 goBack 실행
+      setAlertVisible(true);
     } catch (err) {
       console.error("❌ 서버 전송 실패:", err.response?.data || err.message);
-      Alert.alert("전송 실패", "서버로 결제 정보를 전달하는 데 실패했습니다.");
+
+      setAlertMessage("서버로 결제 정보를 전달하는 데 실패했습니다.");
+      setAlertVisible(true);
     }
   };
 
@@ -129,7 +139,19 @@ const PaymentScreen = ({ route, navigation }) => {
   </html>
   `;
 
-  return <WebView originWhitelist={["*"]} source={{ html }} onShouldStartLoadWithRequest={handleUrlScheme} javaScriptEnabled={true} domStorageEnabled={true} />;
+  return (
+    <>
+      <WebView originWhitelist={["*"]} source={{ html }} onShouldStartLoadWithRequest={handleUrlScheme} javaScriptEnabled={true} domStorageEnabled={true} />
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (onConfirmAction) onConfirmAction(); // goBack 등 실행
+        }}
+      />
+    </>
+  );
 };
 
 export default PaymentScreen;

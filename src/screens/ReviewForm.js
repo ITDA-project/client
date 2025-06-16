@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Button, Input } from "../components";
+import { Button, Input, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -59,6 +59,10 @@ const ReviewForm = ({ route, navigation }) => {
   const [disabled, setDisabled] = useState(true);
   const [rating, setRating] = useState(0); // 별점 상태
 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
+
   useEffect(() => {
     setDisabled(form.trim().length === 0 || rating < 1);
   }, [form, rating]);
@@ -83,7 +87,7 @@ const ReviewForm = ({ route, navigation }) => {
 
   const handleReviewSubmit = async () => {
     try {
-      const accessToken = await EncryptedStorage.getItem("accessToken"); // 여기서 await 필요
+      const accessToken = await EncryptedStorage.getItem("accessToken");
 
       await axios.post(
         "http://10.0.2.2:8080/api/review",
@@ -99,11 +103,15 @@ const ReviewForm = ({ route, navigation }) => {
           },
         }
       );
-      alert("리뷰 등록 성공");
-      navigation.goBack();
+
+      setAlertMessage("리뷰 등록이 완료되었습니다.");
+      setOnConfirmAction(() => () => navigation.goBack());
+      setAlertVisible(true);
     } catch (e) {
-      alert("리뷰 등록 실패");
-      console.error(e);
+      console.error("리뷰 등록 실패:", e);
+      setAlertMessage("리뷰 등록에 실패했습니다.");
+      setOnConfirmAction(null);
+      setAlertVisible(true);
     }
   };
 
@@ -141,6 +149,14 @@ const ReviewForm = ({ route, navigation }) => {
           paddingBottom: 0,
         }}
         textStyle={{ marginLeft: 0, fontSize: 16 }}
+      />
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (onConfirmAction) onConfirmAction();
+        }}
       />
     </Container>
   );
