@@ -1,85 +1,173 @@
-import React, { useState, useContext, useEffect } from "react";
-import { View, Text, FlatList, KeyboardAvoidingView, Platform, Modal } from "react-native";
+import "react-native-get-random-values";
+import React, { useState, useEffect, useCallback, useContext, useRef, useMemo } from "react";
+import { View, FlatList, KeyboardAvoidingView, Platform, Modal } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import styled from "styled-components/native";
+import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button } from "../components";
-import { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { TouchableOpacity } from "react-native";
+import TouchableOpacity from "react-native/Libraries/Components/Touchable/TouchableOpacity";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
+import SockJS from "sockjs-client";
+import { Client as StompClient } from "@stomp/stompjs";
+import { v4 as uuid } from "uuid";
 
 const Chat = () => {
+  /* ──────────────────────── 기본 훅 및 파라미터 */
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
 
-  const { title, participants, writerId, userId } = route.params;
-  const [currentUserId, setCurrentUserId] = useState(null); //현재 사용자의 ID
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      name: "신짱구",
-      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQAdcZk8Uxff8hva1DX0f78gtUgkGuLDjlyUCBFbD-S7EEQx2DAQ&s=10&ec=72940544",
-      text: "방장님 모임 만들어 주셔서 감사합니다!",
-      time: "16:03",
-    },
-    {
-      id: 2,
-      name: "김철수",
-      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJyyKfN-ICpUK3cQfrRkLvbF2yKXebXx6RqwLuhMlTiy8qtmF_rw&s=10&ec=72940544",
-      text: "뜨린이였는데 많이 배워갑니다 ㅎㅎ 짱구님 덕분에 많이 도움이 됐어요",
-      time: "17:23",
-    },
-    { id: 3, name: "김철수", text: "오늘 정말 재밌었어요!", time: "17:25" },
-  ]);
+  const { roomId, title, participants } = route.params;
+
+  /* ──────────────────────── 상태 */
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
-  const [participantStatus, setParticipantStatus] = useState({});
+  const [currentRound, setCurrentRound] = useState(1); // ✅ 회차 상태 추가
   const [meetingActive, setMeetingActive] = useState(false);
-  const [hostExists, setHostExists] = useState(true); //모임장 채팅방 내 존재 여부
+  const [participantStatus, setParticipantStatus] = useState({});
+  const [wsConnected, setWsConnected] = useState(false);
+  const [hostExists, setHostExists] = useState(true); // deleteFlag 반전값
+  const [myRole, setMyRole] = useState();
 
+  const stompRef = useRef(null);
+
+  /* ──────────────────────── Utils */
+  const ensureId = (msg) => ({ ...msg, id: msg.id ?? uuid() });
+
+  /* ──────────────────────── 사용자 ID 로드 */
   useEffect(() => {
-    setCurrentUserId(1); //임시 currentUserId 백 연결 시 대체
-    setMeetingActive(false);
-    setParticipantStatus({});
+    (async () => {
+      try {
+        const token = await EncryptedStorage.getItem("accessToken");
+        const { data } = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+          headers: { access: token },
+        });
+        setCurrentUserId(Number(data.data));
+      } catch (e) {
+        console.error("유저 정보 가져오기 실패", e);
+      }
+    })();
   }, []);
 
+  /* ──────────────────────── 기존 메시지 로드 */
+  const fetchHistory = useCallback(async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
+        headers: { access: token },
+      });
+      const history = (data?.data?.messages ?? []).map((m) => {
+        console.log("메시지 로딩:", m.senderName);
+        return ensureId({
+          id: m.id,
+          senderId: m.senderId,
+          name: m.sender,
+          image: m.profileImage,
+          text: m.content,
+          time: m.createdAt?.slice(11, 16) ?? "",
+        });
+      });
+
+      setHostExists(!data.data.deleteFlag); // 방장 존재 여부
+      setMyRole(data.data.role); // OWNER or USER
+      setMessages(history);
+    } catch (e) {
+      console.error("메시지 불러오기 실패", e.response?.data ?? e.message);
+    }
+  }, [roomId]);
+
+  /* ──────────────────────── 소켓 연결 */
+  const connectSocket = useCallback(async () => {
+    const token = await EncryptedStorage.getItem("accessToken");
+
+    const client = new StompClient({
+      webSocketFactory: () => new SockJS("http://10.0.2.2:8080/ws"),
+      connectHeaders: { access: token },
+      debug: (str) => console.log("[STOMP]", str),
+      onConnect: () => {
+        console.log("✅ STOMP connected");
+        setWsConnected(true);
+        client.subscribe(`/topic/room/${roomId}`, ({ body }) => {
+          try {
+            const raw = JSON.parse(body);
+            console.log("소켓 수신:", raw.senderName);
+
+            const mapped = ensureId({
+              id: raw.id,
+              senderId: raw.senderId,
+              name: raw.senderName,
+              image: raw.profileImage,
+              text: raw.content,
+              time: raw.sentAt ? raw.sentAt.slice(11, 16) : "",
+            });
+
+            setMessages((prev) => [mapped, ...prev]);
+          } catch (e) {
+            console.error("메시지 파싱 실패:", e);
+          }
+        });
+      },
+      onStompError: console.error,
+      onWebSocketError: console.error,
+    });
+
+    client.onUnhandledMessage = (msg) => console.warn("⚠️ UNHANDLED MESSAGE:", msg.body);
+    client.activate();
+    stompRef.current = client;
+  }, [roomId]);
+
+  /* ──────────────────────── 초기 로드 & 언마운트 */
   useEffect(() => {
-    const exists = participants.some((p) => p.userId === writerId);
-    setHostExists(exists);
-  }, [participants, writerId]);
+    if (!roomId) return;
+    fetchHistory();
+    connectSocket();
+    return () => stompRef.current?.deactivate();
+  }, [roomId]);
 
-  const sendMessage = () => {
-    if (!hostExists) return; // 방장이 없으면 전송 차단
+  /* ──────────────────────── 메시지 전송 */
+  const handleSend = () => {
+    if (!input.trim() || !wsConnected) return;
+    stompRef.current.publish({
+      destination: `/app/${roomId}`,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ content: input }),
+    });
+    setInput("");
+  };
 
-    if (input.trim()) {
-      const newMessage = {
-        id: Date.now().toString(),
-        name: "나",
-        text: input,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages([...messages, newMessage]);
-      setInput("");
+  // 채팅방 나가기 버튼
+  const leaveRoom = async () => {
+    const token = await EncryptedStorage.getItem("accessToken");
+    try {
+      await axios.delete(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
+        headers: { access: token },
+      });
+      navigation.goBack();
+    } catch (e) {
+      console.error("채팅방 나가기 실패", e.response?.data || e.message);
     }
   };
 
   const handleStartMeeting = () => {
-    //결제페이지 코드 추가
     const updatedStatus = {};
     participants.forEach((p) => {
       updatedStatus[p.name] = p.status ?? "불참";
     });
     setParticipantStatus(updatedStatus);
     setMeetingActive(true);
+    // setCurrentRound(prev => prev + 1);  // 회차 증가가 필요하면 사용
   };
 
   const handlePaymentSuccess = (name) => {
     if (meetingActive) {
       setParticipantStatus((prev) => ({ ...prev, [name]: "참여" }));
     }
-  }; //결제 완료 후 호출
+  }; //결제 완료 후 상태 불러오기
 
   const handleEndMeeting = () => {
     setMeetingActive(false);
@@ -92,37 +180,42 @@ const Chat = () => {
         participantStatus[p.name] = p.status;
       }
     });
-    navigation.navigate("참여확인", { participants, participantStatus });
+    navigation.navigate("참여확인", { participants, participantStatus, currentRound });
   };
 
-  const renderItem = ({ item, index }) => {
-    const reversedMessages = messages.slice().reverse();
-    const prevMessage = reversedMessages[index + 1];
-    const isMe = item.name === "나";
+  /* ──────────────────────── FlatList 데이터 메모 */
+  const listData = messages;
 
-    const isFirstOfGroup = !prevMessage || prevMessage.name !== item.name;
-    const showTime = !prevMessage || prevMessage.time !== item.time || prevMessage.name !== item.name;
-    const image = item.image || null;
+  /* ──────────────────────── 렌더 함수 */
+  const renderItem = ({ item, index }) => {
+    //console.log("내 ID:", currentUserId, "메시지 보낸 사람:", item.senderId);
+
+    const prev = listData[index + 1];
+    const newerMsg = index > 0 ? messages[index - 1] : null; // 시간 표시 여부 결정용
+    const isMe = String(item.senderId) === String(currentUserId);
+    const isFirstOfGroup = !prev || prev.name !== item.name;
+    const showTime = !newerMsg || newerMsg.senderId !== item.senderId || newerMsg.time !== item.time; // ✅ 마지막 버블에만 시간
 
     return (
       <MessageRow alignRight={isMe}>
+        {/* 아바타 */}
         {!isMe && (
           <AvatarWrapper>
             {isFirstOfGroup ? (
-              image ? (
-                <ProfileImage source={{ uri: image }} />
+              item.image ? (
+                <ProfileImage source={{ uri: item.image }} />
               ) : (
-                <Feather name="user" size={40} color="#888" />
+                <Feather name="user" size={38} color="#888" />
               )
             ) : (
-              <View style={{ width: 40, height: 40 }} /> // 공간 유지용 빈 뷰
+              <View style={{ width: 40, height: 40 }} />
             )}
           </AvatarWrapper>
         )}
 
+        {/* 버블 */}
         <MessageGroup alignRight={isMe}>
           {!isMe && isFirstOfGroup && <Sender>{item.name}</Sender>}
-
           <BubbleRow alignRight={isMe}>
             <MessageBubble alignRight={isMe}>
               <MessageText alignRight={isMe}>{item.text}</MessageText>
@@ -134,6 +227,7 @@ const Chat = () => {
     );
   };
 
+  /* ──────────────────────── UI 컴포넌트 */
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
       <ChatHeader>
@@ -141,19 +235,23 @@ const Chat = () => {
           <MaterialIcons name="keyboard-arrow-left" size={38} />
         </HeaderButton>
 
-        <ChatTitleCentered>{title}</ChatTitleCentered>
+        <HeaderTitleWrapper>
+          <ChatTitleCentered>{title}</ChatTitleCentered>
+          {meetingActive && <RoundIndicator>{`${currentRound}회차 진행중`}</RoundIndicator>}
+        </HeaderTitleWrapper>
+
         <HeaderButton onPress={() => setSideMenuVisible(true)}>
           <MaterialIcons name="menu" size={28} />
         </HeaderButton>
       </ChatHeader>
 
       <ChatArea>
-        <FlatList data={messages.slice().reverse()} renderItem={renderItem} keyExtractor={(item) => item.id} inverted />
-        <InputContainer insets={insets} style={{ backgroundColor: hostExists ? "#fff" : "#ccc", justifyContent: "center", alignItems: "center" }}>
+        {currentUserId !== null && <FlatList data={listData} inverted renderItem={renderItem} keyExtractor={(item) => String(item.id)} />}
+        <InputContainer insets={insets}>
           {hostExists ? (
             <>
               <ChatInput placeholder="메세지를 입력해보세요!" value={input} onChangeText={setInput} editable />
-              <SendButton onPress={sendMessage}>
+              <SendButton onPress={handleSend}>
                 <MaterialIcons name="send" size={24} />
               </SendButton>
             </>
@@ -165,7 +263,6 @@ const Chat = () => {
           )}
         </InputContainer>
       </ChatArea>
-
       <Modal visible={sideMenuVisible} animationType="slide" transparent>
         <Overlay>
           <SideMenuContainer>
@@ -206,7 +303,7 @@ const Chat = () => {
               </ParticipantList>
             </ParticipantListContainer>
 
-            {writerId === currentUserId && (
+            {myRole === "OWNER" && (
               <ButtonContainer>
                 {meetingActive ? (
                   <Button
@@ -228,7 +325,7 @@ const Chat = () => {
               </ButtonContainer>
             )}
 
-            <HeaderButton style={{ alignSelf: "flex-end", position: "absolute", bottom: 20, right: 20 }} onPress={() => console.log("채팅방 나가기")}>
+            <HeaderButton style={{ alignSelf: "flex-end", position: "absolute", bottom: 20, right: 20 }} onPress={leaveRoom}>
               <Ionicons name="exit-outline" size={28} color="#FF2E2E" />
             </HeaderButton>
           </SideMenuContainer>
@@ -248,6 +345,18 @@ const ChatHeader = styled.View`
   border-bottom-width: 1px;
   border-bottom-color: #eee;
   background-color: white;
+`;
+
+const HeaderTitleWrapper = styled.View`
+  flex: 1;
+  align-items: center;
+`;
+
+const RoundIndicator = styled.Text`
+  font-size: 13px;
+  color: #999;
+  margin-top: 2px;
+  font-family: ${({ theme }) => theme.fonts.bold};
 `;
 
 const ChatTitleCentered = styled.Text`
