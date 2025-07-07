@@ -1,7 +1,7 @@
 import "react-native-get-random-values";
 import React, { useState, useEffect, useCallback, useContext, useRef, useMemo } from "react";
-import { View, FlatList, KeyboardAvoidingView, Platform, Modal } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { View, Text, FlatList, KeyboardAvoidingView, Platform, Modal } from "react-native";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button } from "../components";
@@ -20,14 +20,16 @@ const Chat = () => {
   const route = useRoute();
   const insets = useSafeAreaInsets();
 
-  const { roomId, title, participants } = route.params;
+  const { roomId, title } = route.params;
 
   /* ──────────────────────── 상태 */
   const [currentUserId, setCurrentUserId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [participants, setParticipants] = useState([]);
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
   const [currentRound, setCurrentRound] = useState(1); // ✅ 회차 상태 추가
+  const [currentSessionId, setCurrentSessionId] = useState(null);
   const [meetingActive, setMeetingActive] = useState(false);
   const [participantStatus, setParticipantStatus] = useState({});
   const [wsConnected, setWsConnected] = useState(false);
@@ -38,6 +40,10 @@ const Chat = () => {
 
   /* ──────────────────────── Utils */
   const ensureId = (msg) => ({ ...msg, id: msg.id ?? uuid() });
+
+  // ✅ 임의의 날짜와 시간 (하드코딩)
+  const today = () => "2025-07-08"; // 고정된 날짜
+  const now = () => "19:00"; // 고정된 시간
 
   /* ──────────────────────── 사용자 ID 로드 */
   useEffect(() => {
@@ -53,6 +59,81 @@ const Chat = () => {
       }
     })();
   }, []);
+
+  /* ──────────────────────── 참가자 목록 로드  ✅ */
+  const fetchParticipants = useCallback(async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}/participants`, {
+        headers: { access: token },
+      });
+      console.log("참가자 응답:", data);
+
+      const list = (data?.dtoList ?? []).map((p) => ({
+        userId: p.userId ?? null,
+        name: p.participantName,
+        image: p.image,
+        status: p.status ?? null,
+      }));
+      setParticipants(list);
+      return list;
+    } catch (e) {
+      console.error("참가자 목록 불러오기 실패", e.response?.data ?? e.message);
+      return [];
+    }
+  }, [roomId]);
+
+  /* ───── 세션 상태 로드 */
+  const fetchSessionStatus = useCallback(async () => {
+    const token = await EncryptedStorage.getItem("accessToken");
+
+    // 참가자 목록 먼저 로드
+    const { data: participantData } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}/participants`, {
+      headers: { access: token },
+    });
+
+    const list = (participantData?.dtoList ?? []).map((p) => ({
+      userId: p.userId ?? null,
+      name: p.participantName,
+      image: p.image,
+      status: p.status ?? null,
+    }));
+    setParticipants(list); // 상태 반영
+
+    // 세션 상태 조회
+    const { data } = await axios.get(`http://10.0.2.2:8080/api/sessions/chatroom/${roomId}/active`, {
+      headers: { access: token },
+    });
+
+    if (!data.data) {
+      setMeetingActive(false);
+      setParticipantStatus({}); // 진행 안 할 때는 초기화
+      return;
+    }
+
+    const s = data.data;
+    setMeetingActive(true);
+    setCurrentSessionId(s.id);
+    setCurrentRound(s.sessionNumber);
+
+    // 세션 참가자 상태 불러오기
+    const { data: ps } = await axios.get(`http://10.0.2.2:8080/api/sessions/${s.id}/participants`, {
+      headers: { access: token },
+    });
+
+    const badge = {};
+    (ps?.data ?? []).forEach((v) => {
+      badge[v.participantName] = v.status ?? "불참";
+    });
+
+    if (Object.keys(badge).length === 0) {
+      list.forEach((p) => {
+        badge[p.name] = "불참";
+      });
+    }
+
+    setParticipantStatus(badge);
+  }, [roomId]);
 
   /* ──────────────────────── 기존 메시지 로드 */
   const fetchHistory = useCallback(async () => {
@@ -124,14 +205,34 @@ const Chat = () => {
   /* ──────────────────────── 초기 로드 & 언마운트 */
   useEffect(() => {
     if (!roomId) return;
-    fetchHistory();
-    connectSocket();
-    return () => stompRef.current?.deactivate();
+
+    const initialize = async () => {
+      await connectSocket();
+      await fetchHistory();
+      await fetchSessionStatus();
+    };
+
+    initialize();
+    return () => {
+      stompRef.current?.deactivate();
+      stompRef.current = null; // 참조 정리
+    };
   }, [roomId]);
 
+  /* ───────── 화면 포커스 */
+  useFocusEffect(
+    useCallback(() => {
+      if (roomId) fetchSessionStatus();
+    }, [roomId])
+  );
   /* ──────────────────────── 메시지 전송 */
   const handleSend = () => {
-    if (!input.trim() || !wsConnected) return;
+    if (!input.trim()) return;
+    if (!stompRef.current?.connected) {
+      console.warn("소켓 연결 중. 잠시후 시도하세요");
+      return;
+    }
+
     stompRef.current.publish({
       destination: `/app/${roomId}`,
       headers: { "content-type": "application/json" },
@@ -153,14 +254,33 @@ const Chat = () => {
     }
   };
 
-  const handleStartMeeting = () => {
-    const updatedStatus = {};
-    participants.forEach((p) => {
-      updatedStatus[p.name] = p.status ?? "불참";
-    });
-    setParticipantStatus(updatedStatus);
+  /* ───────── 모임 시작 */
+  const handleStartMeeting = async () => {
+    if (meetingActive) return; // 중복 방지
+    const token = await EncryptedStorage.getItem("accessToken");
+
+    // ① 서버에 새 세션 생성
+    const { data } = await axios.post(
+      "http://10.0.2.2:8080/api/sessions/start",
+      { roomId, sessionDate: today(), sessionTime: now(), price: 10000 },
+      { headers: { access: token, "Content-Type": "application/json" } }
+    );
+
+    // ② 응답(JSON) 구조 ─ swagger 참고
+    const s = data.data;
+    setCurrentSessionId(s.id);
+    setCurrentRound(s.sessionNumber); // 회차 갱신
     setMeetingActive(true);
-    // setCurrentRound(prev => prev + 1);  // 회차 증가가 필요하면 사용
+
+    // 최신 참가자 리스트 확보
+    const list = await fetchParticipants();
+
+    // 전원 '불참'으로 초기화
+    const initial = {};
+    list.forEach((p) => {
+      initial[p.name] = "불참";
+    });
+    setParticipantStatus(initial);
   };
 
   const handlePaymentSuccess = (name) => {
@@ -169,18 +289,25 @@ const Chat = () => {
     }
   }; //결제 완료 후 상태 불러오기
 
-  const handleEndMeeting = () => {
-    setMeetingActive(false);
-    setParticipantStatus({});
-    setSideMenuVisible(false);
+  /* ───────── 모임 종료 */
+  const handleEndMeeting = async () => {
+    if (!currentSessionId) return;
+    const token = await EncryptedStorage.getItem("accessToken");
 
-    const participantStatus = {};
-    participants.forEach((p) => {
-      if (p.status) {
-        participantStatus[p.name] = p.status;
-      }
-    });
-    navigation.navigate("참여확인", { participants, participantStatus, currentRound });
+    try {
+      await axios.post(
+        "http://10.0.2.2:8080/api/sessions/end",
+        { roomId, sessionId: currentSessionId },
+        { headers: { access: token, "Content-Type": "application/json" } }
+      );
+
+      await fetchSessionStatus(); // 상태 갱신
+      setParticipantStatus({}); // ⛔ 배지 초기화
+      setSideMenuVisible(false);
+      navigation.navigate("참여확인", { participants, participantStatus, currentRound });
+    } catch (e) {
+      console.error("모임 종료 실패", e.response?.data ?? e.message);
+    }
   };
 
   /* ──────────────────────── FlatList 데이터 메모 */
@@ -240,7 +367,13 @@ const Chat = () => {
           {meetingActive && <RoundIndicator>{`${currentRound}회차 진행중`}</RoundIndicator>}
         </HeaderTitleWrapper>
 
-        <HeaderButton onPress={() => setSideMenuVisible(true)}>
+        <HeaderButton
+          onPress={() => {
+            fetchSessionStatus().finally(() => {
+              setSideMenuVisible(true);
+            });
+          }}
+        >
           <MaterialIcons name="menu" size={28} />
         </HeaderButton>
       </ChatHeader>
@@ -251,7 +384,7 @@ const Chat = () => {
           {hostExists ? (
             <>
               <ChatInput placeholder="메세지를 입력해보세요!" value={input} onChangeText={setInput} editable />
-              <SendButton onPress={handleSend}>
+              <SendButton onPress={handleSend} disabled={!stompRef.current?.connected}>
                 <MaterialIcons name="send" size={24} />
               </SendButton>
             </>
@@ -273,33 +406,36 @@ const Chat = () => {
             <SideMenuTitle>참가 중인 사람</SideMenuTitle>
             <ParticipantListContainer>
               <ParticipantList>
-                {participants?.map((p, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() => {
-                      navigation.navigate("리뷰 등록", {
-                        userId: p.userId,
-                        name: p.name,
-                        image: p.image,
-                      });
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <ParticipantRow key={i}>
-                      {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
-                      <ParticipantItem>{p.name}</ParticipantItem>
+                {participants.map((p, i) => {
+                  const status = participantStatus[p.name] ?? "불참";
+                  return (
+                    <TouchableOpacity
+                      key={i}
+                      onPress={() => {
+                        navigation.navigate("리뷰 등록", {
+                          userId: p.userId,
+                          name: p.name,
+                          image: p.image,
+                        });
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <ParticipantRow key={i}>
+                        {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
+                        <ParticipantItem>{p.name}</ParticipantItem>
 
-                      {meetingActive && participantStatus[p.name] && (
-                        <StatusBadge>
-                          <StatusDot>
-                            <Text style={{ color: "#FFD000" }}>{participantStatus[p.name] === "참여" ? "●" : "○"}</Text>
-                          </StatusDot>
-                          <StatusText>{participantStatus[p.name]}</StatusText>
-                        </StatusBadge>
-                      )}
-                    </ParticipantRow>
-                  </TouchableOpacity>
-                ))}
+                        {meetingActive && (
+                          <StatusBadge>
+                            <StatusDot>
+                              <Text style={{ color: "#FFD000" }}>{status === "참여" ? "●" : "○"}</Text>
+                            </StatusDot>
+                            <StatusText>{status}</StatusText>
+                          </StatusBadge>
+                        )}
+                      </ParticipantRow>
+                    </TouchableOpacity>
+                  );
+                })}
               </ParticipantList>
             </ParticipantListContainer>
 
@@ -478,7 +614,7 @@ const SideMenuTitle = styled.Text`
 `;
 
 const ParticipantListContainer = styled.View`
-  max-height: 300px;
+  height: 300px;
   margin-top: 20px;
   margin-bottom: 20px;
 `;
