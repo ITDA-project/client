@@ -439,8 +439,14 @@ const Chat = () => {
                       activeOpacity={0.7}
                     >
                       <ParticipantRow key={i}>
-                        {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
-                        <ParticipantItem>{p.name}</ParticipantItem>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          {p.image ? (
+                            <ParticipantImage source={{ uri: p.image }} />
+                          ) : (
+                            <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
+                          )}
+                          <ParticipantItem>{p.name}</ParticipantItem>
+                        </View>
 
                         {meetingActive && (
                           <StatusBadge>
@@ -659,7 +665,9 @@ const ParticipantList = styled.ScrollView``;
 const ParticipantRow = styled.View`
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
+  width: 100%;
 `;
 
 const ParticipantImage = styled.Image`
