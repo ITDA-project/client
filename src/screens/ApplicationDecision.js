@@ -86,6 +86,24 @@ const ApplicationDecision = ({ route, navigation }) => {
         }
       );
 
+      //수락일 경우 채팅방 초대
+      if (status === "accept") {
+        try {
+          await axios.post(
+            "http://10.0.2.2:8080/api/chatroom/invite",
+            {
+              postId,
+              username: formData.username,
+            },
+            { headers: { access: token }, "Content-Type": "application/json" }
+          );
+        } catch (inviteErr) {
+          console.error("채팅방 초대 실패", inviteErr);
+          // 초대 실패해도 신청 상태 변경은 이미 성공했으므로 경고만 표시
+          Alert.alert("알림", "수락은 완료됐지만 채팅방 초대에 실패했습니다.");
+        }
+      }
+
       setAlertMessage(`신청서가 ${status === "accept" ? "수락" : "거절"}되었습니다.`);
       setOnConfirmAction(() => () => navigation.goBack());
       setAlertVisible(true);

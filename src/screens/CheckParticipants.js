@@ -26,6 +26,11 @@ const MeetingDate = styled.Text`
   font-family: ${({ theme }) => theme.fonts.bold};
 `;
 
+const RoundText = styled.Text`
+  color: ${({ theme }) => theme.colors.black};
+  font-family: ${({ theme }) => theme.fonts.bold};
+`;
+
 const MessageText = styled.Text`
   color: ${({ theme }) => theme.colors.grey};
   font-size: 18px;
@@ -79,7 +84,7 @@ const CheckParticipants = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { participants, participantStatus } = route.params ?? {};
+  const { participants, participantStatus, currentRound } = route.params ?? {};
 
   //체크박스 선택 여부 상태 저장
   const [Status, setStatus] = useState(participants.map((p) => ({ ...p, attended: false })));
@@ -107,7 +112,9 @@ const CheckParticipants = () => {
     <Wrapper>
       <Container insets={insets}>
         <MeetingDate>2025/05/26</MeetingDate>
-        <MessageText>모임이 종료되었습니다!</MessageText>
+        <MessageText>
+          <RoundText>{currentRound}회차</RoundText> 모임이 종료되었습니다!
+        </MessageText>
         <MessageText>모임에 참여한 사람을 선택해 주세요.</MessageText>
 
         <ParticipantListContainer>
