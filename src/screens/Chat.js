@@ -23,9 +23,20 @@ const Chat = () => {
 
   const { roomId, title } = route.params;
 
-  // ✅ 임의의 날짜와 시간 (하드코딩)
-  const today = () => "2025-07-08"; // 고정된 날짜
-  const now = () => "19:00"; // 고정된 시간
+  const getToday = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD
+  };
+
+  const getNow = () => {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mi}`; // HH:mm (24h)
+  };
 
   /* ──────────────────────── 상태 */
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -42,8 +53,8 @@ const Chat = () => {
   const [myRole, setMyRole] = useState();
 
   const [startModalVisible, setStartModalVisible] = useState(false);
-  const [formDate, setFormDate] = useState(today());
-  const [formTime, setFormTime] = useState(now());
+  const [formDate, setFormDate] = useState(getToday());
+  const [formTime, setFormTime] = useState(getNow());
   const [formPrice, setFormPrice] = useState("10000");
 
   const stompRef = useRef(null);
@@ -459,7 +470,13 @@ const Chat = () => {
                 ) : (
                   <Button
                     title="모임 주최"
-                    onPress={() => setStartModalVisible(true)}
+                    onPress={() => {
+                      // 기본값 세팅
+                      setFormDate(getToday()); // "YYYY-MM-DD"
+                      setFormTime(getNow()); // "HH:mm"
+                      setFormPrice("10000");
+                      setStartModalVisible(true); // 모달 열기
+                    }}
                     containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
                     textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
                     style={{ height: 40, width: 95 }}
