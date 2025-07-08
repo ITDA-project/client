@@ -1,21 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
-import {
-  ScrollView,
-  View,
-  TextInput,
-  Text,
-  Platform,
-  Alert,
-} from "react-native";
+import { ScrollView, View, TextInput, Text, Platform, Alert } from "react-native";
 import styled, { ThemeContext } from "styled-components/native";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Input from "../components/Input";
-import Button from "../components/Button";
+import { Input, Button, AlertModal } from "../components";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { categoryData, cityData, districtData } from "./CreatePost"; // 👈 이렇게 임시 해결
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -85,8 +79,17 @@ const CalendarPicker = ({ date, setDate, minDate, disabled }) => {
           locale="ko-KR"
           minimumDate={minDate}
           onChange={(event, selectedDate) => {
-            setOpen(false);
-            if (selectedDate) setDate(selectedDate);
+            if (Platform.OS === "android") {
+              setOpen(false);
+              if (event.type === "set" && selectedDate) {
+                setDate(selectedDate);
+              }
+            } else {
+              // iOS는 실시간 반영
+              if (selectedDate) {
+                setDate(selectedDate);
+              }
+            }
           }}
         />
       )}
@@ -99,29 +102,42 @@ const EditPost = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  // fallback 처리
-const params = route?.params ?? {};
+  const categoryCodeMap = {
+    취미: "HOBBY",
+    운동: "EXERCISE",
+    또래: "FRIEND",
+    공부: "STUDY",
+    음악: "MUSIC",
+    게임: "GAME",
+  };
 
-const {
-  postId,
-  title: initialTitle,
-  description: initialDesc,
-  selectedCity: initialCity,
-  selectedDistrict: initialDistrict,
-  category: initialCategory,
-  maxParticipants,
-  deposit,
-  tags,
-  recruitmentStart,
-  recruitmentEnd,
-  activityStart,
-  activityEnd,
-} = params;
+  const categoryLabelMap = Object.fromEntries(Object.entries(categoryCodeMap).map(([label, code]) => [code, label]));
+
+  // fallback 처리
+  const params = route?.params ?? {};
+  const {
+    postId,
+    title: initialTitle,
+    description: initialDesc,
+    selectedCity: initialCity,
+    selectedDistrict: initialDistrict,
+    category: initialCategory,
+    maxParticipants,
+    deposit,
+    tags,
+    recruitmentStart,
+    recruitmentEnd,
+    activityStart,
+    activityEnd,
+    isRecreate = false,
+  } = params;
+  console.log("params: ", params);
 
   const [title, setTitle] = useState(initialTitle || "");
   const [description, setDescription] = useState(initialDesc || "");
   const [inputHeight, setInputHeight] = useState(120);
-  const [category, setCategory] = useState(initialCategory || null);
+
+  const [category, setCategory] = useState(categoryLabelMap[initialCategory] || null);
   const [categoryOpen, setCategoryOpen] = useState(false);
 
   const [selectedCity, setSelectedCity] = useState(initialCity || null);
@@ -129,23 +145,29 @@ const {
   const [districtList, setDistrictList] = useState([]);
   const [cityOpen, setCityOpen] = useState(false);
   const [districtOpen, setDistrictOpen] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const [max, setMax] = useState(maxParticipants?.toString() || "");
   const [money, setMoney] = useState(deposit || "");
   const [tagText, setTagText] = useState(tags || "");
 
+  // 문자열로 전달받은 날짜를 Date 객체로 안전하게 변환
   const safeParseDate = (value) => {
     if (!value || typeof value !== "string") return new Date();
-    const normalized = value.replace(/\./g, "-").replace(/\s/g, "");
-    const parsed = new Date(normalized);
-    return isNaN(parsed.getTime()) ? new Date() : parsed;
+    const [y, m, d] = value.split("-");
+    if (y && m && d) {
+      return new Date(Number(y), Number(m) - 1, Number(d));
+    }
+    return new Date();
   };
-  
+  const originalRecruitEnd = safeParseDate(recruitmentEnd); //기존의 마감일
   const [recruitStart, setRecruitStart] = useState(safeParseDate(recruitmentStart));
   const [recruitEnd, setRecruitEnd] = useState(safeParseDate(recruitmentEnd));
   const [activityStartDate, setActivityStartDate] = useState(safeParseDate(activityStart));
   const [activityEndDate, setActivityEndDate] = useState(safeParseDate(activityEnd));
 
+  // 📌 시 선택 시 구 리스트 자동 설정
   useEffect(() => {
     if (selectedCity) {
       setDistrictList(
@@ -157,50 +179,57 @@ const {
     }
   }, [selectedCity]);
 
+  // ✅ 유효성 검사
   const isFormValid = () => {
     return (
-      title &&
-      description &&
-      selectedCity &&
-      selectedDistrict &&
-      category &&
-      max &&
-      money &&
-      tagText &&
-      recruitStart &&
-      recruitEnd &&
-      activityStartDate &&
-      activityEndDate
+      title && description && selectedCity && selectedDistrict && category && max && money && tagText && recruitEnd && activityStartDate && activityEndDate
     );
   };
 
-  const handleUpdate = () => {
-    const formatDate = (date) => {
-        return date instanceof Date ? date.toISOString().split("T")[0] : "";
-      };
-    
-    const updatedPost = {
-        postId,
-        title,
-        description,
-        category,
-        selectedCity,
-        selectedDistrict,
-        memberMax: max,
-        deposit: money,
-        tags: tagText.split(" "),
-        recruitmentStart: formatDate(recruitStart),
-        recruitmentEnd: formatDate(recruitEnd),
-        activityStart: formatDate(activityStartDate),
-        activityEnd: formatDate(activityEndDate),
-        createdAt: new Date().toISOString().split("T")[0], // 또는 유지할 기존 createdAt
-      };
+  // 📡 게시글 수정 요청
+  const handleUpdate = async () => {
+    const formatDate = (date) => date.toISOString().split("T")[0];
+    const originalEndStr = formatDate(originalRecruitEnd);
+    const currentEndStr = formatDate(recruitEnd);
 
-    console.log("수정된 데이터:", updatedPost);
+    if (isRecreate && originalEndStr === currentEndStr) {
+      Alert.alert("모집 마감일 수정 필요", "모임을 재생성하려면 모집 마감일을 변경해주세요.");
+      return;
+    }
+    const requestBody = {
+      title,
+      content: description,
+      category: categoryCodeMap[category],
+      membersMax: Number(max),
+      location: `${selectedCity} ${selectedDistrict}`,
+      dueDate: formatDate(recruitEnd),
+      warranty: money,
+      activityStartDate: formatDate(activityStartDate),
+      activityEndDate: formatDate(activityEndDate),
+    };
+    console.log("요청바디:", requestBody);
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
 
-    // 여기에 실제 API 연동 로직 추가
-    Alert.alert("수정 완료", "게시글이 성공적으로 수정되었습니다.");
-    navigation.replace("MyPostDetail",{updatedPost});
+      if (!accessToken) {
+        Alert.alert("로그인 필요", "수정을 위해 로그인해주세요.");
+        return;
+      }
+
+      const response = await axios.patch(`http://10.0.2.2:8080/api/posts/${postId}`, requestBody, {
+        headers: {
+          access: `${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("✅ 수정 성공:", response.data);
+      navigation.replace("MyPostDetail", { postId });
+    } catch (error) {
+      console.error("❌ 게시글 수정 실패:", error.response?.data || error.message);
+      setAlertMessage("게시글 수정 중 오류가 발생했습니다.");
+      setAlertVisible(true);
+    }
   };
 
   return (
@@ -223,8 +252,7 @@ const {
           </View>
 
           <Label>제목</Label>
-          <Input value={title} onChangeText={setTitle} placeholder="글 제목"
-          containerStyle={{ marginTop: -20 }} />
+          <Input value={title} onChangeText={setTitle} placeholder="글 제목" containerStyle={{ marginTop: -20 }} />
 
           <Label>상세설명</Label>
           <TextInput
@@ -233,9 +261,7 @@ const {
             placeholder="설명 입력"
             multiline
             numberOfLines={5}
-            onContentSizeChange={(e) =>
-              setInputHeight(Math.max(120, e.nativeEvent.contentSize.height))
-            }
+            onContentSizeChange={(e) => setInputHeight(Math.max(120, e.nativeEvent.contentSize.height))}
             style={{
               height: inputHeight,
               padding: 10,
@@ -277,22 +303,20 @@ const {
           </RowContainer>
 
           <Label>모임 최대 인원</Label>
-          <Input
-            value={max}
-            onChangeText={setMax}
-            placeholder="예: 10"
-            keyboardType="numeric"
-            containerStyle={{ marginTop: -20 }}
-          />
+          <Input value={max} onChangeText={setMax} placeholder="예: 10" keyboardType="numeric" containerStyle={{ marginTop: -20 }} />
 
           <Label>모집 기간</Label>
           <RowContainer>
-            <CalendarPicker date={recruitStart} setDate={setRecruitStart} />
+            {/* 모집 시작일 - 고정값 (오늘) */}
+            <DateInputContainer disabled={true}>
+              <DateText>{recruitStart.toLocaleDateString("ko-KR")}</DateText>
+              <Ionicons name="calendar-outline" size={20} color="#888" />
+            </DateInputContainer>
             <Text style={{ fontSize: 18, fontWeight: "bold" }}>~</Text>
             <CalendarPicker
               date={recruitEnd}
               setDate={setRecruitEnd}
-              minDate={recruitStart}
+              minDate={recruitStart} // 모집 시작 이후 날짜만 선택 가능
             />
           </RowContainer>
 
@@ -300,29 +324,14 @@ const {
           <RowContainer>
             <CalendarPicker date={activityStartDate} setDate={setActivityStartDate} />
             <Text style={{ fontSize: 18, fontWeight: "bold" }}>~</Text>
-            <CalendarPicker
-              date={activityEndDate}
-              setDate={setActivityEndDate}
-              minDate={activityStartDate}
-            />
+            <CalendarPicker date={activityEndDate} setDate={setActivityEndDate} minDate={activityStartDate} />
           </RowContainer>
 
           <Label>보증금</Label>
-          <Input
-            value={money}
-            onChangeText={setMoney}
-            placeholder="₩ 0"
-            keyboardType="numeric"
-            containerStyle={{ marginTop: -20 }}
-          />
+          <Input value={money} onChangeText={setMoney} placeholder="₩ 0" keyboardType="numeric" containerStyle={{ marginTop: -20 }} />
 
           <Label>태그</Label>
-          <Input
-            value={tagText}
-            onChangeText={setTagText}
-            placeholder="#친목 #서울"
-            containerStyle={{ marginTop: -20 }}
-          />
+          <Input value={tagText} onChangeText={setTagText} placeholder="#친목 #서울" containerStyle={{ marginTop: -20 }} />
 
           <ButtonContainer>
             <Button
@@ -335,6 +344,13 @@ const {
             />
           </ButtonContainer>
         </ScrollView>
+        <AlertModal
+          visible={alertVisible}
+          message={alertMessage}
+          onConfirm={() => {
+            setAlertVisible(false);
+          }}
+        />
       </Container>
     </KeyboardAwareScrollView>
   );

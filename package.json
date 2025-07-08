@@ -30,6 +30,8 @@
     "expo-splash-screen": "^0.29.22",
     "expo-status-bar": "~2.0.1",
     "http-proxy-middleware": "^3.0.3",
+    "iamport-react-native": "^2.0.14",
+    "jwt-decode": "^4.0.0",
     "prop-types": "^15.8.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -51,13 +53,21 @@
     "react-native-svg": "^15.8.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "styled-components": "^6.1.15"
+    "styled-components": "^6.1.15",
+    "expo-notifications": "~0.29.14"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "@react-native-community/cli": "^17.0.0",
+    "@react-native-community/cli": "^16.0.1",
+    "@react-native/metro-config": "^0.78.2",
+    "connect": "3.6.6",
+    "metro": "^0.76.5",
+    "metro-config": "^0.76.5",
     "prettier": "^3.5.3",
     "react-native-svg-transformer": "^1.5.0"
+  },
+  "overrides": {
+    "connect": "3.6.6"
   },
   "private": true,
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"

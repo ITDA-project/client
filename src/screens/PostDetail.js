@@ -1,9 +1,12 @@
-import React, { useState, useContext } from "react";
-import { useRoute } from "@react-navigation/native";
-import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
+import React, { useState, useContext, useEffect } from "react";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
-import Button from "../components/Button";
+import { Button, AlertModal } from "../components";
+import { TouchableOpacity, Text } from "react-native";
 import useRequireLogin from "../hooks/useRequireLogin";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
@@ -21,7 +24,7 @@ const Title = styled.Text`
   font-family: ${({ theme }) => theme.fonts.extraBold};
   margin-top: 10px;
 `;
-const Date = styled.Text`
+const DateText = styled.Text`
   color: ${({ theme }) => theme.colors.grey};
   font-size: 14px;
   font-family: ${({ theme }) => theme.fonts.regular};
@@ -133,38 +136,122 @@ const PostDetail = () => {
   const { checkLogin, LoginAlert } = useRequireLogin();
   const theme = useContext(ThemeContext);
   const route = useRoute();
-  const { postId, title = "제목 없음", createdAt = "날짜 없음" } = route.params || {};
+
+  const navigation = useNavigation();
+  const { postId } = route.params || {};
+
+  const [meeting, setMeeting] = useState(null);
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(7);
+  const [likeId, setLikeId] = useState(null);
+  const [likes, setLikes] = useState(0);
+  const [user, setUser] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
-  const toggleLike = () => {
-    setLiked(!liked);
-    setLikes(liked ? likes - 1 : likes + 1);
+  const fetchDetail = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+
+      const headers = accessToken ? { access: accessToken } : {};
+
+      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
+      const data = res.data.data;
+
+      console.log("📡 상세 데이터:", res);
+
+      console.log("❤️ 좋아요 여부:", data.liked);
+
+      setMeeting({
+        postId: data.id,
+        title: data.title,
+        createdAt: data.createdAt.split("T")[0].split("-").join("."),
+        content: data.content,
+        location: data.location,
+        maxParticipants: data.membersMax,
+        recruitmentStart: data.createdAt.split("T")[0].split("-").join("-"),
+        recruitmentEnd: data.dueDate,
+        activityStart: data.activityStartDate,
+        activityEnd: data.activityEndDate,
+        deposit: data.warranty,
+        tags: [`#${data.category}`],
+        likes: data.likesCount,
+        likeId: data.likeId,
+      });
+      setUser({
+        userId: data.userId,
+        name: data.userName,
+        career: data.userCareer,
+        image: data.userImage,
+      });
+      setLikes(data.likesCount);
+      setLiked(data.liked ?? false);
+    } catch (e) {
+      console.error("상세 데이터 로딩 실패", e);
+    }
+  };
+  useEffect(() => {
+    fetchDetail();
+  }, []);
+
+  const toggleLike = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        setAlertMessage("로그인이 필요합니다");
+        setAlertVisible(true);
+        return;
+      }
+
+      if (!liked) {
+        console.log("📡 좋아요 요청 보내는 중...");
+        const res = await axios.post(
+          `http://10.0.2.2:8080/api/posts/${postId}/likes`,
+          {},
+          {
+            headers: { access: `${accessToken}` },
+          }
+        );
+        console.log("👍 좋아요 등록 성공:", res.data);
+
+        if (res.status === 201) {
+          setLiked(true);
+          setLikes((prev) => prev + 1);
+        }
+      } else {
+        const res = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}/likes`, {
+          headers: { access: `${accessToken}` },
+        });
+
+        if (res.status === 200) {
+          setLiked(false);
+          setLikes((prev) => prev - 1);
+
+          setTimeout(() => {
+            fetchDetail(); // 딜레이 후 동기화
+          }, 2000); // 1초 뒤에 데이터 재요청
+        }
+      }
+    } catch (error) {
+      console.error("❌ 좋아요 처리 중 오류 발생:", error?.message || error);
+      if (error.response) {
+        console.log("📡 서버 응답 상태 코드:", error.response.status);
+        console.log("📡 서버 응답 데이터:", error.response.data);
+      } else if (error.request) {
+        console.log("📡 요청은 갔지만 응답이 없음:", error.request);
+      } else {
+        console.log("📡 설정 중 오류:", error.message);
+      }
+      setAlertMessage("좋아요 처리 중 문제가 발생했습니다.");
+      setAlertVisible(true);
+    }
   };
 
-  // 더미 데이터 (추후 API 연동 필요)
-  const meeting = {
-    postId,
-    title,
-    createdAt,
-    content: "뜨개질이 취미이신 분? \n처음이지만 같이 해보실 분?\n모두모두 환영합니다! 😊",
-    location: "서울 종로구",
-    maxParticipants: "10",
-    recruitmentStart: "2025.02.22",
-    recruitmentEnd: "2025.03.01",
-    activityStart: "2025.03.08",
-    activityEnd: "202.04.08",
-    deposit: "5,000원",
-    tags: ["#취미", "#뜨개질", "#종로구"],
-    likes: 7,
-  };
-
-  // 작성자 더미 데이터
-  const user = {
-    name: "홍길동",
-    career: "안녕하세요~ 홍길동입니다.\n2024년부터 독서 모임장으로 활동하고 있어요!",
-    image: null, // 프로필 사진이 없을 경우 기본 아이콘 사용
-  };
+  if (!meeting || !user) {
+    return <Text>불러오는 중...</Text>; // 또는 ActivityIndicator
+  }
+  const recruitmentDeadline = new Date(`${meeting.recruitmentEnd}T23:59:59`);
+  const isRecruitmentClosed = recruitmentDeadline < new Date();
 
   return (
     <Container>
@@ -174,7 +261,7 @@ const PostDetail = () => {
           <Ionicons name="share-outline" size={25} onPress={() => console.log("공유하기")} />
         </RowContainer>
 
-        <Date>{meeting.createdAt}</Date>
+        <DateText>{meeting.createdAt}</DateText>
         <Content>{meeting.content}</Content>
         <RowContainer style={{ marginBottom: 10 }}>
           <Ionicons name="location-outline" size={24} color={theme.colors.grey} />
@@ -216,19 +303,23 @@ const PostDetail = () => {
       </Section>
 
       {/* 작성자 정보 섹션 */}
-      <ProfileContainer>
-        <ProfileHeader>
-          <ProfileImageContainer>
-            {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
-          </ProfileImageContainer>
 
-          <RowContainer>
-            <Label>작성자</Label>
-            <ProfileName>{user.name}</ProfileName>
-          </RowContainer>
-        </ProfileHeader>
-        <ProfileIntro>{user.career}</ProfileIntro>
-      </ProfileContainer>
+      <TouchableOpacity onPress={() => navigation.navigate("공개프로필", { userId: user.userId })}>
+        <ProfileContainer>
+          <ProfileHeader>
+            <ProfileImageContainer>
+              {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
+            </ProfileImageContainer>
+
+            <RowContainer>
+              <Label>작성자</Label>
+              <ProfileName>{user.name}</ProfileName>
+            </RowContainer>
+          </ProfileHeader>
+          <ProfileIntro>{user.career}</ProfileIntro>
+        </ProfileContainer>
+      </TouchableOpacity>
+
       {/* 하단 좋아요 & 신청 버튼 고정 */}
       <Footer>
         <LikeButton onPress={toggleLike}>
@@ -240,14 +331,28 @@ const PostDetail = () => {
           <LikeText liked={liked}>{likes}</LikeText>
         </LikeButton>
         <Button
-          title="신청하기"
-          onPress={() => checkLogin("신청서 작성")}
-          containerStyle={{ height: 50, width: 280 }}
+          title={isRecruitmentClosed ? "모집마감" : "신청하기"}
+          onPress={() => {
+            if (!isRecruitmentClosed) checkLogin("신청서 작성", { postId });
+          }}
+          disabled={isRecruitmentClosed}
+          containerStyle={{
+            height: 50,
+            width: 280,
+            backgroundColor: theme.colors.mainBlue,
+          }}
           textStyle={{ marginLeft: 0 }}
           style={{ height: 50, width: 280 }}
         />
         <LoginAlert />
       </Footer>
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+        }}
+      />
     </Container>
   );
 };

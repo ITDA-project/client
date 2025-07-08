@@ -1,16 +1,90 @@
-import React, { useState, useContext } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useContext, useCallback } from "react";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
 import useRequireLogin from "../hooks/useRequireLogin";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const AllPosts = ({ route }) => {
   const { checkLogin, LoginAlert } = useRequireLogin();
   const theme = useContext(ThemeContext);
+  const navigation = useNavigation();
 
-  const currentUser = { userId: 1 }; // 로그인한 사용자 ID
+  const { category, categoryName } = route.params || {};
+  const [meetings, setMeetings] = useState([]);
+  const [selectedSort, setSelectedSort] = useState("latest");
+  const [loading, setLoading] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [cursor, setCursor] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      console.log("🔑 accessToken:", token);
+      const response = await axios.get(
+        "http://10.0.2.2:8080/api/mypage/me",
+
+        {
+          headers: {
+            access: `${token}`,
+          },
+        }
+      );
+
+      setCurrentUserId(response.data.data);
+    } catch (error) {
+      console.error("유저 정보 가져오기 실패:", error);
+    }
+  };
+
+  const fetchMeetings = async (isInitial = false) => {
+    if (loading || (!hasNextPage && !isInitial)) return;
+    setLoading(true);
+
+    try {
+      const params = {
+        sort: selectedSort === "popular" ? "likesCount" : "createdAt",
+        size: 10,
+      };
+
+      if (category) params.category = category;
+      if (!isInitial && cursor) params.cursor = cursor;
+
+      console.log("📡 axios 요청 파라미터:", params); // 디버깅용
+      console.log("✅ 요청에 사용되는 category:", category);
+      const response = await axios.get("http://10.0.2.2:8080/api/posts/list", {
+        params,
+      });
+
+      const newPosts = response.data.dtoList;
+
+      if (newPosts.length > 0) {
+        setMeetings((prev) => (isInitial ? newPosts : [...prev, ...newPosts]));
+        setCursor(newPosts[newPosts.length - 1].postId);
+        setHasNextPage(newPosts.length === 10);
+      } else {
+        setHasNextPage(false);
+      }
+    } catch (error) {
+      console.error("게시글 불러오기 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+      setMeetings([]);
+      setCursor(null);
+      setHasNextPage(true);
+      fetchMeetings(true);
+    }, [selectedSort, category])
+  );
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
@@ -75,38 +149,6 @@ const AllPosts = ({ route }) => {
     },
   });
 
-  //Category,sort 불러오기
-  /*useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get("https://your-api.com/posts", {
-          params: {
-            category: category || undefined,
-            sort: selectedSort,
-          },
-        });
-        setMeetings(response.data);
-      } catch (error) {
-        console.error("게시글 불러오기 실패:", error);
-      }
-    };
-
-    fetchPosts();
-  }, [category, selectedSort]);*/
-
-  const navigation = useNavigation();
-  const { meetings = [], categories } = route.params || {};
-  const [selectedSort, setSelectedSort] = useState("latest");
-
-  // 정렬된 데이터 생성
-  const sortedMeetings = [...meetings].sort((a, b) => {
-    if (selectedSort === "latest") {
-      return new Date(b.createdAt) - new Date(a.createdAt); // 최신순 (날짜 내림차순)
-    } else {
-      return b.likes - a.likes; // 인기순 (좋아요 내림차순)
-    }
-  });
-
   return (
     <View style={styles.container}>
       {/* 선택된 카테고리 표시 */}
@@ -118,7 +160,7 @@ const AllPosts = ({ route }) => {
             color: "#333",
           }}
         >
-          {categories ? `'${categories}' 카테고리 모임` : "전체 모임"}
+          {categoryName ? `'${categoryName}' 카테고리 모임` : "전체 모임"}
         </Text>
         <Text
           style={{
@@ -144,42 +186,48 @@ const AllPosts = ({ route }) => {
       </View>
 
       {/* 게시글 리스트 */}
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        data={sortedMeetings}
-        keyExtractor={(item) => item.postId.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.postItem}
-            onPress={() => {
-              if (item.userId === currentUser.userId) {
-                navigation.navigate("MyPostDetail", {
-                  postId: item.postId,
-                  title: item.title,
-                  createdAt: item.createdAt,
-                  likes: item.likes,
-                });
-              } else {
-                navigation.navigate("PostDetail", {
-                  postId: item.postId,
-                  title: item.title,
-                  createdAt: item.createdAt,
-                  likes: item.likes,
-                });
-              }
-            }}
-          >
-            <Text style={styles.postTitle}>{item.title}</Text>
-            <View style={styles.postInfo}>
-              <Text style={styles.postDate}>{item.createdAt}</Text>
-              <View style={styles.likesContainer}>
-                <Feather name="heart" size={16} color="#ccc" />
-                <Text style={styles.likesText}>{item.likes}</Text>
+      {meetings.length === 0 && !loading ? (
+        <View style={{ marginTop: 50, alignItems: "center" }}>
+          <Text style={{ fontSize: 16, color: "#888", fontFamily: theme.fonts.regular }}>모아모아의 첫 모임을 생성해보세요!</Text>
+        </View>
+      ) : (
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={meetings}
+          keyExtractor={(item) => item.postId.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.postItem}
+              onPress={() => {
+                console.log("📌 postId:", item.postId, "item.userId:", item.userId, "currentUserId:", currentUserId);
+
+                const isMine = String(item.userId) === String(currentUserId);
+                const screen = isMine ? "MyPostDetail" : "PostDetail";
+
+                navigation.navigate(screen, item);
+              }}
+            >
+              <Text style={styles.postTitle}>{item.title}</Text>
+              <View style={styles.postInfo}>
+                <Text style={styles.postDate}>{item.createdAt?.split("T")[0].split("-").join(".")}</Text>
+                <View style={styles.likesContainer}>
+                  <Feather name="heart" size={16} color="#ccc" />
+                  <Text style={styles.likesText}>{item.likesCount}</Text>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+            </TouchableOpacity>
+          )}
+          onEndReached={() => fetchMeetings()}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            loading && (
+              <View style={{ paddingVertical: 20 }}>
+                <ActivityIndicator size="small" color={theme.colors.mainBlue} />
+              </View>
+            )
+          }
+        />
+      )}
 
       {/* 글쓰기 버튼 */}
       <View style={styles.ButtonContainer}>

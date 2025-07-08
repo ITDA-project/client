@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { TouchableOpacity, ActivityIndicator, FlatList } from "react-native";
+import { TouchableOpacity, ActivityIndicator, FlatList, Alert } from "react-native";
+import { AlertModal } from "../components";
 import { AntDesign } from "@expo/vector-icons";
 import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
+import { useRoute } from "@react-navigation/native";
 
 const Container = styled.View`
   flex: 1;
@@ -33,7 +36,7 @@ const ProfileImage = styled.Image`
   width: 40px;
   height: 40px;
   border-radius: 20px;
-  margin-right: 10px;
+  margin-right: 20px;
 `;
 const NameText = styled.Text`
   flex: 1;
@@ -48,23 +51,42 @@ const StyledFlatList = styled(FlatList)`
 const ApplicationList = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
+  const route = useRoute();
+  const { postId } = route.params;
 
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
 
   useEffect(() => {
+    console.log("postId:", postId);
     const fetchApplications = async () => {
       try {
-        // 임시 데이터 설정
-        const response = {
-          data: [
-            { id: 1, name: "신짱구", image: require("../../assets/images/jjang.png") },
-            { id: 2, name: "김철수", image: require("../../assets/images/kim.png") },
-          ],
-        };
-        setApplications(response.data);
+        const accessToken = await EncryptedStorage.getItem("accessToken");
+
+        if (!accessToken) {
+          setAlertMessage("로그인이 필요합니다.");
+          setOnConfirmAction(() => () => navigation.navigate("Login"));
+          setAlertVisible(true);
+
+          return;
+        }
+
+        const response = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}/form/list`, {
+          headers: { access: accessToken },
+        });
+
+        const formList = response.data.data.forms;
+        console.log("신청서 목록: ", formList);
+
+        setApplications(formList);
       } catch (error) {
-        console.error("Error fetching applications:", error);
+        console.error("신청서 불러오기 실패: ", error);
+        setAlertMessage("신청서를 불러오는 데 실패했습니다.");
+        setOnConfirmAction(null);
+        setAlertVisible(true);
       } finally {
         setLoading(false);
       }
@@ -74,9 +96,18 @@ const ApplicationList = ({ navigation }) => {
   }, []);
 
   const renderItem = ({ item }) => (
-    <ListItem onPress={() => navigation.navigate("신청서 확인", { id: item.id, name: item.name, image: item.image })}>
-      <ProfileImage source={item.image} />
-      <NameText>{item.name}</NameText>
+    <ListItem
+      onPress={() =>
+        navigation.navigate("신청서 확인", {
+          postId,
+          formId: item.formId,
+          name: item.userName,
+          image: { uri: item.userImage || "https://ssl.pstatic.net/static/pwe/address/img_profile.png" },
+        })
+      }
+    >
+      <ProfileImage source={{ uri: item.userImage || "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+      <NameText>{item.userName}</NameText>
       <AntDesign name="right" size={20} style={{ color: theme.colors.grey }} />
     </ListItem>
   );
@@ -84,8 +115,21 @@ const ApplicationList = ({ navigation }) => {
   // 타이틀 나중에 수정
   return (
     <Container insets={insets}>
-      <Title>함께 뜨개질해요!</Title>
-      <StyledFlatList data={applications} keyExtractor={(item) => item.id.toString()} renderItem={renderItem} />
+      {loading ? (
+        <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 20 }} />
+      ) : applications.length === 0 ? (
+        <NameText style={{ alignSelf: "center", marginTop: 350, color: "#a1a1a1" }}>신청서가 없습니다.</NameText>
+      ) : (
+        <StyledFlatList data={applications} keyExtractor={(item) => item.formId.toString()} renderItem={renderItem} />
+      )}
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (onConfirmAction) onConfirmAction();
+        }}
+      />
     </Container>
   );
 };

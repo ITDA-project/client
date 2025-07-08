@@ -17,6 +17,7 @@
       "bundleIdentifier": "com.csj1430.moamoa"
     },
     "android": {
+      "permissions": ["READ_MEDIA_IMAGES"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1A4568"

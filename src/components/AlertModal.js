@@ -2,15 +2,22 @@ import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import theme from "../theme";
 
-const AlertModal = ({ visible, message, onConfirm }) => {
+const AlertModal = ({ visible, message, onConfirm, onCancel = null }) => {
   return (
     <Modal transparent animationType="fade" visible={visible}>
       <View style={styles.overlay}>
         <View style={styles.modalBox}>
           <Text style={styles.message}>{message}</Text>
-          <TouchableOpacity style={styles.button} onPress={onConfirm}>
-            <Text style={styles.buttonText}>확인</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.button} onPress={onConfirm}>
+              <Text style={styles.buttonText}>확인</Text>
+            </TouchableOpacity>
+            {onCancel && (
+              <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onCancel}>
+                <Text style={[styles.buttonText, styles.cancelButtonText]}>취소</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </Modal>
@@ -38,16 +45,28 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 22,
   },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
+  },
   button: {
-    backgroundColor: theme.colors.mainBlue,
     paddingVertical: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     borderRadius: 5,
+    backgroundColor: theme.colors.mainBlue,
+    marginLeft: 10,
   },
   buttonText: {
     fontFamily: theme.fonts.bold,
     color: "white",
     fontSize: 16,
+  },
+  cancelButton: {
+    backgroundColor: "#ddd",
+  },
+  cancelButtonText: {
+    color: "#333",
   },
 });
 

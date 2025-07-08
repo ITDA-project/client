@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Image, ActivityIndicator } from "react-native";
-import { Button } from "../components";
+import { Button, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import Logo from "../../assets/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -49,6 +49,8 @@ const Signin = ({ navigation }) => {
   const [success, setSuccessResponse] = useState(null);
   const [failure, setFailureResponse] = useState(null);
   const [getProfileRes, setGetProfileRes] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const { setUser, setAccessToken } = useAuth();
 
@@ -100,17 +102,18 @@ const Signin = ({ navigation }) => {
       });
 
       // 5. JWT 저장 (access token은 헤더, refresh token은 응답 데이터)
-      const accessToken = response.headers.authorization;
+      const accessToken = response.headers.access;
       const refreshToken = response.data.refresh_token;
 
-      console.log("백엔드 응답", response.data);
+      console.log("백엔드 access 응답:", accessToken);
+      console.log("백엔드 refresh 응답", response.data);
 
       if (accessToken) {
         await EncryptedStorage.setItem("accessToken", accessToken);
         setAccessToken(accessToken);
 
-        const storedAccessToeken = await EncryptedStorage.getItem("accessToken");
-        console.log("저장된 엑세스 토큰: ", storedAccessToeken);
+        const storedAccessToken = await EncryptedStorage.getItem("accessToken");
+        console.log("저장된 엑세스 토큰: ", storedAccessToken);
       } else {
         console.log("access가 존재하지 않습니다");
       }
@@ -131,6 +134,10 @@ const Signin = ({ navigation }) => {
       // 6. 메인 화면 이동
       navigation.navigate("Home");
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
+        setModalVisible(true);
+      }
       console.error("카카오 로그인 실패", err);
     } finally {
       setLoading(false);
@@ -188,7 +195,7 @@ const Signin = ({ navigation }) => {
 
       console.log("백엔드 응답", response.data);
 
-      const accessToken = response.headers.authorization;
+      const accessToken = response.headers["access"];
       const refreshToken = response.data.refresh_token;
 
       if (accessToken) {
@@ -210,31 +217,13 @@ const Signin = ({ navigation }) => {
       // 6. 메인 화면 이동
       navigation.navigate("Home");
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
+        setModalVisible(true);
+      }
       console.error("네이버 로그인 실패", err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  //나중에 로그아웃 페이지로 옮겨
-  const logoutWithNaver = async () => {
-    try {
-      await NaverLogin.logout();
-      setSuccessResponse(null);
-      setFailureResponse(null);
-      setGetProfileRes(null);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-  const deleteToken = async () => {
-    try {
-      await NaverLogin.deleteToken();
-      setSuccessResponse(null);
-      setFailureResponse(null);
-      setGetProfileRes(null);
-    } catch (e) {
-      console.error(e);
     }
   };
 
@@ -303,6 +292,7 @@ const Signin = ({ navigation }) => {
           fontFamily: theme.fonts.bold,
         }}
       />
+      <AlertModal visible={modalVisible} message={modalMessage} onConfirm={() => setModalVisible(false)} />
     </Container>
   );
 };

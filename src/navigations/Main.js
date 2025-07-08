@@ -33,11 +33,9 @@ const Main = () => {
       <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
       <Stack.Screen name="PostDetail" component={Screens.PostDetail} options={{ headerTitle: "" }} />
       <Stack.Screen name="MyPostDetail" component={Screens.MyPostDetail} options={{ headerTitle: "" }} />
-      <Stack.Screen name="MyPage" component={Screens.MyPage} screenOptions={{ headerShown: false }} />
-      <Stack.Screen name="Chat" component={Screens.Chat} screenOptions={{ headerShown: false }} />
-      <Stack.Screen name="Notifications" component={Screens.Notifications} screenOptions={{ headerShown: false }} />
       <Stack.Screen name="전체글" component={Screens.AllPosts} />
       <Stack.Screen name="프로필" component={Screens.Profile} />
+      <Stack.Screen name="공개프로필" component={Screens.PublicProfile} />
       <Stack.Screen name="사진/경력 수정" component={Screens.EditProfile} />
       <Stack.Screen name="모임생성" component={Screens.CreatePost} />
 
@@ -75,7 +73,9 @@ const Main = () => {
       <Stack.Screen name="신청서 확인" component={Screens.ApplicationDecision} />
 
       <Stack.Screen name="리뷰 등록" component={Screens.ReviewForm} />
-
+      <Stack.Screen name="채팅방" component={Screens.Chat} options={{ headerShown: false }} />
+      <Stack.Screen name="결제" component={Screens.PaymentScreen} />
+      <Stack.Screen name="참여확인" component={Screens.CheckParticipants} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };
