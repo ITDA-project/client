@@ -5,6 +5,7 @@ import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/nativ
 import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button } from "../components";
+import ChatModal from "../components/ChatModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TouchableOpacity from "react-native/Libraries/Components/Touchable/TouchableOpacity";
 import axios from "axios";
@@ -22,6 +23,21 @@ const Chat = () => {
 
   const { roomId, title } = route.params;
 
+  const getToday = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD
+  };
+
+  const getNow = () => {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mi}`; // HH:mm (24h)
+  };
+
   /* ──────────────────────── 상태 */
   const [currentUserId, setCurrentUserId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -36,14 +52,15 @@ const Chat = () => {
   const [hostExists, setHostExists] = useState(true); // deleteFlag 반전값
   const [myRole, setMyRole] = useState();
 
+  const [startModalVisible, setStartModalVisible] = useState(false);
+  const [formDate, setFormDate] = useState(getToday());
+  const [formTime, setFormTime] = useState(getNow());
+  const [formPrice, setFormPrice] = useState("10000");
+
   const stompRef = useRef(null);
 
   /* ──────────────────────── Utils */
   const ensureId = (msg) => ({ ...msg, id: msg.id ?? uuid() });
-
-  // ✅ 임의의 날짜와 시간 (하드코딩)
-  const today = () => "2025-07-08"; // 고정된 날짜
-  const now = () => "19:00"; // 고정된 시간
 
   /* ──────────────────────── 사용자 ID 로드 */
   useEffect(() => {
@@ -262,7 +279,7 @@ const Chat = () => {
     // ① 서버에 새 세션 생성
     const { data } = await axios.post(
       "http://10.0.2.2:8080/api/sessions/start",
-      { roomId, sessionDate: today(), sessionTime: now(), price: 10000 },
+      { roomId, sessionDate: formDate, sessionTime: formTime, price: parseInt(formPrice, 10) },
       { headers: { access: token, "Content-Type": "application/json" } }
     );
 
@@ -281,6 +298,7 @@ const Chat = () => {
       initial[p.name] = "불참";
     });
     setParticipantStatus(initial);
+    setStartModalVisible(false); // 모달 닫기
   };
 
   const handlePaymentSuccess = (name) => {
@@ -421,8 +439,14 @@ const Chat = () => {
                       activeOpacity={0.7}
                     >
                       <ParticipantRow key={i}>
-                        {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />}
-                        <ParticipantItem>{p.name}</ParticipantItem>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          {p.image ? (
+                            <ParticipantImage source={{ uri: p.image }} />
+                          ) : (
+                            <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
+                          )}
+                          <ParticipantItem>{p.name}</ParticipantItem>
+                        </View>
 
                         {meetingActive && (
                           <StatusBadge>
@@ -451,8 +475,14 @@ const Chat = () => {
                   />
                 ) : (
                   <Button
-                    title="모임시작"
-                    onPress={handleStartMeeting}
+                    title="모임 주최"
+                    onPress={() => {
+                      // 기본값 세팅
+                      setFormDate(getToday()); // "YYYY-MM-DD"
+                      setFormTime(getNow()); // "HH:mm"
+                      setFormPrice("10000");
+                      setStartModalVisible(true); // 모달 열기
+                    }}
                     containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
                     textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
                     style={{ height: 40, width: 95 }}
@@ -467,6 +497,17 @@ const Chat = () => {
           </SideMenuContainer>
         </Overlay>
       </Modal>
+      <ChatModal
+        visible={startModalVisible}
+        formDate={formDate}
+        setFormDate={setFormDate}
+        formTime={formTime}
+        setFormTime={setFormTime}
+        formPrice={formPrice}
+        setFormPrice={setFormPrice}
+        onConfirm={handleStartMeeting}
+        onCancel={() => setStartModalVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -624,7 +665,9 @@ const ParticipantList = styled.ScrollView``;
 const ParticipantRow = styled.View`
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
+  width: 100%;
 `;
 
 const ParticipantImage = styled.Image`
