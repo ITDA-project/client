@@ -397,7 +397,7 @@ const CreatePost = () => {
       }
 
       setAlertMessage("게시글과 채팅방이\n성공적으로 생성되었습니다.");
-      setOnConfirmAction(() => () => navigation.navigate("MyPostDetail", { postId: postIdFromHeader }));
+      setOnConfirmAction(() => () => navigation.replace("MyPostDetail", { postId: postIdFromHeader }));
       setAlertVisible(true);
     } catch (error) {
       console.error("❌ 게시글 등록 실패:", error.response?.data || error.message);
