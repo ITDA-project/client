@@ -8,6 +8,10 @@ import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import { Provider as PaperProvider } from "react-native-paper";
 import { AuthProvider } from "./contexts/AuthContext";
+import { NotificationOverlayProvider } from "./components/NotificationOverlay"; // ✅ 상대경로 확인
+import WebSocketManager from "./components/WebSocketManager";
+import { NavigationContainer } from "@react-navigation/native";
+import { navigationRef } from "./navigations/navigationRef";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,16 +47,19 @@ const App = () => {
   }
 
   return (
-    <AuthProvider>
-      <PaperProvider>
-        <ThemeProvider theme={theme}>
-          <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-            <StatusBar style="auto" />
-            <Navigation />
-          </View>
-        </ThemeProvider>
-      </PaperProvider>
-    </AuthProvider>
+    <NotificationOverlayProvider>
+      <AuthProvider>
+        <PaperProvider>
+          <ThemeProvider theme={theme}>
+            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+              <StatusBar style="auto" />
+              <Navigation />
+              <WebSocketManager />
+            </View>
+          </ThemeProvider>
+        </PaperProvider>
+      </AuthProvider>
+    </NotificationOverlayProvider>
   );
 };
 
