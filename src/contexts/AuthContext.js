@@ -4,6 +4,9 @@ import EncryptedStorage from "react-native-encrypted-storage";
 import * as Keychain from "react-native-keychain";
 import { isTokenExpired } from "../utils/auth";
 import { jwtDecode } from "jwt-decode";
+import { Client as StompClient } from "@stomp/stompjs";
+import { useRef } from "react";
+import SockJS from "sockjs-client";
 
 const AuthContext = createContext();
 
@@ -11,6 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // 로그인하면 user 정보가 저장됨
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [stompClient, setStompClient] = useState(null);
 
   const clearTokens = async () => {
     await EncryptedStorage.removeItem("accessToken");
@@ -38,6 +42,7 @@ export const AuthProvider = ({ children }) => {
         // accessToken이 존재하고 유효하면 그대로 사용
         if (storedAccessToken && !isTokenExpired(storedAccessToken)) {
           setAccessToken(storedAccessToken);
+          setUser({ username: jwtDecode(storedAccessToken).username });
           console.log("access token 복원 성공:", storedAccessToken);
         } else {
           const response = await axios.post("http://10.0.2.2:8080/reissue", {
@@ -65,6 +70,59 @@ export const AuthProvider = ({ children }) => {
 
     restoreSession();
   }, []);
+
+  /*chat-notification 호출*/
+  const clientRef = useRef(null); // WebSocket 연결 상태 추적
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    console.log("✅ 최신 accessToken으로 WebSocket 연결 시도:", accessToken);
+
+    // 기존 연결이 있다면 먼저 끊기
+    if (clientRef.current) {
+      console.log("♻️ 기존 WebSocket 연결 종료");
+      clientRef.current.deactivate();
+    }
+
+    const client = new StompClient({
+      webSocketFactory: () => new SockJS(`http://10.0.2.2:8080/ws?token=${accessToken}`),
+      connectHeaders: {
+        access: accessToken,
+      },
+      onConnect: () => {
+        console.log("✅ 알림 WebSocket 연결됨");
+        client.subscribe("/user/queue/chat-notifications", (message) => {
+          try {
+            const payload = JSON.parse(message.body);
+            console.log("📨 채팅 알림 도착:", payload);
+          } catch (e) {
+            console.log("새 메시지 도착", message.body);
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("❌ STOMP 오류:", frame);
+      },
+
+      onWebSocketClose: () => {
+        console.warn("🔌 WebSocket 연결 종료됨");
+      },
+      onWebSocketError: (error) => {
+        console.error("WebSocket 에러 발생:", error);
+      },
+      debug: console.log,
+    });
+
+    clientRef.current = client;
+    client.activate();
+
+    return () => {
+      console.log("🧹 [cleanup] WebSocket 연결 해제");
+      client.deactivate();
+      clientRef.current = null;
+    };
+  }, [accessToken]);
 
   const signout = async () => {
     await clearTokens(); // 토큰 삭제 안됐을때 살려서 실행
