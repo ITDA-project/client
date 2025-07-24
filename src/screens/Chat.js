@@ -21,7 +21,7 @@ const Chat = () => {
   const route = useRoute();
   const insets = useSafeAreaInsets();
 
-  const { roomId, title } = route.params;
+  const { roomId } = route.params;
 
   const getToday = () => {
     const d = new Date();
@@ -51,6 +51,7 @@ const Chat = () => {
   const [wsConnected, setWsConnected] = useState(false);
   const [hostExists, setHostExists] = useState(true); // deleteFlag 반전값
   const [myRole, setMyRole] = useState();
+  const [title, setTitle] = useState("");
 
   const [startModalVisible, setStartModalVisible] = useState(false);
   const [formDate, setFormDate] = useState(getToday());
@@ -70,6 +71,7 @@ const Chat = () => {
         const { data } = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
           headers: { access: token },
         });
+
         setCurrentUserId(Number(data.data));
       } catch (e) {
         console.error("유저 정보 가져오기 실패", e);
@@ -159,10 +161,11 @@ const Chat = () => {
       const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
         headers: { access: token },
       });
+      console.log("📜 fetchHistory 응답 전체:", data);
       const history = (data?.data?.messages ?? []).map((m) => {
-        console.log("메시지 로딩:", m.senderName);
+        console.log("📨 메시지 파싱 중:", m);
         return ensureId({
-          id: m.id,
+          id: m.id || m.messageId || uuid(),
           senderId: m.senderId,
           name: m.sender,
           image: m.profileImage,
@@ -171,6 +174,8 @@ const Chat = () => {
         });
       });
 
+      console.log("✅ 파싱된 메시지:", history);
+      setTitle(data.data.roomName);
       setHostExists(!data.data.deleteFlag); // 방장 존재 여부
       setMyRole(data.data.role); // OWNER or USER
       setMessages(history);
@@ -191,24 +196,34 @@ const Chat = () => {
         console.log("✅ STOMP connected");
         setWsConnected(true);
         client.subscribe(`/topic/room/${roomId}`, ({ body }) => {
+          console.log("📩 [소켓 수신됨] 원본 body:", body);
           try {
             const raw = JSON.parse(body);
-            console.log("소켓 수신:", raw.senderName);
+            console.log("📨 파싱된 메시지:", raw);
 
             const mapped = ensureId({
-              id: raw.id,
+              id: raw.id || raw.messageId || uuid(),
               senderId: raw.senderId,
-              name: raw.senderName,
+              name: raw.senderName || raw.sender,
               image: raw.profileImage,
               text: raw.content,
-              time: raw.sentAt ? raw.sentAt.slice(11, 16) : "",
+              time: (raw.sentAt || raw.createdAt)?.slice(11, 16) ?? "",
             });
 
-            setMessages((prev) => [mapped, ...prev]);
+            setMessages((prev) => {
+              // 중복 메시지가 들어오는 경우 방지 (id 중복 체크)
+              if (prev.find((msg) => msg.id === mapped.id)) {
+                return prev;
+              }
+              return [mapped, ...prev];
+            });
+            console.log("messages", messages);
+            console.log("📨 mapped message", mapped);
           } catch (e) {
             console.error("메시지 파싱 실패:", e);
           }
         });
+        console.log("구독 완료");
       },
       onStompError: console.error,
       onWebSocketError: console.error,
@@ -219,6 +234,9 @@ const Chat = () => {
     stompRef.current = client;
   }, [roomId]);
 
+  useEffect(() => {
+    console.log("📦 messages 상태 변경:", messages);
+  }, [messages]);
   /* ──────────────────────── 초기 로드 & 언마운트 */
   useEffect(() => {
     if (!roomId) return;
@@ -253,7 +271,7 @@ const Chat = () => {
     stompRef.current.publish({
       destination: `/app/${roomId}`,
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ content: input }),
+      body: JSON.stringify({ content: input, roomId }),
     });
     setInput("");
   };
@@ -333,11 +351,9 @@ const Chat = () => {
 
   /* ──────────────────────── 렌더 함수 */
   const renderItem = ({ item, index }) => {
-    //console.log("내 ID:", currentUserId, "메시지 보낸 사람:", item.senderId);
-
     const prev = listData[index + 1];
     const newerMsg = index > 0 ? messages[index - 1] : null; // 시간 표시 여부 결정용
-    const isMe = String(item.senderId) === String(currentUserId);
+    const isMe = Number(item.senderId) === Number(currentUserId);
     const isFirstOfGroup = !prev || prev.name !== item.name;
     const showTime = !newerMsg || newerMsg.senderId !== item.senderId || newerMsg.time !== item.time; // ✅ 마지막 버블에만 시간
 
@@ -397,7 +413,7 @@ const Chat = () => {
       </ChatHeader>
 
       <ChatArea>
-        {currentUserId !== null && <FlatList data={listData} inverted renderItem={renderItem} keyExtractor={(item) => String(item.id)} />}
+        {currentUserId !== null && <FlatList data={listData} inverted renderItem={renderItem} keyExtractor={(item) => item.id.toString()} />}
         <InputContainer insets={insets}>
           {hostExists ? (
             <>
@@ -407,9 +423,9 @@ const Chat = () => {
               </SendButton>
             </>
           ) : (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons name="error-outline" size={20} color="#fff" style={{ marginRight: 6 }} />
-              <Text style={{ color: "#fff", fontSize: 16, marginBottom: 5 }}>종료된 채팅입니다</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", width: "100%" }}>
+              <MaterialIcons name="error-outline" size={20} color="#000" style={{ marginRight: 6 }} />
+              <Text style={{ color: "#000", fontSize: 16, marginBottom: 5 }}>종료된 채팅입니다</Text>
             </View>
           )}
         </InputContainer>
@@ -600,7 +616,7 @@ const MessageBubble = styled.View`
   background-color: ${(props) => (props.alignRight ? props.theme.colors.mainBlue : props.theme.colors.lightBlue)};
   padding: 10px 14px;
   border-radius: 12px;
-  max-width: 100%;
+  width: auto;
   flex-shrink: 1;
   align-self: ${(props) => (props.alignRight ? "flex-end" : "flex-start")};
 `;
