@@ -155,34 +155,39 @@ const Chat = () => {
   }, [roomId]);
 
   /* ──────────────────────── 기존 메시지 로드 */
-  const fetchHistory = useCallback(async () => {
-    try {
-      const token = await EncryptedStorage.getItem("accessToken");
-      const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
-        headers: { access: token },
-      });
-      console.log("📜 fetchHistory 응답 전체:", data);
-      const history = (data?.data?.messages ?? []).map((m) => {
-        console.log("📨 메시지 파싱 중:", m);
-        return ensureId({
-          id: m.id || m.messageId || uuid(),
-          senderId: m.senderId,
-          name: m.sender,
-          image: m.profileImage,
-          text: m.content,
-          time: m.createdAt?.slice(11, 16) ?? "",
+  const fetchHistory = useCallback(
+    async (participantList) => {
+      try {
+        const token = await EncryptedStorage.getItem("accessToken");
+        const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
+          headers: { access: token },
         });
-      });
+        console.log("📜 fetchHistory 응답 전체:", data);
+        const history = (data?.data?.messages ?? []).map((m) => {
+          const matchedUser = participantList.find((p) => Number(p.userId) === Number(m.senderId));
+          console.log("👤 sender:", m.sender, "→ matched image:", matchedUser?.image);
 
-      console.log("✅ 파싱된 메시지:", history);
-      setTitle(data.data.roomName);
-      setHostExists(!data.data.deleteFlag); // 방장 존재 여부
-      setMyRole(data.data.role); // OWNER or USER
-      setMessages(history);
-    } catch (e) {
-      console.error("메시지 불러오기 실패", e.response?.data ?? e.message);
-    }
-  }, [roomId]);
+          return ensureId({
+            id: m.id || m.messageId || uuid(),
+            senderId: m.senderId,
+            name: m.sender,
+            image: matchedUser?.image ?? null,
+            text: m.content,
+            time: m.createdAt?.slice(11, 16) ?? "",
+          });
+        });
+
+        console.log("✅ 파싱된 메시지:", history);
+        setTitle(data.data.roomName);
+        setHostExists(!data.data.deleteFlag); // 방장 존재 여부
+        setMyRole(data.data.role); // OWNER or USER
+        setMessages(history);
+      } catch (e) {
+        console.error("메시지 불러오기 실패", e.response?.data ?? e.message);
+      }
+    },
+    [roomId]
+  );
 
   /* ──────────────────────── 소켓 연결 */
   const connectSocket = useCallback(async () => {
@@ -234,16 +239,14 @@ const Chat = () => {
     stompRef.current = client;
   }, [roomId]);
 
-  useEffect(() => {
-    console.log("📦 messages 상태 변경:", messages);
-  }, [messages]);
   /* ──────────────────────── 초기 로드 & 언마운트 */
   useEffect(() => {
     if (!roomId) return;
 
     const initialize = async () => {
+      const participantList = await fetchParticipants();
       await connectSocket();
-      await fetchHistory();
+      await fetchHistory(participantList);
       await fetchSessionStatus();
     };
 
