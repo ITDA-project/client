@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import theme from "../theme";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 
-const Notification = () => {
+const Notification = ({ onReadAll }) => {
   const navigation = useNavigation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,15 +27,30 @@ const Notification = () => {
       setNotifications(res.data.data); // `ApiResponse<List<NotificationResponseDto>>` 구조
     } catch (error) {
       console.error("알림 조회 실패:", error);
-      Alert.alert("오류", "알림을 불러오지 못했습니다.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  const markAllAsRead = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      await axios.patch("http://10.0.2.2:8080/api/notifications/read-all", null, {
+        headers: { access: token },
+      });
+      console.log("✅ 전체 읽음 처리 완료");
+    } catch (e) {
+      console.log("❌ 알림 읽음 처리 실패", e);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotifications();
+      markAllAsRead();
+      onReadAll?.();
+    }, [])
+  );
 
   const handlePress = (item) => {
     switch (item.type) {
