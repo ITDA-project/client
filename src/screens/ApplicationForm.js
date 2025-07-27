@@ -19,7 +19,7 @@ const Container = styled.View`
 const ApplicationForm = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const route = useRoute();
-  const { postId } = route.params;
+  const { postId, onComplete } = route.params;
 
   const [form, setForm] = useState("");
   const [disabled, setDisabled] = useState(true);
@@ -56,7 +56,10 @@ const ApplicationForm = ({ navigation }) => {
       );
 
       setAlertMessage("지원서가 성공적으로 제출되었습니다.");
-      setOnConfirmAction(() => () => navigation.goBack());
+      setOnConfirmAction(() => () => {
+        if (onComplete) onComplete();
+        navigation.goBack();
+      });
       setAlertVisible(true);
     } catch (error) {
       const message = error?.response?.data?.message || error.message;

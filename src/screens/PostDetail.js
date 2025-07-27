@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useIsFocused } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
 import { Button, AlertModal } from "../components";
@@ -136,7 +136,7 @@ const PostDetail = () => {
   const { checkLogin, LoginAlert } = useRequireLogin();
   const theme = useContext(ThemeContext);
   const route = useRoute();
-
+  const isFocused = useIsFocused();
   const navigation = useNavigation();
   const { postId } = route.params || {};
 
@@ -147,6 +147,7 @@ const PostDetail = () => {
   const [user, setUser] = useState(null);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [isApplied, setIsApplied] = useState(false);
 
   const fetchDetail = async () => {
     try {
@@ -160,6 +161,7 @@ const PostDetail = () => {
       console.log("📡 상세 데이터:", res);
 
       console.log("❤️ 좋아요 여부:", data.liked);
+      console.log("📄 신청서 ID:", data.formId);
 
       setMeeting({
         postId: data.id,
@@ -185,13 +187,16 @@ const PostDetail = () => {
       });
       setLikes(data.likesCount);
       setLiked(data.liked ?? false);
+      setIsApplied(!!data.formId);
     } catch (e) {
       console.error("상세 데이터 로딩 실패", e);
     }
   };
   useEffect(() => {
-    fetchDetail();
-  }, []);
+    if (isFocused) {
+      fetchDetail();
+    }
+  }, [isFocused]);
 
   const toggleLike = async () => {
     try {
@@ -331,11 +336,18 @@ const PostDetail = () => {
           <LikeText liked={liked}>{likes}</LikeText>
         </LikeButton>
         <Button
-          title={isRecruitmentClosed ? "모집마감" : "신청하기"}
+          title={isRecruitmentClosed ? "모집마감" : isApplied ? "신청완료" : "신청하기"}
           onPress={() => {
-            if (!isRecruitmentClosed) checkLogin("신청서 작성", { postId });
+            if (!isRecruitmentClosed) {
+              checkLogin("신청서 작성", {
+                postId,
+                onComplete: () => {
+                  setIsApplied(true);
+                },
+              });
+            }
           }}
-          disabled={isRecruitmentClosed}
+          disabled={isRecruitmentClosed || isApplied}
           containerStyle={{
             height: 50,
             width: 280,
