@@ -260,6 +260,21 @@ const Chat = () => {
       if (roomId) fetchSessionStatus();
     }, [roomId])
   );
+
+  useEffect(() => {
+    const markAsRead = async () => {
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      await axios.post(
+        `http://10.0.2.2:8080/api/chatroom/${roomId}/read`,
+        {},
+        {
+          headers: { access: accessToken },
+        }
+      );
+    };
+
+    markAsRead();
+  }, [roomId]);
   /* ──────────────────────── 메시지 전송 */
   const handleSend = () => {
     if (!input.trim()) return;
