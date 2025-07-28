@@ -1,7 +1,8 @@
 //탭바 화면
 
-import React, { useContext } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import React, { useContext, useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { Image, TouchableOpacity, View, Text } from "react-native";
 import { ThemeContext } from "styled-components/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -17,6 +18,8 @@ import searchIconActive from "../../assets/icons/searchIcon_.png";
 import chatIconActive from "../../assets/icons/chatIcon_.png";
 import NotificationIconActive from "../../assets/icons/NotificationIcon_.png";
 import profileIconActive from "../../assets/icons/profileIcon_.png";
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -34,6 +37,33 @@ const TabStack = () => {
 const Home = () => {
   const theme = useContext(ThemeContext);
   const { checkLogin, LoginAlert } = useRequireLogin();
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const onReadAll = useCallback(() => {
+    setUnreadCount(0);
+  }, []);
+
+  const NotificationsWrapper = useCallback((props) => <Notifications {...props} onReadAll={onReadAll} />, [onReadAll]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUnread = async () => {
+        const token = await EncryptedStorage.getItem("accessToken");
+        try {
+          const { data } = await axios.get("http://10.0.2.2:8080/api/notifications", {
+            headers: { access: token },
+          });
+          const list = Array.isArray(data?.data) ? data.data : [];
+          const count = list.filter((n) => !n.raed).length;
+          setUnreadCount(count);
+        } catch (e) {
+          console.log("🔔 알림 가져오기 실패", e);
+        }
+      };
+      fetchUnread();
+    }, [])
+  );
 
   return (
     <>
@@ -103,17 +133,36 @@ const Home = () => {
         />
         <Tab.Screen
           name="Notifications"
-          component={Notifications}
+          component={NotificationsWrapper}
           options={{
             tabBarIcon: ({ focused }) => (
-              <Image
-                source={focused ? NotificationIconActive : NotificationIcon} // 클릭되었을 때 이미지 변경
-                style={{
-                  width: 20,
-                  height: 22,
-                  tintColor: focused ? theme.tabBlue : theme.grey,
-                }}
-              />
+              <View style={{ width: 24, height: 24 }}>
+                <Image
+                  source={focused ? NotificationIconActive : NotificationIcon}
+                  style={{
+                    width: 20,
+                    height: 22,
+                    tintColor: focused ? theme.tabBlue : theme.grey,
+                  }}
+                />
+                {unreadCount > 0 && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      right: -6,
+                      top: -4,
+                      backgroundColor: "red",
+                      borderRadius: 10,
+                      minWidth: 16,
+                      paddingHorizontal: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ color: "white", fontSize: 10, fontWeight: "bold" }}>{unreadCount > 99 ? "99+" : unreadCount}</Text>
+                  </View>
+                )}
+              </View>
             ),
             tabBarButton: (props) => (
               <TouchableOpacity
