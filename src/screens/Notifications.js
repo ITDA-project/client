@@ -1,58 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import theme from "../theme";
-
-const notifications = [
-  {
-    id: 1,
-    type: "application",
-    message: "새로운 신청자가 있어요! 확인해보세요!",
-    postTitle: "함께 뜨개질해요!",
-  },
-  {
-    id: 2,
-    type: "rejected",
-    message: "신청이 거절되었습니다. 다른 모임에 신청해보세요!",
-    postTitle: "주말 등산가요!",
-  },
-  {
-    id: 3,
-    type: "payment_complete",
-    message: "결제가 완료되었어요! 모임을 즐길 준비가 되었어요.",
-    postTitle: "일본어 스터디",
-  },
-  {
-    id: 4,
-    type: "payment_required",
-    message: "새로운 결제 요청이 있어요! 참여하시겠어요?",
-    postTitle: "일본어 스터디",
-  },
-];
+import axios from "axios";
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Notification = () => {
   const navigation = useNavigation();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: "", date: "", amount: 0 });
 
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+
+      const token = await EncryptedStorage.getItem("accessToken");
+
+      const res = await axios.get("http://10.0.2.2:8080/api/notifications", {
+        headers: {
+          access: token,
+        },
+      });
+      setNotifications(res.data.data); // `ApiResponse<List<NotificationResponseDto>>` 구조
+    } catch (error) {
+      console.error("알림 조회 실패:", error);
+      Alert.alert("오류", "알림을 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   const handlePress = (item) => {
     switch (item.type) {
-      case "application":
-        navigation.navigate("신청서 목록");
+      case "FORM_APPROVED":
+        if (item.roomId) {
+          navigation.navigate("채팅방", { roomId: item.roomId });
+        } else {
+          Alert.alert("오류", "채팅방 정보를 찾을 수 없습니다.");
+        }
         break;
-      case "rejected":
+      case "FORM_REJECTED":
         navigation.navigate("전체글");
         break;
-      case "payment_complete":
-        Alert.alert("결제완료", "모아모아와 함께 모임에 참여해주세요!", [{ text: "확인" }]);
+      case "FORM_APPLY":
+        console.log("PostId from Notification item:", item.postId);
+        if (!item.postId) {
+          Alert.alert("오류", "신청서 postId가 없습니다.");
+          return;
+        }
+        navigation.navigate("신청서 목록", { postId: item.postId });
         break;
-      case "payment_required":
-        setModalData({ title: item.postTitle, date: "2025/05/26", amount: 1 });
+      case "PAYMENT_COMPLETE":
+        Alert.alert("결제완료", "모아모아와 함께 모임에 참여해주세요!");
+        break;
+      case "PAYMENT_REQUESTED":
+        setModalData({ title: item.title, date: "2025/05/26", amount: 10000 }); //날짜, 금액 전달 수정 필요
         setModalVisible(true);
         break;
       default:
-        console.warn("Unknown type:", item.type);
+        console.warn("알 수 없는 알림 타입:", item.type);
         break;
     }
   };
@@ -66,8 +79,8 @@ const Notification = () => {
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.notificationItem} onPress={() => handlePress(item)}>
             <View style={styles.messageBox}>
-              <Text style={styles.postTitle}>{item.postTitle}</Text>
-              <Text style={styles.messageText}>{item.message}</Text>
+              <Text style={styles.postTitle}>{item.title}</Text>
+              <Text style={styles.messageText}>{item.body}</Text>
             </View>
             <Feather name="chevron-right" size={20} color="#999" />
           </TouchableOpacity>

@@ -22,6 +22,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1A4568"
       },
+      "googleServicesFile": "./android/app/google-services.json",
       "package": "com.csj1430.moamoa"
     },
     "web": {

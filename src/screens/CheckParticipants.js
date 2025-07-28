@@ -26,6 +26,11 @@ const MeetingDate = styled.Text`
   font-family: ${({ theme }) => theme.fonts.bold};
 `;
 
+const RoundText = styled.Text`
+  color: ${({ theme }) => theme.colors.black};
+  font-family: ${({ theme }) => theme.fonts.bold};
+`;
+
 const MessageText = styled.Text`
   color: ${({ theme }) => theme.colors.grey};
   font-size: 18px;
@@ -45,7 +50,20 @@ const ParticipantList = styled.View`
   align-items: center;
 `;
 
+/* --- 새로 추가 --- */
+const IconBox = styled.TouchableOpacity`
+  width: 32px; /* 체크박스 영역 고정 */
+  align-items: center;
+`;
+
+const AvatarBox = styled.View`
+  width: 48px; /* 이미지 + 좌우 여백 포함 고정 */
+  align-items: center;
+`;
+
+/* 기존 ParticipantRow는 폭 100%, align-items:center 유지 */
 const ParticipantRow = styled.View`
+  width: 100%;
   flex-direction: row;
   align-items: center;
   margin-bottom: 20px;
@@ -79,7 +97,7 @@ const CheckParticipants = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { participants, participantStatus } = route.params ?? {};
+  const { participants, participantStatus, currentRound } = route.params ?? {};
 
   //체크박스 선택 여부 상태 저장
   const [Status, setStatus] = useState(participants.map((p) => ({ ...p, attended: false })));
@@ -107,20 +125,21 @@ const CheckParticipants = () => {
     <Wrapper>
       <Container insets={insets}>
         <MeetingDate>2025/05/26</MeetingDate>
-        <MessageText>모임이 종료되었습니다!</MessageText>
+        <MessageText>
+          <RoundText>{currentRound}회차</RoundText> 모임이 종료되었습니다!
+        </MessageText>
         <MessageText>모임에 참여한 사람을 선택해 주세요.</MessageText>
 
         <ParticipantListContainer>
           <ParticipantList>
             {participants.map((p, i) => (
               <ParticipantRow key={i}>
-                <MaterialIcons
-                  name={Status[i].attended ? "check-box" : "check-box-outline-blank"}
-                  size={24}
-                  color={theme.colors.black}
-                  onPress={() => toggleCheck(i)}
-                />
-                {p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" style={{ marginHorizontal: 12 }} />}
+                <IconBox onPress={() => toggleCheck(i)}>
+                  <MaterialIcons name={Status[i].attended ? "check-box" : "check-box-outline-blank"} size={24} color={theme.colors.black} />
+                </IconBox>
+
+                <AvatarBox>{p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" />}</AvatarBox>
+
                 <ParticipantName>{p.name}</ParticipantName>
               </ParticipantRow>
             ))}

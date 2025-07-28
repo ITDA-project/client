@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // 로그인하면 user 정보가 저장됨
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [stompClient, setStompClient] = useState(null);
 
   const clearTokens = async () => {
     await EncryptedStorage.removeItem("accessToken");
@@ -38,6 +39,7 @@ export const AuthProvider = ({ children }) => {
         // accessToken이 존재하고 유효하면 그대로 사용
         if (storedAccessToken && !isTokenExpired(storedAccessToken)) {
           setAccessToken(storedAccessToken);
+          setUser({ username: jwtDecode(storedAccessToken).username });
           console.log("access token 복원 성공:", storedAccessToken);
         } else {
           const response = await axios.post("http://10.0.2.2:8080/reissue", {
@@ -106,7 +108,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  return <AuthContext.Provider value={{ user, setUser, accessToken, setAccessToken, signout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, setUser, accessToken, setAccessToken, signout, loading }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);
