@@ -55,7 +55,7 @@ const Home = () => {
             headers: { access: token },
           });
           const list = Array.isArray(data?.data) ? data.data : [];
-          const count = list.filter((n) => !n.raed).length;
+          const count = list.filter((n) => !n.read).length;
           setUnreadCount(count);
         } catch (e) {
           console.log("🔔 알림 가져오기 실패", e);
