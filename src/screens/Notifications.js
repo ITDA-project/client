@@ -236,11 +236,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
+    paddingBottom: 30,
   },
   emptyText: {
     fontSize: 16,
-    color: "#aaa",
+    color: theme.colors.grey,
     fontFamily: theme.fonts.bold,
   },
 });

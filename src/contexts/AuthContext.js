@@ -13,11 +13,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [stompClient, setStompClient] = useState(null);
 
-  const clearTokens = async () => {
-    await EncryptedStorage.removeItem("accessToken");
-    await Keychain.resetGenericPassword();
-  };
-
   useEffect(() => {
     const restoreSession = async () => {
       console.log("🔄 앱 시작 - 세션 복원 시도 중...");
@@ -69,7 +64,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signout = async () => {
-    await clearTokens(); // 토큰 삭제 안됐을때 살려서 실행
     try {
       // 1. 저장된 accessToken과 refreshToken 불러오기
       const storedAccessToken = await EncryptedStorage.getItem("accessToken");
