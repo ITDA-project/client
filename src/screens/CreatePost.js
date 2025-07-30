@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { Alert, ScrollView, View, Platform, TextInput, Text } from "react-native";
 import styled from "styled-components/native";
 import { useNavigation } from "@react-navigation/native";
@@ -13,18 +13,8 @@ import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
   flex: 1;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 0 20px;
   background-color: ${({ theme }) => theme.colors.white};
-`;
-
-const ButtonContainer = styled.View`
-  margin-top: 10px;
-  margin-bottom: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
-  justify-content: center;
-  align-items: center;
 `;
 
 const RowContainer = styled.View`
@@ -322,6 +312,12 @@ const CreatePost = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
 
+  const descriptionRef = useRef();
+  const maxRef = useRef();
+  const depositRef = useRef();
+  const tagRef = useRef();
+  const scrollRef = useRef();
+
   const [category, setCategory] = useState(null);
   const [categoryOpen, setCategoryOpen] = useState(false);
 
@@ -439,32 +435,118 @@ const CreatePost = () => {
 
   return (
     <KeyboardAwareScrollView
+      Ref={scrollRef}
       extraScrollHeight={100} // 키보드와 입력창 사이 여백 추가
       enableOnAndroid={true} // Android에서도 동작하도록 설정
       keyboardShouldPersistTaps="handled"
     >
       <Container>
-        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          {/* 카테고리 선택 */}
-          <Label>카테고리</Label>
-          <View style={{ width: "45%", zIndex: 3000 }}>
+        {/* 카테고리 선택 */}
+        <Label>카테고리</Label>
+        <View style={{ width: "45%", zIndex: 3000 }}>
+          <DropDownPicker
+            open={categoryOpen}
+            value={category}
+            items={categoryData}
+            setOpen={setCategoryOpen}
+            setValue={setCategory}
+            placeholder="카테고리 선택"
+            listMode="MODAL"
+            modalProps={{
+              animationType: "slide",
+              transparent: false,
+            }}
+            modalTitle="카테고리 선택"
+            modalTitleStyle={{
+              fontSize: 18,
+              fontWeight: "bold",
+              marginBottom: 10,
+            }}
+            modalContentContainerStyle={{
+              backgroundColor: "#fff",
+              paddingHorizontal: 20,
+              paddingVertical: 30,
+              marginHorizontal: 20,
+              marginVertical: 80,
+              borderRadius: 16,
+              elevation: 5,
+            }}
+            modalAnimationType="slide"
+            style={{
+              backgroundColor: "#fff",
+              borderColor: theme.colors.grey,
+              borderWidth: 1,
+              borderRadius: 8,
+              paddingHorizontal: 10,
+            }}
+            textStyle={{
+              fontSize: 16,
+              color: theme.colors.black,
+            }}
+          />
+        </View>
+
+        <Label>제목</Label>
+        <Input
+          returnKeyType="next"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="글 제목"
+          containerStyle={{ marginTop: -20 }}
+          onSubmitEditing={() => descriptionRef.current.focus()}
+        />
+
+        <Label>상세설명</Label>
+        {/* input컴포넌트 사용시 높이조절 x */}
+        <TextInput
+          ref={descriptionRef}
+          onFocus={() => scrollRef.current?.scrollToFocusedInput(descriptionRef.current)}
+          value={description}
+          onChangeText={setDescription}
+          placeholder={`어떤 모임인지 자유롭게 설명해주세요!\n(ex. 주 몇회, 초보자 환영, 필요물품 ...)`}
+          placeholderTextColor={theme.colors.grey}
+          multiline={true}
+          numberOfLines={5}
+          onContentSizeChange={(e) => {
+            setInputHeight(Math.max(120, e.nativeEvent.contentSize.height));
+          }}
+          style={{
+            height: inputHeight,
+            padding: 10,
+            borderColor: theme.colors.grey,
+            borderWidth: 1,
+            borderRadius: 5,
+            fontSize: 16,
+            color: theme.colors.black,
+            backgroundColor: theme.colors.white,
+            fontFamily: theme.fonts.regular,
+            textAlignVertical: "top",
+          }}
+          onSubmitEditing={() => maxRef.current.focus()}
+        />
+
+        <Label>지역</Label>
+        <RowContainer style={{ zIndex: 3000 }}>
+          {/* 시 선택 드롭다운 */}
+          <View style={{ width: "40%" }}>
             <DropDownPicker
-              open={categoryOpen}
-              value={category}
-              items={categoryData}
-              setOpen={setCategoryOpen}
-              setValue={setCategory}
-              placeholder="카테고리 선택"
+              open={cityOpen}
+              value={selectedCity}
+              items={cityData}
+              setOpen={setCityOpen}
+              setValue={setSelectedCity}
+              placeholder="시 선택"
               listMode="MODAL"
               modalProps={{
                 animationType: "slide",
                 transparent: false,
               }}
-              modalTitle="카테고리 선택"
+              modalTitle="시 선택"
               modalTitleStyle={{
                 fontSize: 18,
                 fontWeight: "bold",
                 marginBottom: 10,
+                color: "#333",
               }}
               modalContentContainerStyle={{
                 backgroundColor: "#fff",
@@ -485,188 +567,130 @@ const CreatePost = () => {
               }}
               textStyle={{
                 fontSize: 16,
-                color: theme.colors.black,
+                color: "#333",
               }}
             />
           </View>
 
-          <Label>제목</Label>
-          <Input returnKeyType="next" value={title} onChangeText={setTitle} placeholder="글 제목" containerStyle={{ marginTop: -20 }} />
+          {/* 구 선택 드롭다운 */}
+          <View style={{ width: "40%" }}>
+            <DropDownPicker
+              open={districtOpen}
+              value={selectedDistrict}
+              items={districtList}
+              setOpen={setDistrictOpen}
+              setValue={setSelectedDistrict}
+              placeholder="구 선택"
+              disabled={!selectedCity}
+              listMode="MODAL"
+              modalProps={{
+                animationType: "slide",
+                transparent: false,
+              }}
+              modalTitle="구 선택"
+              modalTitleStyle={{
+                fontSize: 18,
+                fontWeight: "bold",
+                marginBottom: 10,
+                color: "#333",
+              }}
+              modalContentContainerStyle={{
+                backgroundColor: "#fff",
+                paddingHorizontal: 20,
+                paddingVertical: 30,
+                marginHorizontal: 20,
+                marginVertical: 80,
+                borderRadius: 16,
+                elevation: 5,
+              }}
+              modalAnimationType="slide"
+              style={{
+                backgroundColor: "#fff",
+                borderColor: theme.colors.grey,
+                borderWidth: 1,
+                borderRadius: 8,
+                paddingHorizontal: 10,
+              }}
+              textStyle={{
+                fontSize: 16,
+                color: "#333",
+              }}
+            />
+          </View>
+        </RowContainer>
 
-          <Label>상세설명</Label>
-          {/* input컴포넌트 사용시 높이조절 x */}
-          <TextInput
-            value={description}
-            onChangeText={setDescription}
-            placeholder={`어떤 모임인지 자유롭게 설명해주세요!\n(ex. 주 몇회, 초보자 환영, 필요물품 ...)`}
-            placeholderTextColor={theme.colors.grey}
-            multiline={true}
-            numberOfLines={5}
-            onContentSizeChange={(e) => {
-              setInputHeight(Math.max(120, e.nativeEvent.contentSize.height));
-            }}
-            style={{
-              height: inputHeight,
-              padding: 10,
-              borderColor: theme.colors.grey,
-              borderWidth: 1,
-              borderRadius: 5,
-              fontSize: 16,
-              color: theme.colors.black,
-              backgroundColor: theme.colors.white,
-              fontFamily: theme.fonts.regular,
-              textAlignVertical: "top",
-            }}
+        <Label>모임 최대 인원</Label>
+        <Input
+          ref={maxRef}
+          onFocus={() => scrollRef.current?.scrollToFocusedInput(maxRef.current)}
+          returnKeyType="next"
+          value={maxParticipants}
+          onChangeText={setMaxParticipants}
+          placeholder="모임을 함께할 최대 인원 수 (ex. 8, 10)"
+          containerStyle={{ marginTop: -20 }}
+          onSubmitEditing={() => depositRef.current.focus()}
+        />
+
+        <Label>모집 기간</Label>
+        <RowContainer>
+          {/* 모집 시작일 - 고정값 (오늘) */}
+          <DateInputContainer disabled={true}>
+            <DateText>{recruitmentStart.toLocaleDateString("ko-KR")}</DateText>
+            <Ionicons name="calendar-outline" size={20} color="#888" />
+          </DateInputContainer>
+          <Text>~</Text>
+          <CalendarPicker
+            date={recruitmentEnd}
+            setDate={setRecruitmentEnd}
+            minDate={recruitmentStart} // 모집 시작 이후 날짜만 선택 가능
+            disabled={!recruitmentStart} // 모집 시작을 선택해야 활성화
           />
+        </RowContainer>
 
-          <Label>지역</Label>
-          <RowContainer style={{ zIndex: 3000 }}>
-            {/* 시 선택 드롭다운 */}
-            <View style={{ width: "40%" }}>
-              <DropDownPicker
-                open={cityOpen}
-                value={selectedCity}
-                items={cityData}
-                setOpen={setCityOpen}
-                setValue={setSelectedCity}
-                placeholder="시 선택"
-                listMode="MODAL"
-                modalProps={{
-                  animationType: "slide",
-                  transparent: false,
-                }}
-                modalTitle="시 선택"
-                modalTitleStyle={{
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  marginBottom: 10,
-                  color: "#333",
-                }}
-                modalContentContainerStyle={{
-                  backgroundColor: "#fff",
-                  paddingHorizontal: 20,
-                  paddingVertical: 30,
-                  marginHorizontal: 20,
-                  marginVertical: 80,
-                  borderRadius: 16,
-                  elevation: 5,
-                }}
-                modalAnimationType="slide"
-                style={{
-                  backgroundColor: "#fff",
-                  borderColor: theme.colors.grey,
-                  borderWidth: 1,
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                }}
-                textStyle={{
-                  fontSize: 16,
-                  color: "#333",
-                }}
-              />
-            </View>
-
-            {/* 구 선택 드롭다운 */}
-            <View style={{ width: "40%" }}>
-              <DropDownPicker
-                open={districtOpen}
-                value={selectedDistrict}
-                items={districtList}
-                setOpen={setDistrictOpen}
-                setValue={setSelectedDistrict}
-                placeholder="구 선택"
-                disabled={!selectedCity}
-                listMode="MODAL"
-                modalProps={{
-                  animationType: "slide",
-                  transparent: false,
-                }}
-                modalTitle="구 선택"
-                modalTitleStyle={{
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  marginBottom: 10,
-                  color: "#333",
-                }}
-                modalContentContainerStyle={{
-                  backgroundColor: "#fff",
-                  paddingHorizontal: 20,
-                  paddingVertical: 30,
-                  marginHorizontal: 20,
-                  marginVertical: 80,
-                  borderRadius: 16,
-                  elevation: 5,
-                }}
-                modalAnimationType="slide"
-                style={{
-                  backgroundColor: "#fff",
-                  borderColor: theme.colors.grey,
-                  borderWidth: 1,
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                }}
-                textStyle={{
-                  fontSize: 16,
-                  color: "#333",
-                }}
-              />
-            </View>
-          </RowContainer>
-
-          <Label>모임 최대 인원</Label>
-          <Input
-            returnKeyType="next"
-            value={maxParticipants}
-            onChangeText={setMaxParticipants}
-            placeholder="모임을 함께할 최대 인원 수 (ex. 8, 10)"
-            containerStyle={{ marginTop: -20 }}
+        <Label>활동 기간</Label>
+        <RowContainer>
+          <CalendarPicker date={activityStart} setDate={setActivityStart} />
+          <Text>~</Text>
+          <CalendarPicker
+            date={activityEnd}
+            setDate={setActivityEnd}
+            minDate={activityStart} // ✅ 활동 시작 이후만 선택 가능
+            disabled={!activityStart} // ✅ 시작 날짜 선택 후 활성화
           />
+        </RowContainer>
 
-          <Label>모집 기간</Label>
-          <RowContainer>
-            {/* 모집 시작일 - 고정값 (오늘) */}
-            <DateInputContainer disabled={true}>
-              <DateText>{recruitmentStart.toLocaleDateString("ko-KR")}</DateText>
-              <Ionicons name="calendar-outline" size={20} color="#888" />
-            </DateInputContainer>
-            <Text>~</Text>
-            <CalendarPicker
-              date={recruitmentEnd}
-              setDate={setRecruitmentEnd}
-              minDate={recruitmentStart} // 모집 시작 이후 날짜만 선택 가능
-              disabled={!recruitmentStart} // 모집 시작을 선택해야 활성화
-            />
-          </RowContainer>
+        <Label>보증금</Label>
+        <Input
+          ref={depositRef}
+          onFocus={() => scrollRef.current?.scrollToFocusedInput(depositRef.current)}
+          returnKeyType="next"
+          value={deposit}
+          onChangeText={setDeposit}
+          placeholder="₩ 999,999,999"
+          containerStyle={{ marginTop: -20 }}
+          onSubmitEditing={() => tagRef.current.focus()}
+        />
 
-          <Label>활동 기간</Label>
-          <RowContainer>
-            <CalendarPicker date={activityStart} setDate={setActivityStart} />
-            <Text>~</Text>
-            <CalendarPicker
-              date={activityEnd}
-              setDate={setActivityEnd}
-              minDate={activityStart} // ✅ 활동 시작 이후만 선택 가능
-              disabled={!activityStart} // ✅ 시작 날짜 선택 후 활성화
-            />
-          </RowContainer>
+        <Label>태그</Label>
+        <Input
+          ref={tagRef}
+          onFocus={() => scrollRef.current?.scrollToFocusedInput(tagRef.current)}
+          returnKeyType="done"
+          value={tags}
+          onChangeText={setTags}
+          placeholder="#뜨개질 #취미 #종로구"
+          containerStyle={{ marginTop: -20 }}
+        />
 
-          <Label>보증금</Label>
-          <Input returnKeyType="next" value={deposit} onChangeText={setDeposit} placeholder="₩ 999,999,999" containerStyle={{ marginTop: -20 }} />
+        <Button
+          title="생성하기"
+          onPress={handleSubmit}
+          disabled={!isFormValid()}
+          containerStyle={{ height: 50, width: "100%", marginTop: 20, paddingHorizontal: 0 }}
+          textStyle={{ fontSize: 18 }}
+          style={{ height: 50, width: "100%", paddingHorizontal: 0 }}
+        />
 
-          <Label>태그</Label>
-          <Input returnKeyType="done" value={tags} onChangeText={setTags} placeholder="#뜨개질 #취미 #종로구" containerStyle={{ marginTop: -20 }} />
-
-          <ButtonContainer>
-            <Button
-              title="만들기"
-              onPress={handleSubmit}
-              disabled={!isFormValid()}
-              containerStyle={{ height: 45, width: 350 }}
-              textStyle={{ fontSize: 16 }}
-              style={{ height: 45, width: 350 }}
-            />
-          </ButtonContainer>
-        </ScrollView>
         <AlertModal
           visible={alertVisible}
           message={alertMessage}

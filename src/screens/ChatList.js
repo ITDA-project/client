@@ -160,7 +160,7 @@ const ChatList = () => {
   useFocusEffect(
     useCallback(() => {
       fetchChatRooms();
-    }, [fetchChatRooms])
+    }, [])
   );
 
   const renderItem = ({ item }) => (

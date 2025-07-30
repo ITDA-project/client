@@ -100,6 +100,14 @@ const Notification = ({ onReadAll }) => {
             <Feather name="chevron-right" size={20} color="#999" />
           </TouchableOpacity>
         )}
+        ListEmptyComponent={
+          !loading && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>알림이 존재하지 않습니다</Text>
+            </View>
+          )
+        }
+        contentContainerStyle={notifications.length === 0 ? styles.emptyWrapper : null}
       />
 
       {/* 결제 정보 확인 모달 */}
@@ -221,6 +229,19 @@ const styles = StyleSheet.create({
   cancelText: {
     fontFamily: theme.fonts.bold,
     color: theme.colors.mainBlue,
+  },
+  emptyWrapper: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#aaa",
+    fontFamily: theme.fonts.bold,
   },
 });
 
