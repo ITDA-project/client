@@ -78,7 +78,6 @@ const Divider = styled.View`
 const ProfileContainer = styled.View`
   flex-direction: column; /* 전체를 세로 정렬 */
   margin-top: 10px;
-  margin-left: 10px;
   margin-right: 10px;
 `;
 
@@ -126,6 +125,7 @@ const ProfileIntro = styled.Text`
   font-size: 16px;
   color: #444;
   line-height: 22px; /* 줄 간격 조정 */
+  margin-left: 10px;
   margin-top: 15px;
 `;
 
@@ -417,7 +417,11 @@ const MyPostDetail = () => {
           <ProfileContainer>
             <ProfileHeader>
               <ProfileImageContainer>
-                {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
+                {user?.image ? (
+                  <ProfileImage source={{ uri: user.image }} />
+                ) : (
+                  <ProfileImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+                )}
               </ProfileImageContainer>
 
               <RowContainer>

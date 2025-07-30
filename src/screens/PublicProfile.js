@@ -22,7 +22,6 @@ const ProfileContainer = styled.View`
 const ProfileImageContainer = styled.View`
   width: 60px;
   height: 60px;
-  margin-left: 10px;
   margin-right: 15px;
   border-radius: 30px;
   background-color: #ddd;
@@ -37,7 +36,6 @@ const ProfileImage = styled.Image`
 `;
 
 const UserInfo = styled.View`
-  margin-left: 10px;
   flex-direction: row;
   align-items: center;
 `;
@@ -194,7 +192,11 @@ const PublicProfile = ({ route }) => {
       {/* 프로필 영역 */}
       <ProfileContainer>
         <ProfileImageContainer>
-          {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
+          {user?.image ? (
+            <ProfileImage source={{ uri: user.image }} />
+          ) : (
+            <ProfileImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+          )}
         </ProfileImageContainer>
         <UserInfo>
           <UserName>{user.name}</UserName>

@@ -384,7 +384,7 @@ const Chat = () => {
               item.image ? (
                 <ProfileImage source={{ uri: item.image }} />
               ) : (
-                <Feather name="user" size={38} color="#888" />
+                <ProfileImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
               )
             ) : (
               <View style={{ width: 40, height: 40 }} />
@@ -474,11 +474,12 @@ const Chat = () => {
                     >
                       <ParticipantRow key={i}>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          {p.image ? (
+                          {p?.image ? (
                             <ParticipantImage source={{ uri: p.image }} />
                           ) : (
-                            <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
+                            <ParticipantImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
                           )}
+
                           <ParticipantItem>{p.name}</ParticipantItem>
                         </View>
 
