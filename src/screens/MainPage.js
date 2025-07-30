@@ -113,15 +113,16 @@ const MainPage = () => {
       fontFamily: theme.fonts.bold,
     },
     sectionContent: {
-      minHeight: 110, // 또는 원하는 높이
+      minHeight: 120,
       justifyContent: "center",
+      marginBottom: 10,
     },
     sectionHeader: {
       flexDirection: "row", // 가로 정렬
       justifyContent: "space-between", // 양 끝 정렬
       alignItems: "center", // 수직 중앙 정렬
     },
-    sectionTitle: { fontSize: 20, fontFamily: theme.fonts.bold, marginTop: 25, marginBottom: 10, color: "#656565" },
+    sectionTitle: { fontSize: 20, fontFamily: theme.fonts.bold, marginTop: 25, marginBottom: 2, color: "#656565" },
 
     viewAllButton: { fontSize: 16, marginLeft: "auto", fontFamily: theme.fonts.bold },
 
@@ -132,6 +133,21 @@ const MainPage = () => {
     likesContainer: { flexDirection: "row", alignItems: "center", marginLeft: "auto", justifyContent: "center" },
     likesText: { marginLeft: 5, color: "#979C9E", fontFamily: theme.fonts.bold },
   });
+
+  //Section 컴포넌트
+  const Section = ({ title, showViewAll, onViewAllPress, children }) => (
+    <View style={{ marginBottom: 40 }}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        {showViewAll && (
+          <TouchableOpacity onPress={onViewAllPress}>
+            <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={styles.sectionContent}>{children}</View>
+    </View>
+  );
 
   const category = [
     { id: "1", name: "취미", code: "HOBBY", image: require("../../assets/icons/categoriHobby.png") },
@@ -147,14 +163,14 @@ const MainPage = () => {
     //배열인지 확인
     if (!Array.isArray(data) || data.length === 0) {
       return (
-        <View style={{ alignItems: "center", marginVertical: 20 }}>
+        <View style={{ minHeight: 100, alignItems: "center", justifyContent: "center", marginVertical: 20, paddingBottom: 10 }}>
           <Text style={{ fontSize: 16, color: "#888", fontFamily: theme.fonts.regular }}>모아모아의 첫 모임을 생성해보세요!</Text>
         </View>
       );
     }
 
     return (
-      <View>
+      <View style={{ minHeight: 150 }}>
         {data.map((item) => (
           <TouchableOpacity
             key={item.postId}
@@ -220,26 +236,14 @@ const MainPage = () => {
         </ScrollView>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* 최신 모임 섹션 */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>최신 모임</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("전체글", { category: null, sort: "createdAt" })}>
-            <Text style={styles.viewAllButton}>{`전체글 >`}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.sectionContent}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, justifyContent: "space-between", paddingBottom: 100 }}>
+        <Section title="최신 모임" showViewAll onViewAllPress={() => navigation.navigate("전체글", { category: null, sort: "createdAt" })}>
           <PostList data={latestMeetings} />
-        </View>
+        </Section>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>주간 TOP3 모임</Text>
-        </View>
-
-        <View style={styles.sectionContent}>
+        <Section title="주간 TOP3 모임">
           <PostList data={popularMeetings} />
-        </View>
+        </Section>
       </ScrollView>
     </View>
   );
