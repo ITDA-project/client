@@ -11,7 +11,7 @@ const Notification = ({ onReadAll }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalData, setModalData] = useState({ title: "", date: "", amount: 0 });
+  const [modalData, setModalData] = useState({ title: "", date: "", time: "", location: "", price: 0 });
 
   const fetchNotifications = async () => {
     try {
@@ -76,7 +76,13 @@ const Notification = ({ onReadAll }) => {
         Alert.alert("결제완료", "모아모아와 함께 모임에 참여해주세요!");
         break;
       case "PAYMENT_REQUESTED":
-        setModalData({ title: item.title, date: "2025/05/26", amount: 10000 }); //날짜, 금액 전달 수정 필요
+        setModalData({
+          title: item.title,
+          date: item.sessionDate || "날짜 정보 없음",
+          time: item.sessionTime || "시간 정보 없음",
+          location: item.location || "장소 정보 없음",
+          price: item.price || 0,
+        });
         setModalVisible(true);
         break;
       default:
@@ -116,14 +122,16 @@ const Notification = ({ onReadAll }) => {
           <View style={styles.modalBox}>
             <Text style={styles.title}>{modalData.title}</Text>
             <Text style={styles.date}>{modalData.date}</Text>
-            <Text style={styles.amount}>{modalData.amount.toLocaleString()}원</Text>
+            <Text style={styles.time}>{modalData.time}</Text>
+            <Text style={styles.location}>{modalData.location}</Text>
+            <Text style={styles.price}>{modalData.price.toLocaleString()}원</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.confirmButton}
                 onPress={() => {
                   setModalVisible(false);
                   navigation.navigate("결제", {
-                    amount: modalData.amount,
+                    price: modalData.price,
                     title: modalData.title,
                   });
                 }}
@@ -185,8 +193,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: theme.fonts.bold,
-    fontSize: 16,
-    marginBottom: 6,
+    fontSize: 20,
+    marginBottom: 15,
     textAlign: "center",
   },
   date: {
@@ -195,11 +203,23 @@ const styles = StyleSheet.create({
     color: "gray",
     marginBottom: 6,
   },
-  amount: {
+  time: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 14,
+    color: "gray",
+    marginBottom: 6,
+  },
+  location: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 14,
+    color: "gray",
+    marginBottom: 20,
+  },
+  price: {
     fontFamily: theme.fonts.bold,
-    fontSize: 16,
+    fontSize: 17,
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 30,
   },
   buttonContainer: {
     flexDirection: "row",

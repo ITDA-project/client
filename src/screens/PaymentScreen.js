@@ -74,7 +74,7 @@ const PaymentScreen = ({ route, navigation }) => {
     try {
       const { imp_uid, merchant_uid } = data;
       const accessToken = await EncryptedStorage.getItem("accessToken");
-      console.log(accessToken);
+      console.log("엑세스 토큰: ", accessToken);
 
       if (!accessToken) {
         console.log("인증 오류! 로그인이 필요합니다.");
@@ -100,8 +100,10 @@ const PaymentScreen = ({ route, navigation }) => {
     } catch (err) {
       console.error("❌ 서버 전송 실패:", err.response?.data || err.message);
 
-      setAlertMessage("서버로 결제 정보를 전달하는 데 실패했습니다.");
+      setAlertMessage("서버로 결제 정보를 전달하는 데\n실패했습니다.");
       setAlertVisible(true);
+
+      setOnConfirmAction(() => () => navigation.goBack()); // 확인 시 goBack 실행
     }
   };
 
