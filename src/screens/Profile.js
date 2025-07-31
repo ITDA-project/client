@@ -23,21 +23,12 @@ const ProfileContainer = styled.View`
   align-items: center;
 `;
 
-const ProfileImageContainer = styled.View`
-  width: 60px;
-  height: 60px;
+const ProfileImage = styled.Image`
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
   margin-left: 10px;
   margin-right: 15px;
-  border-radius: 30px;
-  background-color: #ddd;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ProfileImage = styled.Image`
-  width: 100%;
-  height: 100%;
-  border-radius: 30px;
 `;
 
 const UserInfo = styled.View`
@@ -219,9 +210,11 @@ const Profile = ({ navigation, route }) => {
     <Container>
       {/* 상단 프로필 */}
       <ProfileContainer>
-        <ProfileImageContainer>
-          {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={30} color="#888" />}
-        </ProfileImageContainer>
+        {user?.image ? (
+          <ProfileImage source={{ uri: user.image }} />
+        ) : (
+          <ProfileImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+        )}
         <UserInfo>
           <UserName>{user.name}</UserName>
           <StarContainer>

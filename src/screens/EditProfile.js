@@ -17,9 +17,9 @@ const Container = styled.View`
 `;
 
 const ProfileImageContainer = styled.TouchableOpacity`
-  width: 80px;
-  height: 80px;
-  border-radius: 40px;
+  width: 65px;
+  height: 65px;
+  border-radius: 32.5px;
   background-color: #ddd;
   align-items: center;
   justify-content: center;
@@ -31,7 +31,7 @@ const ProfileImageContainer = styled.TouchableOpacity`
 const ProfileImage = styled.Image`
   width: 100%;
   height: 100%;
-  border-radius: 40px;
+  border-radius: 32.5px;
 `;
 
 const CameraIconContainer = styled.View`
@@ -170,9 +170,9 @@ const EditProfile = ({ navigation, route }) => {
     <Container>
       {/* 프로필 사진 */}
       <ProfileImageContainer onPress={pickImage}>
-        {image ? <ProfileImage source={{ uri: image }} /> : <Feather name="user" size={30} color="#888" />}
+        {image ? <ProfileImage source={{ uri: image }} /> : <ProfileImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />}
         <CameraIconContainer>
-          <Feather name="camera" size={16} color="#777" />
+          <Feather name="camera" size={15} color="#777" />
         </CameraIconContainer>
       </ProfileImageContainer>
 

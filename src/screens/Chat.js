@@ -57,6 +57,7 @@ const Chat = () => {
   const [formDate, setFormDate] = useState(getToday());
   const [formTime, setFormTime] = useState(getNow());
   const [formPrice, setFormPrice] = useState("10000");
+  const [formLocation, setFormLocation] = useState("");
 
   const stompRef = useRef(null);
 
@@ -315,7 +316,7 @@ const Chat = () => {
     // ① 서버에 새 세션 생성
     const { data } = await axios.post(
       "http://10.0.2.2:8080/api/sessions/start",
-      { roomId, sessionDate: formDate, sessionTime: formTime, price: parseInt(formPrice, 10) },
+      { roomId, sessionDate: formDate, sessionTime: formTime, price: parseInt(formPrice, 10), location: formLocation },
       { headers: { access: token, "Content-Type": "application/json" } }
     );
 
@@ -384,7 +385,7 @@ const Chat = () => {
               item.image ? (
                 <ProfileImage source={{ uri: item.image }} />
               ) : (
-                <Feather name="user" size={38} color="#888" />
+                <ProfileImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
               )
             ) : (
               <View style={{ width: 40, height: 40 }} />
@@ -474,11 +475,12 @@ const Chat = () => {
                     >
                       <ParticipantRow key={i}>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          {p.image ? (
+                          {p?.image ? (
                             <ParticipantImage source={{ uri: p.image }} />
                           ) : (
-                            <Feather name="user" size={28} color="#888" style={{ marginRight: 10 }} />
+                            <ParticipantImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
                           )}
+
                           <ParticipantItem>{p.name}</ParticipantItem>
                         </View>
 
@@ -515,6 +517,7 @@ const Chat = () => {
                       setFormDate(getToday()); // "YYYY-MM-DD"
                       setFormTime(getNow()); // "HH:mm"
                       setFormPrice("10000");
+                      setFormLocation(""); // 초기화
                       setStartModalVisible(true); // 모달 열기
                     }}
                     containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
@@ -539,6 +542,8 @@ const Chat = () => {
         setFormTime={setFormTime}
         formPrice={formPrice}
         setFormPrice={setFormPrice}
+        formLocation={formLocation}
+        setFormLocation={setFormLocation}
         onConfirm={handleStartMeeting}
         onCancel={() => setStartModalVisible(false)}
       />

@@ -125,7 +125,7 @@ const ApplicationList = ({ navigation }) => {
       {loading ? (
         <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 20 }} />
       ) : applications.length === 0 ? (
-        <NameText style={{ alignSelf: "center", marginTop: 350, color: "#a1a1a1" }}>신청서가 없습니다.</NameText>
+        <NameText style={{ alignSelf: "center", marginTop: 350, color: "#a1a1a1" }}>신청서가 없습니다</NameText>
       ) : (
         <StyledFlatList data={applications} keyExtractor={(item) => item.formId.toString()} renderItem={renderItem} />
       )}
