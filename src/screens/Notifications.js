@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import theme from "../theme";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
+import { formatTime, formatDate } from "../utils/utils";
 
 const Notification = ({ onReadAll }) => {
   const navigation = useNavigation();
@@ -160,9 +161,9 @@ const Notification = ({ onReadAll }) => {
         <View style={styles.overlay}>
           <View style={styles.modalBox}>
             <Text style={styles.title}>{modalData.title}</Text>
-            <Text style={styles.date}>날짜: {modalData.date}</Text>
-            <Text style={styles.time}>시간: {modalData.time}</Text>
-            <Text style={styles.location}>장소: {modalData.location}</Text>
+            <Text style={styles.date}>{formatDate(modalData.date)}</Text>
+            <Text style={styles.time}>{formatTime(modalData.time)}</Text>
+            <Text style={styles.location}>{modalData.location}</Text>
             <Text style={styles.amount}>{modalData.amount.toLocaleString()}원</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity

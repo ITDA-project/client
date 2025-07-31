@@ -133,7 +133,7 @@ const PaymentScreen = ({ route, navigation }) => {
           pay_method: "card",
           merchant_uid: "mid_" + new Date().getTime(),
           name: "${title}",
-          amount: 100, 
+          amount: 100, // 테스트 이후 가격도 param값으로 수정 필요
           buyer_name: "홍길동", // 추후 사용자의 이름으로 수정 필요
           buyer_tel: "010-1234-5678",
           m_redirect_url: "moamoa://payment-success",
