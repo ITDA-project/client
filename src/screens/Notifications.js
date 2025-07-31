@@ -76,6 +76,7 @@ const Notification = ({ onReadAll }) => {
         location: sessionInfo.location || "장소 정보 없음",
         amount: sessionInfo.price || 0,
         somoimId: sessionInfo.somoimId || roomId, // somoimId가 없으면 roomId 사용
+        sessionId: sessionInfo.sessionNumber,
       });
       setModalVisible(true);
     } catch (error) {
@@ -168,11 +169,13 @@ const Notification = ({ onReadAll }) => {
                 style={styles.confirmButton}
                 onPress={() => {
                   setModalVisible(false);
+                  console.log("진짜 직전에 결제페이지로 넘길 데이터", modalData.amount, modalData.title, modalData.somoimId, modalData.sessionId);
                   // 모달에 저장된 roomId를 결제 페이지로 넘겨줍니다.
                   navigation.navigate("결제", {
                     amount: modalData.amount,
                     title: modalData.title,
-                    somoimId: modalData.roomId, // somoimId로 값을 전달
+                    somoimId: modalData.somoimId, // somoimId로 값을 전달
+                    sessionId: modalData.sessionId,
                   });
                 }}
               >
