@@ -25,19 +25,26 @@ const AllPosts = ({ route }) => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
       console.log("🔑 accessToken:", token);
-      const response = await axios.get(
-        "http://10.0.2.2:8080/api/mypage/me",
 
-        {
-          headers: {
-            access: `${token}`,
-          },
-        }
-      );
+      // 토큰이 없거나 유효하지 않으면 (null, undefined, 빈 문자열 등) API 호출을 건너뜀
+      // 이렇게 하면 유효하지 않은 토큰으로 인한 서버 오류를 방지할 수 있습니다.
+      if (!token || token === "null" || token === "undefined" || token.trim() === "") {
+        console.log("로그인 상태가 아니어서 사용자 정보 조회를 건너뛰었습니다.");
+        setCurrentUserId(null); // 사용자 ID를 null로 설정하여 비로그인 상태로 처리
+        return;
+      }
+
+      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+        headers: {
+          access: `${token}`,
+        },
+      });
 
       setCurrentUserId(response.data.data);
     } catch (error) {
       console.error("유저 정보 가져오기 실패:", error);
+      // 오류 발생 시에도 사용자 ID를 null로 설정하여 비로그인 상태로 처리
+      setCurrentUserId(null);
     }
   };
 
