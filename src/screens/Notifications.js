@@ -121,8 +121,8 @@ const Notification = ({ onReadAll }) => {
         }
         navigation.navigate("신청서 목록", { postId: item.postId });
         break;
-      case "PAYMENT_COMPLETE":
-        setAlertMessage("모아모아와 함께 모임에 참여해주세요!");
+      case "PAYMENT_COMPLETED":
+        setAlertMessage("잊지 말고 꼭 참여해주세요!");
         setAlertVisible(true);
         break;
       case "PAYMENT_REQUESTED":
@@ -203,7 +203,6 @@ const Notification = ({ onReadAll }) => {
         message={alertMessage}
         onConfirm={() => {
           setAlertVisible(false);
-          if (onConfirmAction) onConfirmAction();
         }}
       />
     </View>
