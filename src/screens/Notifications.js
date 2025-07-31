@@ -11,7 +11,7 @@ const Notification = ({ onReadAll }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalData, setModalData] = useState({ title: "", date: "", time: "", location: "", price: 0 });
+  const [modalData, setModalData] = useState({ title: "", date: "", time: "", location: "", amount: 0 });
 
   const fetchNotifications = async () => {
     try {
@@ -74,7 +74,7 @@ const Notification = ({ onReadAll }) => {
         date: sessionInfo.sessionDate || "날짜 정보 없음",
         time: sessionInfo.sessionTime || "시간 정보 없음",
         location: sessionInfo.location || "장소 정보 없음",
-        price: sessionInfo.price || 0,
+        amount: sessionInfo.price || 0,
         somoimId: sessionInfo.somoimId || roomId, // somoimId가 없으면 roomId 사용
       });
       setModalVisible(true);
@@ -162,7 +162,7 @@ const Notification = ({ onReadAll }) => {
             <Text style={styles.date}>날짜: {modalData.date}</Text>
             <Text style={styles.time}>시간: {modalData.time}</Text>
             <Text style={styles.location}>장소: {modalData.location}</Text>
-            <Text style={styles.price}>{modalData.price.toLocaleString()}원</Text>
+            <Text style={styles.amount}>{modalData.amount.toLocaleString()}원</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.confirmButton}
@@ -170,7 +170,7 @@ const Notification = ({ onReadAll }) => {
                   setModalVisible(false);
                   // 모달에 저장된 roomId를 결제 페이지로 넘겨줍니다.
                   navigation.navigate("결제", {
-                    price: modalData.price,
+                    amount: modalData.amount,
                     title: modalData.title,
                     somoimId: modalData.roomId, // somoimId로 값을 전달
                   });
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     color: "gray",
     marginBottom: 20,
   },
-  price: {
+  amount: {
     fontFamily: theme.fonts.bold,
     fontSize: 17,
     textAlign: "center",
