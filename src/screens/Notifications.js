@@ -6,6 +6,7 @@ import theme from "../theme";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { formatTime, formatDate } from "../utils/utils";
+import { AlertModal } from "../components";
 
 const Notification = ({ onReadAll }) => {
   const navigation = useNavigation();
@@ -13,6 +14,9 @@ const Notification = ({ onReadAll }) => {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: "", date: "", time: "", location: "", amount: 0 });
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const fetchNotifications = async () => {
     try {
@@ -62,8 +66,8 @@ const Notification = ({ onReadAll }) => {
 
       // 진행 중인 세션이 없는 경우
       if (!sessionInfo) {
-        Alert.alert("알림", "진행 중인 세션이 없습니다.");
-        setModalVisible(false); // 세션이 없으면 모달을 닫습니다.
+        setAlertMessage("진행 중인 세션이 없습니다");
+        setAlertVisible(true);
         return;
       }
 
@@ -82,7 +86,9 @@ const Notification = ({ onReadAll }) => {
       setModalVisible(true);
     } catch (error) {
       console.error(`❌ 세션 정보 조회 실패 (roomId: ${item.postId}):`, error);
-      Alert.alert("오류", "세션 정보를 불러오지 못했습니다.");
+
+      setAlertMessage("세션 정보를 불러오지 못했습니다");
+      setAlertVisible(true);
     }
   };
 
@@ -109,20 +115,23 @@ const Notification = ({ onReadAll }) => {
       case "FORM_APPLY":
         console.log("PostId from Notification item:", item.postId);
         if (!item.postId) {
-          Alert.alert("오류", "신청서 postId가 없습니다.");
+          setAlertMessage("신청서 postId가 없습니다");
+          setAlertVisible(true);
           return;
         }
         navigation.navigate("신청서 목록", { postId: item.postId });
         break;
-      case "PAYMENT_COMPLETE":
-        Alert.alert("결제완료", "모아모아와 함께 모임에 참여해주세요!");
+      case "PAYMENT_COMPLETED":
+        setAlertMessage("잊지 말고 꼭 참여해주세요!");
+        setAlertVisible(true);
         break;
       case "PAYMENT_REQUESTED":
         // postId를 roomId로 가정하고 세션 정보를 조회합니다.
         if (item.postId) {
           fetchSessionInfo(item);
         } else {
-          Alert.alert("오류", "모임 정보를 찾을 수 없습니다.");
+          setAlertMessage("모임 정보를 찾을 수 없습니다");
+          setAlertVisible(true);
         }
         break;
       default:
@@ -189,6 +198,13 @@ const Notification = ({ onReadAll }) => {
           </View>
         </View>
       </Modal>
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+        }}
+      />
     </View>
   );
 };
