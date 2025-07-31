@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Alert } from "react-native";
 import { Input, Button, AlertModal } from "../components";
 import styled from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
