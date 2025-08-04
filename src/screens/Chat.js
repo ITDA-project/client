@@ -46,6 +46,8 @@ const Chat = () => {
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
   const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [sessionDate, setSessionDate] = useState(null); // ⭐ 추가
+  const [sessionTime, setSessionTime] = useState(null); // ⭐ 추가
   const [meetingActive, setMeetingActive] = useState(false);
   // ⭐ participantStatus 객체의 키를 userId로 관리하도록 변경
   const [participantStatus, setParticipantStatus] = useState({});
@@ -135,6 +137,8 @@ const Chat = () => {
       setMeetingActive(true);
       setCurrentSessionId(s.id);
       setCurrentRound(s.sessionNumber);
+      setSessionDate(s.sessionDate); // ⭐ 추가
+      setSessionTime(s.sessionTime); // ⭐ 추가
 
       // 3. 결제 상태 API 호출
       const paymentStatusResponse = await axios.post(
@@ -322,6 +326,8 @@ const Chat = () => {
     setCurrentSessionId(s.id);
     setCurrentRound(s.sessionNumber);
     setMeetingActive(true);
+    setSessionDate(s.sessionDate); // ⭐ 추가
+    setSessionTime(s.sessionTime); // ⭐ 추가
 
     const list = await fetchParticipants();
 
@@ -360,7 +366,7 @@ const Chat = () => {
       await fetchSessionStatus();
       setParticipantStatus({});
       setSideMenuVisible(false);
-      navigation.navigate("참여확인", { participants, participantStatus, currentRound });
+      navigation.navigate("참여확인", { participants, participantStatus, currentRound, sessionDate });
     } catch (e) {
       console.error("모임 종료 실패", e.response?.data ?? e.message);
     }

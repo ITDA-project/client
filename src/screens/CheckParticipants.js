@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useMemo } from "react";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -92,15 +92,27 @@ const FooterContainer = styled.View`
   background-color: ${({ theme }) => theme.colors.white};
 `;
 
+const EmptyText = styled.Text`
+  position: absolute;
+  top: 55%;
+  font-size: 16px;
+  color: #a1a1a1;
+  text-align: center;
+  font-family: ${({ theme }) => theme.fonts.regular};
+`;
+
 const CheckParticipants = () => {
   const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { participants, participantStatus, currentRound } = route.params ?? {};
+  const { participants, participantStatus, currentRound, sessionDate } = route.params ?? {};
 
-  //체크박스 선택 여부 상태 저장
-  const [Status, setStatus] = useState(participants.map((p) => ({ ...p, attended: false })));
+  const paidParticipants = useMemo(() => {
+    return participants.filter((p) => participantStatus[p.userId] === "참여");
+  }, [participants, participantStatus]);
+
+  const [Status, setStatus] = useState(() => paidParticipants.map((p) => ({ ...p, attended: false })));
 
   const toggleCheck = (index) => {
     const updated = [...Status];
@@ -109,13 +121,11 @@ const CheckParticipants = () => {
   };
 
   const handleSubmit = () => {
-    const actualParticipants = Status.filter((p) => p.attended) //체크된 사람만 필터링
-      .map((p) => p.name); //이름만 추출
+    const actualParticipants = Status.filter((p) => p.attended).map((p) => p.name);
     const expectedParticipants = Object.entries(participantStatus ?? {})
-      .filter(([_, status]) => status === "참여") //값이 "참여"인 항목만 필터링
-      .map(([name]) => name); //이름만 추출
+      .filter(([_, status]) => status === "참여")
+      .map(([name]) => name);
 
-    //참여 예정자 중 실제 참석한 사람
     const matchedParticipants = actualParticipants.filter((name) => expectedParticipants.includes(name));
     console.log("💸 보증금 환불 대상:", matchedParticipants);
     navigation.goBack();
@@ -124,27 +134,30 @@ const CheckParticipants = () => {
   return (
     <Wrapper>
       <Container insets={insets}>
-        <MeetingDate>2025/05/26</MeetingDate>
+        <MeetingDate>{sessionDate || "날짜 정보 없음"}</MeetingDate>
         <MessageText>
           <RoundText>{currentRound}회차</RoundText> 모임이 종료되었습니다!
         </MessageText>
-        <MessageText>모임에 참여한 사람을 선택해 주세요.</MessageText>
-
-        <ParticipantListContainer>
-          <ParticipantList>
-            {participants.map((p, i) => (
-              <ParticipantRow key={i}>
-                <IconBox onPress={() => toggleCheck(i)}>
-                  <MaterialIcons name={Status[i].attended ? "check-box" : "check-box-outline-blank"} size={24} color={theme.colors.black} />
-                </IconBox>
-
-                <AvatarBox>{p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" />}</AvatarBox>
-
-                <ParticipantName>{p.name}</ParticipantName>
-              </ParticipantRow>
-            ))}
-          </ParticipantList>
-        </ParticipantListContainer>
+        {paidParticipants.length === 0 ? (
+          <EmptyText>결제한 사람이 없습니다.</EmptyText>
+        ) : (
+          <>
+            <MessageText>모임에 참여한 사람을 선택해 주세요.</MessageText>
+            <ParticipantListContainer>
+              <ParticipantList>
+                {paidParticipants.map((p, i) => (
+                  <ParticipantRow key={i}>
+                    <IconBox onPress={() => toggleCheck(i)}>
+                      <MaterialIcons name={Status[i].attended ? "check-box" : "check-box-outline-blank"} size={24} color={theme.colors.black} />
+                    </IconBox>
+                    <AvatarBox>{p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" />}</AvatarBox>
+                    <ParticipantName>{p.name}</ParticipantName>
+                  </ParticipantRow>
+                ))}
+              </ParticipantList>
+            </ParticipantListContainer>
+          </>
+        )}
       </Container>
 
       <FooterContainer>
