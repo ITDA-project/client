@@ -168,7 +168,14 @@ const CheckParticipants = () => {
                     <IconBox onPress={() => toggleCheck(i)}>
                       <MaterialIcons name={Status[i].attended ? "check-box" : "check-box-outline-blank"} size={24} color={theme.colors.black} />
                     </IconBox>
-                    <AvatarBox>{p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" />}</AvatarBox>
+                    <AvatarBox>
+                      {p.image ? (
+                        <ParticipantImage source={{ uri: p.image }} />
+                      ) : (
+                        // 👇 이 부분을 수정합니다.
+                        <ParticipantImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+                      )}
+                    </AvatarBox>
                     <ParticipantName>{p.name}</ParticipantName>
                   </ParticipantRow>
                 ))}
