@@ -5,6 +5,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { Button } from "../components";
+import EncryptedStorage from "react-native-encrypted-storage";
+import axios from "axios";
 
 const Wrapper = styled.View`
   flex: 1;
@@ -106,7 +108,7 @@ const CheckParticipants = () => {
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { participants, participantStatus, currentRound, sessionDate } = route.params ?? {};
+  const { participants, participantStatus, currentRound, sessionDate, roomId, sessionId } = route.params ?? {};
 
   const paidParticipants = useMemo(() => {
     return participants.filter((p) => participantStatus[p.userId] === "참여");
@@ -120,15 +122,31 @@ const CheckParticipants = () => {
     setStatus(updated);
   };
 
-  const handleSubmit = () => {
-    const actualParticipants = Status.filter((p) => p.attended).map((p) => p.name);
-    const expectedParticipants = Object.entries(participantStatus ?? {})
-      .filter(([_, status]) => status === "참여")
-      .map(([name]) => name);
+  const handleSubmit = async () => {
+    const actualParticipants = Status.filter((p) => p.attended).map((p) => p.userId);
 
-    const matchedParticipants = actualParticipants.filter((name) => expectedParticipants.includes(name));
-    console.log("💸 보증금 환불 대상:", matchedParticipants);
-    navigation.goBack();
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      // ⭐ 이 곳에서 모임 종료 API를 호출합니다.
+      await axios.post(
+        "http://10.0.2.2:8080/api/sessions/end",
+        {
+          roomId,
+          sessionId,
+          // ⭐ 실제 참여자를 백엔드로 보내야 할 경우 이 부분을 추가해야 합니다.
+          // actualParticipants
+        },
+        {
+          headers: { access: token, "Content-Type": "application/json" },
+        }
+      );
+
+      // API 호출 성공 후, 이전 화면으로 돌아갑니다.
+      navigation.goBack();
+    } catch (e) {
+      console.error("모임 종료 실패:", e.response?.data ?? e.message);
+      // 실패 시 사용자에게 알림을 주는 로직 추가 가능
+    }
   };
 
   return (

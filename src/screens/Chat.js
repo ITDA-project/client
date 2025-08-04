@@ -351,22 +351,14 @@ const Chat = () => {
   /* ───────── 모임 종료 */
   const handleEndMeeting = async () => {
     if (!currentSessionId) return;
-    const token = await EncryptedStorage.getItem("accessToken");
 
     // ⭐ 모달을 닫는 로직 추가
     setEndMeetingModalVisible(false);
 
     try {
-      await axios.post(
-        "http://10.0.2.2:8080/api/sessions/end",
-        { roomId, sessionId: currentSessionId },
-        { headers: { access: token, "Content-Type": "application/json" } }
-      );
-
-      await fetchSessionStatus();
-      setParticipantStatus({});
       setSideMenuVisible(false);
-      navigation.navigate("참여확인", { participants, participantStatus, currentRound, sessionDate });
+
+      navigation.navigate("참여확인", { roomId, seesionId: currentSessionId, participants, participantStatus, currentRound, sessionDate });
     } catch (e) {
       console.error("모임 종료 실패", e.response?.data ?? e.message);
     }
