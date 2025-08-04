@@ -4,7 +4,7 @@ import { View, Text, FlatList, KeyboardAvoidingView, Platform, Modal } from "rea
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
-import { Button } from "../components";
+import { Button, AlertModal } from "../components";
 import ChatModal from "../components/ChatModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TouchableOpacity from "react-native/Libraries/Components/Touchable/TouchableOpacity";
@@ -59,6 +59,7 @@ const Chat = () => {
   const [formTime, setFormTime] = useState(getNow());
   const [formPrice, setFormPrice] = useState("10000");
   const [formLocation, setFormLocation] = useState("");
+  const [endMeetingModalVisible, setEndMeetingModalVisible] = useState(false);
 
   const stompRef = useRef(null);
 
@@ -346,6 +347,9 @@ const Chat = () => {
     if (!currentSessionId) return;
     const token = await EncryptedStorage.getItem("accessToken");
 
+    // ⭐ 모달을 닫는 로직 추가
+    setEndMeetingModalVisible(false);
+
     try {
       await axios.post(
         "http://10.0.2.2:8080/api/sessions/end",
@@ -501,7 +505,7 @@ const Chat = () => {
                 {meetingActive ? (
                   <Button
                     title="모임종료"
-                    onPress={handleEndMeeting}
+                    onPress={() => setEndMeetingModalVisible(true)} // Alert 대신 모달 상태를 변경
                     containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
                     textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
                     style={{ height: 40, width: 95 }}
@@ -542,6 +546,14 @@ const Chat = () => {
         setFormLocation={setFormLocation}
         onConfirm={handleStartMeeting}
         onCancel={() => setStartModalVisible(false)}
+      />
+
+      {/* ⭐ 커스텀 AlertModal 컴포넌트 추가 */}
+      <AlertModal
+        visible={endMeetingModalVisible}
+        message="모임을 종료하시겠습니까?"
+        onConfirm={handleEndMeeting}
+        onCancel={() => setEndMeetingModalVisible(false)}
       />
     </KeyboardAvoidingView>
   );
