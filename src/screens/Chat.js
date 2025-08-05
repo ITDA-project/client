@@ -349,18 +349,46 @@ const Chat = () => {
   };
 
   /* ───────── 모임 종료 */
+  // Chat.js 파일 내 handleEndMeeting 함수 (수정 제안)
+
   const handleEndMeeting = async () => {
     if (!currentSessionId) return;
 
-    // ⭐ 모달을 닫는 로직 추가
+    // 모달을 닫는 로직 추가
     setEndMeetingModalVisible(false);
 
     try {
       setSideMenuVisible(false);
 
-      navigation.navigate("참여확인", { roomId, seesionId: currentSessionId, participants, participantStatus, currentRound, sessionDate });
+      // 1. 현재 사용자의 결제 정보를 가져오기 위해 API 호출
+      const token = await EncryptedStorage.getItem("accessToken");
+      const paymentInfoResponse = await axios.post(
+        "http://10.0.2.2:8080/api/payments/info",
+        {
+          userId: currentUserId,
+          sessionId: currentSessionId,
+          somoimId: roomId, // roomId가 somoimId와 동일
+        },
+        { headers: { access: token } }
+      );
+
+      // 2. 성공적으로 결제 정보를 가져왔다면 impUid를 추출
+      const { impUid, amount } = paymentInfoResponse.data.data; // 응답 구조에 맞게 수정
+
+      // 3. '참여확인' 화면으로 이동하면서 필요한 모든 정보를 전달
+      navigation.navigate("참여확인", {
+        roomId,
+        sessionId: currentSessionId,
+        participants,
+        participantStatus,
+        currentRound,
+        sessionDate,
+        impUid, // ⭐ 추출한 impUid를 전달
+        amount,
+      });
     } catch (e) {
-      console.error("모임 종료 실패", e.response?.data ?? e.message);
+      console.error("모임 종료 실패 또는 결제 정보 조회 실패:", e.response?.data ?? e.message);
+      Alert.alert("오류", "결제 정보 조회에 실패했습니다. 다시 시도해주세요.");
     }
   };
 

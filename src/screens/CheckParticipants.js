@@ -120,12 +120,10 @@ const CheckParticipants = () => {
     setStatus(updated);
   };
 
-  // useMemo를 사용하여 체크된 참여자 목록을 실시간으로 계산
   const checkedParticipants = useMemo(() => {
     return Status.filter((p) => p.attended);
   }, [Status]);
 
-  // useEffect를 사용하여 목록이 변경될 때마다 로그에 출력
   useEffect(() => {
     console.log("실시간으로 체크된 참여자 목록:");
     if (checkedParticipants.length > 0) {
@@ -141,7 +139,50 @@ const CheckParticipants = () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
 
-      // 1. 모임 종료 API 호출 시, roomId와 sessionId만 보냅니다.
+      // ⭐ 환불 대상자는 체크된(checked) 참여자들입니다.
+      const refundTargets = checkedParticipants;
+
+      console.log(
+        "환불 대상자:",
+        refundTargets.map((p) => p.name)
+      );
+
+      // 환불 대상자에 대한 환불 처리
+      if (refundTargets.length > 0) {
+        await Promise.all(
+          refundTargets.map(async (p) => {
+            // 불참자의 결제 정보(impUid, amount)를 가져오는 API 호출
+            const refundInfoResponse = await axios.post(
+              "http://10.0.2.2:8080/api/payments/info",
+              {
+                userId: p.userId,
+                sessionId,
+                somoimId: roomId,
+              },
+              {
+                headers: { access: token, "Content-Type": "application/json" },
+              }
+            );
+
+            const { amount, impUid } = refundInfoResponse.data.data;
+            console.log(`- ${p.name}의 환불 정보: amount=${amount}, impUid=${impUid}`);
+
+            // 가져온 환불 정보를 포함하여 환불 API 호출
+            return axios.post(
+              "http://10.0.2.2:8080/api/payments/refund",
+              {
+                amount,
+                impUid,
+              },
+              {
+                headers: { access: token, "Content-Type": "application/json" },
+              }
+            );
+          })
+        );
+      }
+
+      // 모든 환불 처리가 완료된 후에 모임 종료 API를 호출합니다.
       await axios.post(
         "http://10.0.2.2:8080/api/sessions/end",
         { roomId, sessionId },
@@ -150,24 +191,10 @@ const CheckParticipants = () => {
         }
       );
 
-      // 2. 체크된 사람들에게 환불 API를 호출합니다.
-      if (checkedParticipants.length > 0) {
-        await Promise.all(
-          checkedParticipants.map((p) =>
-            axios.post(
-              "http://10.0.2.2:8080/api/payments/refund",
-              { userId: p.userId, sessionId },
-              {
-                headers: { access: token, "Content-Type": "application/json" },
-              }
-            )
-          )
-        );
-      }
-
+      console.log("모든 환불 처리와 세션 종료가 완료되었습니다.");
       navigation.goBack();
     } catch (e) {
-      console.error("모임 처리 실패:", e.response?.data ?? e.message);
+      console.error("세션 종료 처리 실패:", e.response?.data ?? e.message);
     }
   };
 
