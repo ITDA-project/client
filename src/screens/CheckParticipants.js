@@ -1,10 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { Button } from "../components";
+import EncryptedStorage from "react-native-encrypted-storage";
+import axios from "axios";
 
 const Wrapper = styled.View`
   flex: 1;
@@ -50,18 +52,16 @@ const ParticipantList = styled.View`
   align-items: center;
 `;
 
-/* --- 새로 추가 --- */
 const IconBox = styled.TouchableOpacity`
-  width: 32px; /* 체크박스 영역 고정 */
+  width: 32px;
   align-items: center;
 `;
 
 const AvatarBox = styled.View`
-  width: 48px; /* 이미지 + 좌우 여백 포함 고정 */
+  width: 48px;
   align-items: center;
 `;
 
-/* 기존 ParticipantRow는 폭 100%, align-items:center 유지 */
 const ParticipantRow = styled.View`
   width: 100%;
   flex-direction: row;
@@ -92,15 +92,27 @@ const FooterContainer = styled.View`
   background-color: ${({ theme }) => theme.colors.white};
 `;
 
+const EmptyText = styled.Text`
+  position: absolute;
+  top: 55%;
+  font-size: 16px;
+  color: #a1a1a1;
+  text-align: center;
+  font-family: ${({ theme }) => theme.fonts.regular};
+`;
+
 const CheckParticipants = () => {
   const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { participants, participantStatus, currentRound } = route.params ?? {};
+  const { participants, participantStatus, currentRound, sessionDate, roomId, sessionId } = route.params ?? {};
 
-  //체크박스 선택 여부 상태 저장
-  const [Status, setStatus] = useState(participants.map((p) => ({ ...p, attended: false })));
+  const paidParticipants = useMemo(() => {
+    return participants.filter((p) => participantStatus[p.userId] === "참여");
+  }, [participants, participantStatus]);
+
+  const [Status, setStatus] = useState(() => paidParticipants.map((p) => ({ ...p, attended: false })));
 
   const toggleCheck = (index) => {
     const updated = [...Status];
@@ -108,43 +120,117 @@ const CheckParticipants = () => {
     setStatus(updated);
   };
 
-  const handleSubmit = () => {
-    const actualParticipants = Status.filter((p) => p.attended) //체크된 사람만 필터링
-      .map((p) => p.name); //이름만 추출
-    const expectedParticipants = Object.entries(participantStatus ?? {})
-      .filter(([_, status]) => status === "참여") //값이 "참여"인 항목만 필터링
-      .map(([name]) => name); //이름만 추출
+  const checkedParticipants = useMemo(() => {
+    return Status.filter((p) => p.attended);
+  }, [Status]);
 
-    //참여 예정자 중 실제 참석한 사람
-    const matchedParticipants = actualParticipants.filter((name) => expectedParticipants.includes(name));
-    console.log("💸 보증금 환불 대상:", matchedParticipants);
-    navigation.goBack();
+  useEffect(() => {
+    console.log("실시간으로 체크된 참여자 목록:");
+    if (checkedParticipants.length > 0) {
+      checkedParticipants.forEach((p) => {
+        console.log(`- 이름: ${p.name}, userId: ${p.userId}`);
+      });
+    } else {
+      console.log("체크된 참여자가 없습니다.");
+    }
+  }, [checkedParticipants]);
+
+  const handleSubmit = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+
+      // ⭐ 환불 대상자는 체크된(checked) 참여자들입니다.
+      const refundTargets = checkedParticipants;
+
+      console.log(
+        "환불 대상자:",
+        refundTargets.map((p) => p.name)
+      );
+
+      // 환불 대상자에 대한 환불 처리
+      if (refundTargets.length > 0) {
+        await Promise.all(
+          refundTargets.map(async (p) => {
+            // 불참자의 결제 정보(impUid, amount)를 가져오는 API 호출
+            const refundInfoResponse = await axios.post(
+              "http://10.0.2.2:8080/api/payments/info",
+              {
+                userId: p.userId,
+                sessionId,
+                somoimId: roomId,
+              },
+              {
+                headers: { access: token, "Content-Type": "application/json" },
+              }
+            );
+
+            const { amount, impUid } = refundInfoResponse.data.data;
+            console.log(`- ${p.name}의 환불 정보: amount=${amount}, impUid=${impUid}`);
+
+            // 가져온 환불 정보를 포함하여 환불 API 호출
+            return axios.post(
+              "http://10.0.2.2:8080/api/payments/refund",
+              {
+                amount,
+                impUid,
+              },
+              {
+                headers: { access: token, "Content-Type": "application/json" },
+              }
+            );
+          })
+        );
+      }
+
+      // 모든 환불 처리가 완료된 후에 모임 종료 API를 호출합니다.
+      await axios.post(
+        "http://10.0.2.2:8080/api/sessions/end",
+        { roomId, sessionId },
+        {
+          headers: { access: token, "Content-Type": "application/json" },
+        }
+      );
+
+      console.log("모든 환불 처리와 세션 종료가 완료되었습니다.");
+      navigation.goBack();
+    } catch (e) {
+      console.error("세션 종료 처리 실패:", e.response?.data ?? e.message);
+    }
   };
 
   return (
     <Wrapper>
       <Container insets={insets}>
-        <MeetingDate>2025/05/26</MeetingDate>
+        <MeetingDate>{sessionDate || "날짜 정보 없음"}</MeetingDate>
         <MessageText>
           <RoundText>{currentRound}회차</RoundText> 모임이 종료되었습니다!
         </MessageText>
-        <MessageText>모임에 참여한 사람을 선택해 주세요.</MessageText>
-
-        <ParticipantListContainer>
-          <ParticipantList>
-            {participants.map((p, i) => (
-              <ParticipantRow key={i}>
-                <IconBox onPress={() => toggleCheck(i)}>
-                  <MaterialIcons name={Status[i].attended ? "check-box" : "check-box-outline-blank"} size={24} color={theme.colors.black} />
-                </IconBox>
-
-                <AvatarBox>{p.image ? <ParticipantImage source={{ uri: p.image }} /> : <Feather name="user" size={28} color="#888" />}</AvatarBox>
-
-                <ParticipantName>{p.name}</ParticipantName>
-              </ParticipantRow>
-            ))}
-          </ParticipantList>
-        </ParticipantListContainer>
+        {paidParticipants.length === 0 ? (
+          <EmptyText>결제한 사람이 없습니다.</EmptyText>
+        ) : (
+          <>
+            <MessageText>모임에 참여한 사람을 선택해 주세요.</MessageText>
+            <ParticipantListContainer>
+              <ParticipantList>
+                {paidParticipants.map((p, i) => (
+                  <ParticipantRow key={i}>
+                    <IconBox onPress={() => toggleCheck(i)}>
+                      <MaterialIcons name={Status[i].attended ? "check-box" : "check-box-outline-blank"} size={24} color={theme.colors.black} />
+                    </IconBox>
+                    <AvatarBox>
+                      {p.image ? (
+                        <ParticipantImage source={{ uri: p.image }} />
+                      ) : (
+                        <ParticipantImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+                      )}
+                    </AvatarBox>
+                    <ParticipantName>{p.name}</ParticipantName>
+                  </ParticipantRow>
+                ))}
+              </ParticipantList>
+            </ParticipantListContainer>
+          </>
+        )}
       </Container>
 
       <FooterContainer>

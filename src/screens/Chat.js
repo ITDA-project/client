@@ -4,7 +4,7 @@ import { View, Text, FlatList, KeyboardAvoidingView, Platform, Modal } from "rea
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
-import { Button } from "../components";
+import { Button, AlertModal } from "../components";
 import ChatModal from "../components/ChatModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TouchableOpacity from "react-native/Libraries/Components/Touchable/TouchableOpacity";
@@ -44,12 +44,15 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [participants, setParticipants] = useState([]);
   const [sideMenuVisible, setSideMenuVisible] = useState(false);
-  const [currentRound, setCurrentRound] = useState(1); // ✅ 회차 상태 추가
+  const [currentRound, setCurrentRound] = useState(1);
   const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [sessionDate, setSessionDate] = useState(null); // ⭐ 추가
+  const [sessionTime, setSessionTime] = useState(null); // ⭐ 추가
   const [meetingActive, setMeetingActive] = useState(false);
+  // ⭐ participantStatus 객체의 키를 userId로 관리하도록 변경
   const [participantStatus, setParticipantStatus] = useState({});
   const [wsConnected, setWsConnected] = useState(false);
-  const [hostExists, setHostExists] = useState(true); // deleteFlag 반전값
+  const [hostExists, setHostExists] = useState(true);
   const [myRole, setMyRole] = useState();
   const [title, setTitle] = useState("");
 
@@ -58,6 +61,7 @@ const Chat = () => {
   const [formTime, setFormTime] = useState(getNow());
   const [formPrice, setFormPrice] = useState("10000");
   const [formLocation, setFormLocation] = useState("");
+  const [endMeetingModalVisible, setEndMeetingModalVisible] = useState(false);
 
   const stompRef = useRef(null);
 
@@ -72,7 +76,6 @@ const Chat = () => {
         const { data } = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
           headers: { access: token },
         });
-
         setCurrentUserId(Number(data.data));
       } catch (e) {
         console.error("유저 정보 가져오기 실패", e);
@@ -80,15 +83,13 @@ const Chat = () => {
     })();
   }, []);
 
-  /* ──────────────────────── 참가자 목록 로드  ✅ */
+  /* ──────────────────────── 참가자 목록 로드 */
   const fetchParticipants = useCallback(async () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
       const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}/participants`, {
         headers: { access: token },
       });
-      console.log("참가자 응답:", data);
-
       const list = (data?.dtoList ?? []).map((p) => ({
         userId: p.userId ?? null,
         name: p.participantName,
@@ -103,56 +104,76 @@ const Chat = () => {
     }
   }, [roomId]);
 
-  /* ───── 세션 상태 로드 */
+  /* ───── 세션 상태 로드 (수정된 버전) */
   const fetchSessionStatus = useCallback(async () => {
     const token = await EncryptedStorage.getItem("accessToken");
 
-    // 참가자 목록 먼저 로드
-    const { data: participantData } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}/participants`, {
-      headers: { access: token },
-    });
-
-    const list = (participantData?.dtoList ?? []).map((p) => ({
-      userId: p.userId ?? null,
-      name: p.participantName,
-      image: p.image,
-      status: p.status ?? null,
-    }));
-    setParticipants(list); // 상태 반영
-
-    // 세션 상태 조회
-    const { data } = await axios.get(`http://10.0.2.2:8080/api/sessions/chatroom/${roomId}/active`, {
-      headers: { access: token },
-    });
-
-    if (!data.data) {
-      setMeetingActive(false);
-      setParticipantStatus({}); // 진행 안 할 때는 초기화
-      return;
-    }
-
-    const s = data.data;
-    setMeetingActive(true);
-    setCurrentSessionId(s.id);
-    setCurrentRound(s.sessionNumber);
-
-    // 세션 참가자 상태 불러오기
-    const { data: ps } = await axios.get(`http://10.0.2.2:8080/api/sessions/${s.id}/participants`, {
-      headers: { access: token },
-    });
-
-    const badge = {};
-    (ps?.data ?? []).forEach((v) => {
-      badge[v.participantName] = v.status ?? "불참";
-    });
-
-    if (Object.keys(badge).length === 0) {
-      list.forEach((p) => {
-        badge[p.name] = "불참";
+    try {
+      // 1. 참가자 목록 로드
+      const participantDataResponse = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}/participants`, {
+        headers: { access: token },
       });
-    }
+      const list = (participantDataResponse?.data?.dtoList ?? []).map((p) => ({
+        userId: p.userId ?? null,
+        name: p.participantName,
+        image: p.image,
+        status: p.status ?? null,
+      }));
+      setParticipants(list);
 
-    setParticipantStatus(badge);
+      // 2. 현재 활성화된 세션 정보 로드
+      const sessionDataResponse = await axios.get(`http://10.0.2.2:8080/api/sessions/chatroom/${roomId}/active`, {
+        headers: { access: token },
+      });
+
+      if (!sessionDataResponse.data.data) {
+        setMeetingActive(false);
+        setParticipantStatus({});
+        console.log("[fetchSessionStatus] 활성화된 세션이 없습니다.");
+        return;
+      }
+
+      const s = sessionDataResponse.data.data;
+      setMeetingActive(true);
+      setCurrentSessionId(s.id);
+      setCurrentRound(s.sessionNumber);
+      setSessionDate(s.sessionDate); // ⭐ 추가
+      setSessionTime(s.sessionTime); // ⭐ 추가
+
+      // 3. 결제 상태 API 호출
+      const paymentStatusResponse = await axios.post(
+        `http://10.0.2.2:8080/api/payments/status`,
+        {
+          roomId,
+          sessionId: s.id,
+        },
+        { headers: { access: token } }
+      );
+
+      const newParticipantStatus = {};
+      const paymentStatuses = paymentStatusResponse?.data?.data?.userPaymentStatuses ?? [];
+
+      console.log("[fetchSessionStatus] 결제 상태 API 응답:", paymentStatuses);
+
+      // 4. 결제 상태 정보 매핑 (userId를 키로 사용)
+      paymentStatuses.forEach((userStatus) => {
+        // userStatus.paid 값을 사용
+        newParticipantStatus[userStatus.userId] = userStatus.paid ? "참여" : "불참";
+      });
+
+      // 5. 결제 정보가 없는 참가자(전체 참가자 목록에는 있지만 userPaymentStatuses에 없는 사람)는 '불참'으로 설정
+      list.forEach((p) => {
+        if (!newParticipantStatus[p.userId]) {
+          newParticipantStatus[p.userId] = "불참";
+        }
+      });
+
+      console.log("[fetchSessionStatus] 최종 참가자 상태:", newParticipantStatus);
+
+      setParticipantStatus(newParticipantStatus);
+    } catch (e) {
+      console.error("세션 상태 로드 실패:", e.response?.data ?? e.message);
+    }
   }, [roomId]);
 
   /* ──────────────────────── 기존 메시지 로드 */
@@ -163,11 +184,8 @@ const Chat = () => {
         const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
           headers: { access: token },
         });
-        console.log("📜 fetchHistory 응답 전체:", data);
         const history = (data?.data?.messages ?? []).map((m) => {
           const matchedUser = participantList.find((p) => Number(p.userId) === Number(m.senderId));
-          console.log("👤 sender:", m.sender, "→ matched image:", matchedUser?.image);
-
           return ensureId({
             id: m.id || m.messageId || uuid(),
             senderId: m.senderId,
@@ -178,10 +196,9 @@ const Chat = () => {
           });
         });
 
-        console.log("✅ 파싱된 메시지:", history);
         setTitle(data.data.roomName);
-        setHostExists(!data.data.deleteFlag); // 방장 존재 여부
-        setMyRole(data.data.role); // OWNER or USER
+        setHostExists(!data.data.deleteFlag);
+        setMyRole(data.data.role);
         setMessages(history);
       } catch (e) {
         console.error("메시지 불러오기 실패", e.response?.data ?? e.message);
@@ -199,14 +216,10 @@ const Chat = () => {
       connectHeaders: { access: token },
       debug: (str) => console.log("[STOMP]", str),
       onConnect: () => {
-        console.log("✅ STOMP connected");
         setWsConnected(true);
         client.subscribe(`/topic/room/${roomId}`, ({ body }) => {
-          console.log("📩 [소켓 수신됨] 원본 body:", body);
           try {
             const raw = JSON.parse(body);
-            console.log("📨 파싱된 메시지:", raw);
-
             const mapped = ensureId({
               id: raw.id || raw.messageId || uuid(),
               senderId: raw.senderId,
@@ -217,19 +230,15 @@ const Chat = () => {
             });
 
             setMessages((prev) => {
-              // 중복 메시지가 들어오는 경우 방지 (id 중복 체크)
               if (prev.find((msg) => msg.id === mapped.id)) {
                 return prev;
               }
               return [mapped, ...prev];
             });
-            console.log("messages", messages);
-            console.log("📨 mapped message", mapped);
           } catch (e) {
             console.error("메시지 파싱 실패:", e);
           }
         });
-        console.log("구독 완료");
       },
       onStompError: console.error,
       onWebSocketError: console.error,
@@ -254,7 +263,7 @@ const Chat = () => {
     initialize();
     return () => {
       stompRef.current?.deactivate();
-      stompRef.current = null; // 참조 정리
+      stompRef.current = null;
     };
   }, [roomId]);
 
@@ -268,17 +277,11 @@ const Chat = () => {
   useEffect(() => {
     const markAsRead = async () => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
-      await axios.post(
-        `http://10.0.2.2:8080/api/chatroom/${roomId}/read`,
-        {},
-        {
-          headers: { access: accessToken },
-        }
-      );
+      await axios.post(`http://10.0.2.2:8080/api/chatroom/${roomId}/read`, {}, { headers: { access: accessToken } });
     };
-
     markAsRead();
   }, [roomId]);
+
   /* ──────────────────────── 메시지 전송 */
   const handleSend = () => {
     if (!input.trim()) return;
@@ -310,58 +313,82 @@ const Chat = () => {
 
   /* ───────── 모임 시작 */
   const handleStartMeeting = async () => {
-    if (meetingActive) return; // 중복 방지
+    if (meetingActive) return;
     const token = await EncryptedStorage.getItem("accessToken");
 
-    // ① 서버에 새 세션 생성
     const { data } = await axios.post(
       "http://10.0.2.2:8080/api/sessions/start",
       { roomId, sessionDate: formDate, sessionTime: formTime, price: parseInt(formPrice, 10), location: formLocation },
       { headers: { access: token, "Content-Type": "application/json" } }
     );
 
-    // ② 응답(JSON) 구조 ─ swagger 참고
     const s = data.data;
     setCurrentSessionId(s.id);
-    setCurrentRound(s.sessionNumber); // 회차 갱신
+    setCurrentRound(s.sessionNumber);
     setMeetingActive(true);
+    setSessionDate(s.sessionDate); // ⭐ 추가
+    setSessionTime(s.sessionTime); // ⭐ 추가
 
-    // 최신 참가자 리스트 확보
     const list = await fetchParticipants();
 
-    // 전원 '불참'으로 초기화
     const initial = {};
     list.forEach((p) => {
-      initial[p.name] = "불참";
+      // ⭐ userId를 키로 사용
+      initial[p.userId] = "불참";
     });
     setParticipantStatus(initial);
-    setStartModalVisible(false); // 모달 닫기
+    setStartModalVisible(false);
   };
 
   const handlePaymentSuccess = (name) => {
+    // 이 함수는 이제 사용되지 않지만, 다른 곳에서 호출할 경우를 대비해 유지
+    // ⭐ 이 함수를 사용하려면 name 대신 userId를 인자로 받도록 수정해야 합니다.
     if (meetingActive) {
       setParticipantStatus((prev) => ({ ...prev, [name]: "참여" }));
     }
-  }; //결제 완료 후 상태 불러오기
+  };
 
   /* ───────── 모임 종료 */
+  // Chat.js 파일 내 handleEndMeeting 함수 (수정 제안)
+
   const handleEndMeeting = async () => {
     if (!currentSessionId) return;
-    const token = await EncryptedStorage.getItem("accessToken");
+
+    // 모달을 닫는 로직 추가
+    setEndMeetingModalVisible(false);
 
     try {
-      await axios.post(
-        "http://10.0.2.2:8080/api/sessions/end",
-        { roomId, sessionId: currentSessionId },
-        { headers: { access: token, "Content-Type": "application/json" } }
+      setSideMenuVisible(false);
+
+      // 1. 현재 사용자의 결제 정보를 가져오기 위해 API 호출
+      const token = await EncryptedStorage.getItem("accessToken");
+      const paymentInfoResponse = await axios.post(
+        "http://10.0.2.2:8080/api/payments/info",
+        {
+          userId: currentUserId,
+          sessionId: currentSessionId,
+          somoimId: roomId, // roomId가 somoimId와 동일
+        },
+        { headers: { access: token } }
       );
 
-      await fetchSessionStatus(); // 상태 갱신
-      setParticipantStatus({}); // ⛔ 배지 초기화
-      setSideMenuVisible(false);
-      navigation.navigate("참여확인", { participants, participantStatus, currentRound });
+      // 2. 성공적으로 결제 정보를 가져왔다면 impUid를 추출
+      const { impUid, amount } = paymentInfoResponse.data.data; // 응답 구조에 맞게 수정
+
+      // 3. '참여확인' 화면으로 이동하면서 필요한 모든 정보를 전달
+      navigation.navigate("참여확인", {
+        roomId,
+        sessionId: currentSessionId,
+        participants,
+        participantStatus,
+        currentRound,
+        sessionDate,
+        impUid, // ⭐ 추출한 impUid를 전달
+        amount,
+      });
     } catch (e) {
-      console.error("모임 종료 실패", e.response?.data ?? e.message);
+      console.error("모임 종료 실패 또는 결제 정보 조회 실패:", e.response?.data ?? e.message);
+      Alert.alert("오류", "결제 정보 조회에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -371,14 +398,13 @@ const Chat = () => {
   /* ──────────────────────── 렌더 함수 */
   const renderItem = ({ item, index }) => {
     const prev = listData[index + 1];
-    const newerMsg = index > 0 ? messages[index - 1] : null; // 시간 표시 여부 결정용
+    const newerMsg = index > 0 ? messages[index - 1] : null;
     const isMe = Number(item.senderId) === Number(currentUserId);
     const isFirstOfGroup = !prev || prev.name !== item.name;
-    const showTime = !newerMsg || newerMsg.senderId !== item.senderId || newerMsg.time !== item.time; // ✅ 마지막 버블에만 시간
+    const showTime = !newerMsg || newerMsg.senderId !== item.senderId || newerMsg.time !== item.time;
 
     return (
       <MessageRow alignRight={isMe}>
-        {/* 아바타 */}
         {!isMe && (
           <AvatarWrapper>
             {isFirstOfGroup ? (
@@ -393,7 +419,6 @@ const Chat = () => {
           </AvatarWrapper>
         )}
 
-        {/* 버블 */}
         <MessageGroup alignRight={isMe}>
           {!isMe && isFirstOfGroup && <Sender>{item.name}</Sender>}
           <BubbleRow alignRight={isMe}>
@@ -459,11 +484,13 @@ const Chat = () => {
             <SideMenuTitle>참가 중인 사람</SideMenuTitle>
             <ParticipantListContainer>
               <ParticipantList>
-                {participants.map((p, i) => {
-                  const status = participantStatus[p.name] ?? "불참";
+                {participants.map((p) => {
+                  // ⭐ p.userId를 사용하여 상태를 참조
+                  const status = participantStatus[p.userId] ?? "불참";
                   return (
+                    // ⭐ key prop에 p.userId 사용
                     <TouchableOpacity
-                      key={i}
+                      key={p.userId}
                       onPress={() => {
                         navigation.navigate("리뷰 등록", {
                           userId: p.userId,
@@ -473,7 +500,7 @@ const Chat = () => {
                       }}
                       activeOpacity={0.7}
                     >
-                      <ParticipantRow key={i}>
+                      <ParticipantRow>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
                           {p?.image ? (
                             <ParticipantImage source={{ uri: p.image }} />
@@ -504,7 +531,7 @@ const Chat = () => {
                 {meetingActive ? (
                   <Button
                     title="모임종료"
-                    onPress={handleEndMeeting}
+                    onPress={() => setEndMeetingModalVisible(true)} // Alert 대신 모달 상태를 변경
                     containerStyle={{ backgroundColor: theme.colors.lightBlue, height: 40, width: "100%" }}
                     textStyle={{ color: theme.colors.black, fontSize: 16, marginLeft: 0 }}
                     style={{ height: 40, width: 95 }}
@@ -513,12 +540,11 @@ const Chat = () => {
                   <Button
                     title="모임 주최"
                     onPress={() => {
-                      // 기본값 세팅
-                      setFormDate(getToday()); // "YYYY-MM-DD"
-                      setFormTime(getNow()); // "HH:mm"
+                      setFormDate(getToday());
+                      setFormTime(getNow());
                       setFormPrice("10000");
-                      setFormLocation(""); // 초기화
-                      setStartModalVisible(true); // 모달 열기
+                      setFormLocation("");
+                      setStartModalVisible(true);
                     }}
                     containerStyle={{ backgroundColor: theme.colors.mainBlue, height: 40, width: "100%" }}
                     textStyle={{ color: theme.colors.white, fontSize: 16, marginLeft: 0 }}
@@ -546,6 +572,14 @@ const Chat = () => {
         setFormLocation={setFormLocation}
         onConfirm={handleStartMeeting}
         onCancel={() => setStartModalVisible(false)}
+      />
+
+      {/* ⭐ 커스텀 AlertModal 컴포넌트 추가 */}
+      <AlertModal
+        visible={endMeetingModalVisible}
+        message="모임을 종료하시겠습니까?"
+        onConfirm={handleEndMeeting}
+        onCancel={() => setEndMeetingModalVisible(false)}
       />
     </KeyboardAvoidingView>
   );
@@ -727,7 +761,7 @@ const ButtonContainer = styled.View`
 
 const Overlay = styled.View`
   flex: 1;
-  background-color: rgba(0, 0, 0, 0.3); /* 검은색 + 30% 투명도 */
+  background-color: rgba(0, 0, 0, 0.3);
   flex-direction: row;
   justify-content: flex-end;
 `;
