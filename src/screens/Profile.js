@@ -100,8 +100,7 @@ const Placeholder = styled.Text`
 
 const Divider = styled.View`
   height: 1px;
-  background-color: ${({ theme }) => theme.colors.grey};
-  margin-top: 20px;
+  background-color: ${({ theme }) => theme.colors.lightGrey};
   margin-bottom: 10px;
 `;
 

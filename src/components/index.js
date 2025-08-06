@@ -3,5 +3,6 @@ import ErrorMessage from "./ErrorMessage";
 import Input from "./Input";
 import Review from "./Review";
 import AlertModal from "./AlertModal";
+import LoginModal from "./LoginModal";
 
-export { Button, ErrorMessage, Input, Review, AlertModal };
+export { Button, ErrorMessage, Input, Review, AlertModal, LoginModal };
