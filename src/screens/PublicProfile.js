@@ -179,14 +179,6 @@ const PublicProfile = ({ route }) => {
     );
   }
 
-  if (!user) {
-    return (
-      <Container>
-        <Placeholder>유저 정보를 불러올 수 없습니다</Placeholder>
-      </Container>
-    );
-  }
-
   return (
     <Container>
       {/* 프로필 영역 */}

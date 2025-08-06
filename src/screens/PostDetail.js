@@ -309,7 +309,11 @@ const PostDetail = () => {
 
       {/* 작성자 정보 섹션 */}
 
-      <TouchableOpacity onPress={() => navigation.navigate("공개프로필", { userId: user.userId })}>
+      <TouchableOpacity
+        onPress={() => {
+          checkLogin("공개프로필", { userId: user.userId });
+        }}
+      >
         <ProfileContainer>
           <ProfileHeader>
             <ProfileImageContainer>
