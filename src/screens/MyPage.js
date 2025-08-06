@@ -6,6 +6,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { jwtDecode } from "jwt-decode";
+import theme from "../theme";
 
 // 스타일 정의
 const Container = styled.View`
@@ -170,7 +171,7 @@ const MyPage = () => {
                 })) || [],
             },
             {
-              title: "좋아한 모임",
+              title: "좋아요 누른 모임",
               data:
                 resData.likedPosts?.map((post) => ({
                   ...post,
@@ -195,7 +196,7 @@ const MyPage = () => {
           setUser({ name: "사용자", totalStar: 0 });
           setMeetings([
             { title: "신청한 모임", data: [] },
-            { title: "좋아한 모임", data: [] },
+            { title: "좋아요 누른 모임", data: [] },
             { title: "내가 만든 모임", data: [] },
           ]);
         } finally {

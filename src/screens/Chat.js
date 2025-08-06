@@ -493,10 +493,8 @@ const Chat = () => {
                     <TouchableOpacity
                       key={p.userId}
                       onPress={() => {
-                        navigation.navigate("리뷰 등록", {
+                        navigation.navigate("공개프로필", {
                           userId: p.userId,
-                          name: p.name,
-                          image: p.image,
                         });
                       }}
                       activeOpacity={0.7}
