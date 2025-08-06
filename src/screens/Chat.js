@@ -13,6 +13,7 @@ import EncryptedStorage from "react-native-encrypted-storage";
 import SockJS from "sockjs-client";
 import { Client as StompClient } from "@stomp/stompjs";
 import { v4 as uuid } from "uuid";
+import theme from "../theme";
 
 const Chat = () => {
   /* ──────────────────────── 기본 훅 및 파라미터 */
@@ -514,7 +515,7 @@ const Chat = () => {
                         {meetingActive && (
                           <StatusBadge>
                             <StatusDot>
-                              <Text style={{ color: "#FFD000" }}>{status === "참여" ? "●" : "○"}</Text>
+                              <Text style={{ color: theme.colors.mainBlue }}>{status === "참여" ? "●" : "○"}</Text>
                             </StatusDot>
                             <StatusText>{status}</StatusText>
                           </StatusBadge>
