@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { TouchableWithoutFeedback, Alert, Text } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
-import { styled, ThemeContext } from "styled-components/native";
+import styled, { ThemeContext } from "styled-components/native";
 import { Button, AlertModal, LoginModal } from "../components";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import api from "../api/api";

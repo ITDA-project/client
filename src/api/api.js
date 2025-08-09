@@ -45,7 +45,7 @@ api.interceptors.response.use(
         await EncryptedStorage.setItem("accessToken", newAccessToken);
         await Keychain.setGenericPassword("refreshToken", newRefreshToken);
 
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        originalRequest.headers.access = newAccessToken;
         return api(originalRequest);
       } catch (refreshError) {
         console.error("토큰 재발급 실패:", refreshError);

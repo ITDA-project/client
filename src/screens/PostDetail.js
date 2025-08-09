@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useRoute, useNavigation, useIsFocused } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
-import { styled, ThemeContext } from "styled-components/native";
+import styled, { ThemeContext } from "styled-components/native";
 import { Button, AlertModal, LoginModal } from "../components";
 import { TouchableOpacity, Text } from "react-native";
 import useRequireLogin from "../hooks/useRequireLogin";
