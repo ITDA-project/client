@@ -8,7 +8,7 @@ import { Button, AlertModal } from "../components";
 import ChatModal from "../components/ChatModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TouchableOpacity from "react-native/Libraries/Components/Touchable/TouchableOpacity";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import SockJS from "sockjs-client";
 import { Client as StompClient } from "@stomp/stompjs";
@@ -74,7 +74,7 @@ const Chat = () => {
     (async () => {
       try {
         const token = await EncryptedStorage.getItem("accessToken");
-        const { data } = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+        const { data } = await api.get("/mypage/me", {
           headers: { access: token },
         });
         setCurrentUserId(Number(data.data));
@@ -88,7 +88,7 @@ const Chat = () => {
   const fetchParticipants = useCallback(async () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
-      const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}/participants`, {
+      const { data } = await api.get(`/chatroom/${roomId}/participants`, {
         headers: { access: token },
       });
       const list = (data?.dtoList ?? []).map((p) => ({
@@ -111,7 +111,7 @@ const Chat = () => {
 
     try {
       // 1. 참가자 목록 로드
-      const participantDataResponse = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}/participants`, {
+      const participantDataResponse = await api.get(`/chatroom/${roomId}/participants`, {
         headers: { access: token },
       });
       const list = (participantDataResponse?.data?.dtoList ?? []).map((p) => ({
@@ -123,7 +123,7 @@ const Chat = () => {
       setParticipants(list);
 
       // 2. 현재 활성화된 세션 정보 로드
-      const sessionDataResponse = await axios.get(`http://10.0.2.2:8080/api/sessions/chatroom/${roomId}/active`, {
+      const sessionDataResponse = await api.get(`/sessions/chatroom/${roomId}/active`, {
         headers: { access: token },
       });
 
@@ -142,8 +142,8 @@ const Chat = () => {
       setSessionTime(s.sessionTime); // ⭐ 추가
 
       // 3. 결제 상태 API 호출
-      const paymentStatusResponse = await axios.post(
-        `http://10.0.2.2:8080/api/payments/status`,
+      const paymentStatusResponse = await api.post(
+        `/payments/status`,
         {
           roomId,
           sessionId: s.id,
@@ -182,7 +182,7 @@ const Chat = () => {
     async (participantList) => {
       try {
         const token = await EncryptedStorage.getItem("accessToken");
-        const { data } = await axios.get(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
+        const { data } = await api.get(`/chatroom/${roomId}`, {
           headers: { access: token },
         });
         const history = (data?.data?.messages ?? []).map((m) => {
@@ -278,7 +278,7 @@ const Chat = () => {
   useEffect(() => {
     const markAsRead = async () => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
-      await axios.post(`http://10.0.2.2:8080/api/chatroom/${roomId}/read`, {}, { headers: { access: accessToken } });
+      await api.post(`/chatroom/${roomId}/read`, {}, { headers: { access: accessToken } });
     };
     markAsRead();
   }, [roomId]);
@@ -303,7 +303,7 @@ const Chat = () => {
   const leaveRoom = async () => {
     const token = await EncryptedStorage.getItem("accessToken");
     try {
-      await axios.delete(`http://10.0.2.2:8080/api/chatroom/${roomId}`, {
+      await api.delete(`/chatroom/${roomId}`, {
         headers: { access: token },
       });
       navigation.goBack();
@@ -317,8 +317,8 @@ const Chat = () => {
     if (meetingActive) return;
     const token = await EncryptedStorage.getItem("accessToken");
 
-    const { data } = await axios.post(
-      "http://10.0.2.2:8080/api/sessions/start",
+    const { data } = await api.post(
+      "/sessions/start",
       { roomId, sessionDate: formDate, sessionTime: formTime, price: parseInt(formPrice, 10), location: formLocation },
       { headers: { access: token, "Content-Type": "application/json" } }
     );
@@ -363,8 +363,8 @@ const Chat = () => {
 
       // 1. 현재 사용자의 결제 정보를 가져오기 위해 API 호출
       const token = await EncryptedStorage.getItem("accessToken");
-      const paymentInfoResponse = await axios.post(
-        "http://10.0.2.2:8080/api/payments/info",
+      const paymentInfoResponse = await api.post(
+        "/payments/info",
         {
           userId: currentUserId,
           sessionId: currentSessionId,

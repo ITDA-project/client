@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { FlatList } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import styled from "styled-components/native";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -115,7 +115,7 @@ const ChatList = () => {
         return;
       }
 
-      const res = await axios.get("http://10.0.2.2:8080/api/chatroom", {
+      const res = await api.get("/chatroom", {
         headers: { access: accessToken },
       });
 

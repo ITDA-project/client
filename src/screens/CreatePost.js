@@ -8,7 +8,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -376,7 +376,7 @@ const CreatePost = () => {
         tags: tags.trim().split(" "),
       };
 
-      const response = await axios.post("http://10.0.2.2:8080/api/posts/create", requestBody, {
+      const response = await api.post("/posts/create", requestBody, {
         headers: {
           access: `${accessToken}`,
           "Content-Type": "application/json",

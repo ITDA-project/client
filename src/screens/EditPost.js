@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { Input, Button, AlertModal } from "../components";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { categoryData, cityData, districtData } from "./CreatePost"; // 👈 이렇게 임시 해결
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -216,7 +216,7 @@ const EditPost = () => {
         return;
       }
 
-      const response = await axios.patch(`http://10.0.2.2:8080/api/posts/${postId}`, requestBody, {
+      const response = await api.patch(`/posts/${postId}`, requestBody, {
         headers: {
           access: `${accessToken}`,
           "Content-Type": "application/json",

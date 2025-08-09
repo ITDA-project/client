@@ -5,7 +5,7 @@ import { styled, ThemeContext } from "styled-components/native";
 import { Button, AlertModal, LoginModal } from "../components";
 import { TouchableOpacity, Text } from "react-native";
 import useRequireLogin from "../hooks/useRequireLogin";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -156,7 +156,7 @@ const PostDetail = () => {
 
       const headers = accessToken ? { access: accessToken } : {};
 
-      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
+      const res = await api.get(`/posts/${postId}`, { headers });
       const data = res.data.data;
 
       console.log("📡 상세 데이터:", res);
@@ -210,8 +210,8 @@ const PostDetail = () => {
 
       if (!liked) {
         console.log("📡 좋아요 요청 보내는 중...");
-        const res = await axios.post(
-          `http://10.0.2.2:8080/api/posts/${postId}/likes`,
+        const res = await api.post(
+          `/posts/${postId}/likes`,
           {},
           {
             headers: { access: `${accessToken}` },
@@ -224,7 +224,7 @@ const PostDetail = () => {
           setLikes((prev) => prev + 1);
         }
       } else {
-        const res = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}/likes`, {
+        const res = await api.delete(`/posts/${postId}/likes`, {
           headers: { access: `${accessToken}` },
         });
 

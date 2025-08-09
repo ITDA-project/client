@@ -5,7 +5,7 @@ import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
 import { Button, AlertModal, LoginModal } from "../components";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
-import axios from "axios";
+import api from "../api/api";
 import { ScrollView } from "react-native-gesture-handler";
 import useRequireLogin from "../hooks/useRequireLogin";
 import EncryptedStorage from "react-native-encrypted-storage";
@@ -183,7 +183,7 @@ const MyPostDetail = () => {
     try {
       const accessToken = await EncryptedStorage.getItem("accessToken");
       const headers = accessToken ? { access: accessToken } : {};
-      const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
+      const res = await api.get(`/posts/${postId}`, { headers });
       const useridid = res.data.data.userId;
       const data = res.data.data;
 
@@ -238,8 +238,8 @@ const MyPostDetail = () => {
 
       if (!liked) {
         console.log("📡 좋아요 요청 보내는 중...");
-        const res = await axios.post(
-          `http://10.0.2.2:8080/api/posts/${postId}/likes`,
+        const res = await api.post(
+          `/posts/${postId}/likes`,
           {},
           {
             headers: { access: `${accessToken}` },
@@ -252,7 +252,7 @@ const MyPostDetail = () => {
           setLikes((prev) => prev + 1);
         }
       } else {
-        const res = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}/likes`, {
+        const res = await api.delete(`/posts/${postId}/likes`, {
           headers: { access: `${accessToken}` },
         });
         console.log("🗑️ 좋아요 삭제 성공:", res.data);
@@ -316,7 +316,7 @@ const MyPostDetail = () => {
         return;
       }
 
-      const response = await axios.delete(`http://10.0.2.2:8080/api/posts/${postId}`, {
+      const response = await api.delete(`/posts/${postId}`, {
         headers: { access: `${accessToken}` },
       });
 

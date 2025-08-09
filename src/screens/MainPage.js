@@ -4,7 +4,7 @@ import { ThemeContext, styled } from "styled-components/native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import Logo from "../../assets/logo.svg";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const LogoContainer = styled.View`
@@ -27,7 +27,7 @@ const MainPage = () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
       console.log("🔑 accessToken:", token);
-      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+      const response = await api.get("/mypage/me", {
         headers: {
           access: `${token}`,
         },
@@ -43,10 +43,10 @@ const MainPage = () => {
       setLoading(true);
 
       const [latestRes, popularRes] = await Promise.all([
-        axios.get("http://10.0.2.2:8080/api/posts/list", {
+        api.get("/posts/list", {
           params: { sort: "createdAt", size: 3 },
         }),
-        axios.get("http://10.0.2.2:8080/api/posts/list", {
+        api.get("/posts/list", {
           params: { sort: "likesCount", size: 3 },
         }),
       ]);

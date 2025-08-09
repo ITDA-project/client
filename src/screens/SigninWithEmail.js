@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils/utils";
 import { Keyboard } from "react-native";
-import axios from "axios";
+import api from "../api/api";
 import { useAuth } from "../contexts/AuthContext";
 import EncryptedStorage from "react-native-encrypted-storage";
 import * as Keychain from "react-native-keychain";
@@ -98,8 +98,8 @@ const SigninWithEmail = ({ navigation }) => {
     setErrorMessage("");
 
     try {
-      const response = await axios.post(
-        "http://10.0.2.2:8080/auth/login",
+      const response = await api.post(
+        "/auth/login",
         { username: email, password },
         {
           headers: {

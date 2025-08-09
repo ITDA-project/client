@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, Alert } from
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import theme from "../theme";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { formatTime, formatDate } from "../utils/utils";
 import { AlertModal } from "../components";
@@ -22,7 +22,7 @@ const Notification = ({ onReadAll }) => {
     try {
       setLoading(true);
       const token = await EncryptedStorage.getItem("accessToken");
-      const res = await axios.get("http://10.0.2.2:8080/api/notifications", {
+      const res = await api.get("/notifications", {
         headers: { access: token },
       });
       console.log("🔔 알림 조회 성공:", res.data.data);
@@ -37,7 +37,7 @@ const Notification = ({ onReadAll }) => {
   const markAllAsRead = async () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
-      await axios.patch("http://10.0.2.2:8080/api/notifications/read-all", null, {
+      await api.patch("/notifications/read-all", null, {
         headers: { access: token },
       });
       console.log("✅ 전체 읽음 처리 완료");
@@ -55,10 +55,10 @@ const Notification = ({ onReadAll }) => {
 
       // !!! 이 부분을 수정해야 합니다 !!!
       // 백엔드 컨트롤러에 정의된 올바른 API URL로 수정
-      const url = `http://10.0.2.2:8080/api/sessions/chatroom/${roomId}/active`;
+      const url = `/sessions/chatroom/${roomId}/active`;
       console.log(`📡 세션 정보 요청 URL: ${url}`); // 요청 URL을 로그로 확인
 
-      const res = await axios.get(url, {
+      const res = await api.get(url, {
         headers: { access: token },
       });
 

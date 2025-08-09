@@ -3,7 +3,7 @@ import { Input, Button, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import * as Keychain from "react-native-keychain";
 import { useAuth } from "../contexts/AuthContext";
@@ -61,7 +61,7 @@ const DeleteAccount = ({ navigation }) => {
       }
 
       try {
-        await axios.delete("http://10.0.2.2:8080/api/auth/delete", {
+        await api.delete("/auth/delete", {
           headers: {
             access: accessToken,
             "Content-Type": "application/json",
