@@ -1,17 +1,17 @@
 import api from "./api";
 
 // email login
-export const loginWithEmailAPI = (payload) => api.post("/auth/login", payload);
+export const loginWithEmailAPI = (payload, config = {}) => api.post("/auth/login", payload, config);
 
 // email signup
-export const signupWithEmailAPI = (payload) => api.post("/auth/signup/email", payload);
-export const checkEmailDuplicateAPI = (payload) => api.post("/auth/signup/email/checkemail", payload);
+export const signupWithEmailAPI = (payload, config = {}) => api.post("/auth/signup/email", payload, config);
+export const checkEmailDuplicateAPI = (payload, config = {}) => api.post("/auth/signup/email/checkemail", payload, config);
 
 // social signup
-export const signupWithKakaoAPI = (payload) => api.post("/auth/signup/kakao", payload);
-export const signupWithNaverAPI = (payload) => api.post("/auth/signup/naver", payload);
+export const signupWithKakaoAPI = (payload, config = {}) => api.post("/auth/signup/kakao", payload, config);
+export const signupWithNaverAPI = (payload, config = {}) => api.post("/auth/signup/naver", payload, config);
 
 // password reset
-export const requestFindPasswordAPI = (payload) => api.post("/auth/password/find", payload);
-export const verifyOtpAPI = (payload) => api.post("/auth/password/otp", payload);
-export const changePasswordAPI = (payload) => api.patch("/auth/password/find", payload);
+export const requestFindPasswordAPI = (payload, config = {}) => api.post("/auth/password/find", payload, config);
+export const verifyOtpAPI = (payload, config = {}) => api.post("/auth/password/otp", payload, config);
+export const changePasswordAPI = (payload, config = {}) => api.patch("/auth/password/find", payload, config);
