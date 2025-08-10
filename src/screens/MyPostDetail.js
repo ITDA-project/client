@@ -3,8 +3,8 @@ import { TouchableWithoutFeedback, Alert, Text } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
-import { Button, AlertModal } from "../components";
-import { useNavigation } from "@react-navigation/native";
+import { Button, AlertModal, LoginModal } from "../components";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import axios from "axios";
 import { ScrollView } from "react-native-gesture-handler";
 import useRequireLogin from "../hooks/useRequireLogin";
@@ -78,7 +78,6 @@ const Divider = styled.View`
 const ProfileContainer = styled.View`
   flex-direction: column; /* 전체를 세로 정렬 */
   margin-top: 10px;
-  margin-left: 10px;
   margin-right: 10px;
 `;
 
@@ -126,6 +125,7 @@ const ProfileIntro = styled.Text`
   font-size: 16px;
   color: #444;
   line-height: 22px; /* 줄 간격 조정 */
+  margin-left: 10px;
   margin-top: 15px;
 `;
 
@@ -161,8 +161,10 @@ const MyPostDetail = () => {
   const theme = useContext(ThemeContext);
   const route = useRoute();
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
-  const { checkLogin, LoginAlert } = useRequireLogin();
+  // useRequireLogin 훅은 신청 목록 확인 버튼에만 사용합니다.
+  const { checkLogin, loginModalVisible, setLoginModalVisible } = useRequireLogin();
   const { postId } = route.params || {};
 
   const [meeting, setMeeting] = useState(null);
@@ -180,9 +182,7 @@ const MyPostDetail = () => {
   const fetchDetail = async () => {
     try {
       const accessToken = await EncryptedStorage.getItem("accessToken");
-
       const headers = accessToken ? { access: accessToken } : {};
-
       const res = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}`, { headers });
       const useridid = res.data.data.userId;
       const data = res.data.data;
@@ -219,9 +219,12 @@ const MyPostDetail = () => {
       console.error("상세 데이터 로딩 실패", e);
     }
   };
+
   useEffect(() => {
-    fetchDetail();
-  }, []);
+    if (isFocused) {
+      fetchDetail();
+    }
+  }, [isFocused]);
 
   const toggleLike = async () => {
     try {
@@ -260,15 +263,11 @@ const MyPostDetail = () => {
       }
     } catch (error) {
       console.error("❌ 좋아요 처리 중 오류 발생:", error?.message || error);
-      if (error.response) {
-        console.log("📡 서버 응답 상태 코드:", error.response.status);
-        console.log("📡 서버 응답 데이터:", error.response.data);
-      } else if (error.request) {
-        console.log("📡 요청은 갔지만 응답이 없음:", error.request);
+      if (error.response && error.response.status === 401) {
+        setAlertMessage("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
       } else {
-        console.log("📡 설정 중 오류:", error.message);
+        setAlertMessage("좋아요 처리 중 문제가 발생했습니다.");
       }
-      setAlertMessage("좋아요 처리 중 문제가 발생했습니다.");
       setAlertVisible(true);
     }
   };
@@ -305,7 +304,7 @@ const MyPostDetail = () => {
 
   const handleDelete = () => {
     setMenuVisible(false);
-    setConfirmVisible(true); // ✅ Alert 대신 모달 표시
+    setConfirmVisible(true);
   };
 
   const confirmDelete = async () => {
@@ -341,10 +340,7 @@ const MyPostDetail = () => {
   if (!meeting || !user) {
     return <Text> 불러오는 중 ...</Text>;
   }
-  /* 테스트용 시간 설정
-  const fakeNow = new Date("2025-05-21T12:00:00");
-  const recruitmentDeadline = new Date(`${meeting.recruitmentEnd}T23:59:59`);
-  const isRecruitmentClosed = recruitmentDeadline < fakeNow; */
+
   const recruitmentDeadline = new Date(`${meeting.recruitmentEnd}T23:59:59`);
   const isRecruitmentClosed = recruitmentDeadline < new Date();
 
@@ -417,7 +413,11 @@ const MyPostDetail = () => {
           <ProfileContainer>
             <ProfileHeader>
               <ProfileImageContainer>
-                {user.image ? <ProfileImage source={{ uri: user.image }} /> : <Feather name="user" size={35} color="#888" />}
+                {user?.image ? (
+                  <ProfileImage source={{ uri: user.image }} />
+                ) : (
+                  <ProfileImage source={{ uri: "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
+                )}
               </ProfileImageContainer>
 
               <RowContainer>
@@ -431,16 +431,15 @@ const MyPostDetail = () => {
         {/* 하단 좋아요 & 신청 버튼 고정 */}
         <Footer>
           <LikeButton onPress={toggleLike}>
-            {liked ? (
-              <AntDesign name="heart" size={28} color="#FF6B6B" /> // 꽉 찬 하트
-            ) : (
-              <Feather name="heart" size={28} color="#000" /> // 빈 하트
-            )}
+            {liked ? <AntDesign name="heart" size={28} color="#FF6B6B" /> : <Feather name="heart" size={28} color="#000" />}
             <LikeText liked={liked}>{likes}</LikeText>
           </LikeButton>
           <Button
             title={isRecruitmentClosed ? "모임 재생성하기" : "신청 목록 확인"}
             onPress={async () => {
+              const isLoginRequired = checkLogin("신청서 목록", { postId });
+              if (isLoginRequired) return;
+
               if (isRecruitmentClosed) {
                 const [city, district] = meeting.location.split(" ");
                 navigation.navigate("모임수정", {
@@ -457,21 +456,18 @@ const MyPostDetail = () => {
                   recruitmentEnd: meeting.recruitmentEnd,
                   activityStart: meeting.activityStart,
                   activityEnd: meeting.activityEnd,
-                  isRecreate: true, //재생성하기임을 명시(일반 게시글 수정과 헷갈리지 않게게)
+                  isRecreate: true,
                 });
               } else {
-                const isLoggedIn = await checkLogin("신청서 목록", { postId });
-                if (isLoggedIn) {
-                  navigation.navigate("신청서 목록", { postId });
-                }
+                navigation.navigate("신청서 목록", { postId });
               }
             }}
             containerStyle={{ height: 50, width: 280 }}
             textStyle={{ marginLeft: 0 }}
             style={{ height: 50, width: 280 }}
           />
-          <LoginAlert />
         </Footer>
+        <LoginModal visible={loginModalVisible} onClose={() => setLoginModalVisible(false)} />
         <AlertModal
           visible={alertVisible}
           message={alertMessage}
@@ -480,13 +476,7 @@ const MyPostDetail = () => {
             if (onConfirmAction) onConfirmAction();
           }}
         />
-
-        <AlertModal
-          visible={confirmVisible}
-          message="정말 삭제하시겠습니까?"
-          onConfirm={confirmDelete}
-          onCancel={() => setConfirmVisible(false)} // ✅ 취소 시 모달 닫기만
-        />
+        <AlertModal visible={confirmVisible} message="정말 삭제하시겠습니까?" onConfirm={confirmDelete} onCancel={() => setConfirmVisible(false)} />
       </Container>
     </TouchableWithoutFeedback>
   );

@@ -6,7 +6,7 @@ import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const PaymentScreen = ({ route, navigation }) => {
-  const { amount, title } = route.params;
+  const { amount, title, somoimId, sessionId } = route.params;
 
   const [paymentData, setPaymentData] = useState(null);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -59,7 +59,7 @@ const PaymentScreen = ({ route, navigation }) => {
 
     hasProcessedPayment.current = true;
 
-    console.log("💫 결제 성공 처리 시작", { imp_uid, merchant_uid });
+    console.log("💫 결제 성공 처리 시작", { imp_uid, merchant_uid, somoimId });
 
     const paymentInfo = {
       imp_uid,
@@ -67,32 +67,38 @@ const PaymentScreen = ({ route, navigation }) => {
       success: true,
     };
 
+    // sendPaymentDataToServer 함수에 somoimId를 함께 전달
     sendPaymentDataToServer(paymentInfo);
   };
 
+  // sendPaymentDataToServer 함수에 somoimId 매개변수 추가
   const sendPaymentDataToServer = async (data) => {
     try {
       const { imp_uid, merchant_uid } = data;
       const accessToken = await EncryptedStorage.getItem("accessToken");
-      console.log(accessToken);
+      console.log("엑세스 토큰: ", accessToken);
 
       if (!accessToken) {
         console.log("인증 오류! 로그인이 필요합니다.");
         return;
       }
 
-      const response = await axios.post(
-        "http://10.0.2.2:8080/api/payments/verify",
-        {
-          impUid: imp_uid,
-          merchantUid: merchant_uid,
+      payload = {
+        impUid: imp_uid,
+        merchantUid: merchant_uid,
+        somoimId, // somoimId 추가
+        sessionId, // 세션 ID 추가
+      };
+      console.log("📤 결제 정보 전송:", payload);
+
+      // 백엔드 API 요청 시 somoimId를 body에 포함
+      const response = await axios.post("http://10.0.2.2:8080/api/payments/verify", payload, {
+        headers: {
+          access: accessToken,
         },
-        {
-          headers: {
-            access: accessToken,
-          },
-        }
-      );
+      });
+
+      console.log("✅ 결제 정보 전송 성공:", response.data);
 
       setAlertMessage("결제가 성공적으로 완료되었습니다.");
       setOnConfirmAction(() => () => navigation.goBack()); // 확인 시 goBack 실행
@@ -100,11 +106,14 @@ const PaymentScreen = ({ route, navigation }) => {
     } catch (err) {
       console.error("❌ 서버 전송 실패:", err.response?.data || err.message);
 
-      setAlertMessage("서버로 결제 정보를 전달하는 데 실패했습니다.");
+      setAlertMessage("서버로 결제 정보를 전달하는 데\n실패했습니다.");
       setAlertVisible(true);
+
+      setOnConfirmAction(() => () => navigation.goBack()); // 확인 시 goBack 실행
     }
   };
 
+  // 결제 웹뷰의 amount에 route.params로 받은 amount 변수 사용
   const html = `
   <!DOCTYPE html>
   <html lang="ko">
@@ -124,8 +133,8 @@ const PaymentScreen = ({ route, navigation }) => {
           pay_method: "card",
           merchant_uid: "mid_" + new Date().getTime(),
           name: "${title}",
-          amount: 100,
-          buyer_name: "홍길동",
+          amount: 100, // 테스트 이후 가격도 param값으로 수정 필요
+          buyer_name: "홍길동", // 추후 사용자의 이름으로 수정 필요
           buyer_tel: "010-1234-5678",
           m_redirect_url: "moamoa://payment-success",
         }, function(rsp) {
@@ -141,7 +150,18 @@ const PaymentScreen = ({ route, navigation }) => {
 
   return (
     <>
-      <WebView originWhitelist={["*"]} source={{ html }} onShouldStartLoadWithRequest={handleUrlScheme} javaScriptEnabled={true} domStorageEnabled={true} />
+      <WebView
+        originWhitelist={["*"]}
+        source={{ html }}
+        onShouldStartLoadWithRequest={handleUrlScheme}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        injectedJavaScriptBeforeContentLoaded={""} // 생략 가능
+        onMessage={(event) => {
+          const data = JSON.parse(event.nativeEvent.data);
+          console.log("💬 WebView 메시지:", data);
+        }}
+      />
       <AlertModal
         visible={alertVisible}
         message={alertMessage}

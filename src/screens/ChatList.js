@@ -67,6 +67,37 @@ const EmptyText = styled.Text`
   font-family: ${({ theme }) => theme.fonts.bold};
 `;
 
+const UnreadBadge = styled.View`
+  background-color: red;
+  border-radius: 10px;
+  padding: 2px 6px;
+  justify-content: center;
+  align-items: center;
+  margin-left: 6px;
+  margin-top: 6px;
+`;
+
+const UnreadText = styled.Text`
+  color: white;
+  font-size: 12px;
+  font-family: ${({ theme }) => theme.fonts.bold};
+`;
+
+const RowWrapper = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const LeftColumn = styled.View`
+  flex: 1;
+  padding-right: 10px;
+`;
+
+const RightColumn = styled.View`
+  align-items: flex-end;
+`;
+
 const ChatList = () => {
   const navigation = useNavigation();
   const [chatRooms, setChatRooms] = useState([]);
@@ -109,6 +140,7 @@ const ChatList = () => {
         lastMessage: c.lastMessage ?? "",
         time: c.lastMessageAt ? c.lastMessageAt.slice(11, 16) : "",
         participants: c.participants ?? [],
+        unread: c.unread ?? 0,
       }));
 
       console.log(
@@ -128,7 +160,7 @@ const ChatList = () => {
   useFocusEffect(
     useCallback(() => {
       fetchChatRooms();
-    }, [fetchChatRooms])
+    }, [])
   );
 
   const renderItem = ({ item }) => (
@@ -141,11 +173,23 @@ const ChatList = () => {
         })
       }
     >
-      <ChatHeader>
-        <ChatTitle>{item.title}</ChatTitle>
-        <ChatTime>{item.time}</ChatTime>
-      </ChatHeader>
-      <ChatMessage>{item.lastMessage}</ChatMessage>
+      <RowWrapper>
+        {/* 왼쪽: 제목 + 메시지 */}
+        <LeftColumn>
+          <ChatTitle>{item.title}</ChatTitle>
+          <ChatMessage>{item.lastMessage}</ChatMessage>
+        </LeftColumn>
+
+        {/* 오른쪽: 시간 + 배지 */}
+        <RightColumn>
+          <ChatTime>{item.time}</ChatTime>
+          {item.unread > 0 && (
+            <UnreadBadge>
+              <UnreadText>{item.unread > 99 ? "99+" : item.unread}</UnreadText>
+            </UnreadBadge>
+          )}
+        </RightColumn>
+      </RowWrapper>
     </ChatItem>
   );
 

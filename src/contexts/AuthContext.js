@@ -70,6 +70,7 @@ export const AuthProvider = ({ children }) => {
 
   const signout = async () => {
     await clearTokens(); // 토큰 삭제 안됐을때 살려서 실행
+
     try {
       // 1. 저장된 accessToken과 refreshToken 불러오기
       const storedAccessToken = await EncryptedStorage.getItem("accessToken");

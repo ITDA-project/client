@@ -26,7 +26,7 @@ const ProfileContainer = styled.View`
 const ProfileImage = styled.Image`
   width: 50px;
   height: 50px;
-  border-radius: 20px;
+  border-radius: 25px;
   margin-right: 15px;
 `;
 
@@ -78,7 +78,11 @@ const ReviewForm = ({ route, navigation }) => {
             size={23}
             color="#FFD000"
             style={{ marginHorizontal: 2 }}
-            onPress={() => setRating(num)}
+            onPress={() => {
+              setRating(num);
+              // ✅ 여기에 로그를 추가하여 실시간으로 별점 값을 확인합니다.
+              console.log("선택된 별점:", num);
+            }}
           />
         ))}
       </StarRow>

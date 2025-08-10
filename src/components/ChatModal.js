@@ -16,7 +16,7 @@ const timeStringToDate = (hhMm) => {
   return base;
 };
 
-const ChatModal = ({ visible, formDate, setFormDate, formTime, setFormTime, formPrice, setFormPrice, onConfirm, onCancel }) => {
+const ChatModal = ({ visible, formDate, setFormDate, formTime, setFormTime, formPrice, setFormPrice, formLocation, setFormLocation, onConfirm, onCancel }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -56,9 +56,12 @@ const ChatModal = ({ visible, formDate, setFormDate, formTime, setFormTime, form
           <Text style={styles.label}>보증금 (숫자)</Text>
           <TextInput style={[styles.selector, { paddingVertical: 8 }]} value={formPrice} onChangeText={setFormPrice} keyboardType="numeric" />
 
+          <Text style={styles.label}>장소</Text>
+          <TextInput style={[styles.selector, { paddingVertical: 8 }]} value={formLocation} onChangeText={setFormLocation} />
+
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.confirmBtn} onPress={onConfirm}>
-              <Text style={styles.confirmTxt}>확인</Text>
+              <Text style={styles.confirmTxt}>주최</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.cancelBtn} onPress={onCancel}>
               <Text style={styles.cancelTxt}>취소</Text>

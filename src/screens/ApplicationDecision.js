@@ -53,7 +53,7 @@ const ApplicationDecision = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
 
-  const { formId, postId } = route.params;
+  const { formId, postId, name } = route.params;
 
   const [formData, setFormData] = useState(null);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -123,7 +123,7 @@ const ApplicationDecision = ({ route, navigation }) => {
     <Container insets={insets}>
       <ProfileContainer>
         <ProfileImage source={{ uri: formData.userImage || "https://ssl.pstatic.net/static/pwe/address/img_profile.png" }} />
-        <NameText>{formData.userName}</NameText>
+        <NameText>{name}</NameText>
       </ProfileContainer>
 
       <Form>{formData.content}</Form>

@@ -1,41 +1,104 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import theme from "../theme";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
+import { formatTime, formatDate } from "../utils/utils";
+import { AlertModal } from "../components";
 
-const Notification = () => {
+const Notification = ({ onReadAll }) => {
   const navigation = useNavigation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalData, setModalData] = useState({ title: "", date: "", amount: 0 });
+  const [modalData, setModalData] = useState({ title: "", date: "", time: "", location: "", amount: 0 });
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-
       const token = await EncryptedStorage.getItem("accessToken");
-
       const res = await axios.get("http://10.0.2.2:8080/api/notifications", {
-        headers: {
-          access: token,
-        },
+        headers: { access: token },
       });
-      setNotifications(res.data.data); // `ApiResponse<List<NotificationResponseDto>>` 구조
+      console.log("🔔 알림 조회 성공:", res.data.data);
+      setNotifications(res.data.data);
     } catch (error) {
       console.error("알림 조회 실패:", error);
-      Alert.alert("오류", "알림을 불러오지 못했습니다.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  const markAllAsRead = async () => {
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      await axios.patch("http://10.0.2.2:8080/api/notifications/read-all", null, {
+        headers: { access: token },
+      });
+      console.log("✅ 전체 읽음 처리 완료");
+    } catch (e) {
+      console.log("❌ 알림 읽음 처리 실패", e);
+    }
+  };
+
+  // 알림 아이템 전체를 넘겨받아 세션 정보를 가져오는 새로운 함수
+  const fetchSessionInfo = async (item) => {
+    // roomId 대신 item 전체를 받도록 변경
+    try {
+      const token = await EncryptedStorage.getItem("accessToken");
+      const roomId = item.postId; // postId를 roomId로 가정
+
+      // !!! 이 부분을 수정해야 합니다 !!!
+      // 백엔드 컨트롤러에 정의된 올바른 API URL로 수정
+      const url = `http://10.0.2.2:8080/api/sessions/chatroom/${roomId}/active`;
+      console.log(`📡 세션 정보 요청 URL: ${url}`); // 요청 URL을 로그로 확인
+
+      const res = await axios.get(url, {
+        headers: { access: token },
+      });
+
+      const sessionInfo = res.data.data;
+
+      // 진행 중인 세션이 없는 경우
+      if (!sessionInfo) {
+        setAlertMessage("진행 중인 세션이 없습니다");
+        setAlertVisible(true);
+        return;
+      }
+
+      console.log(`✅ 세션 정보 조회 성공 (roomId: ${roomId}):`, sessionInfo);
+
+      // 모달에 표시할 데이터를 업데이트합니다.
+      setModalData({
+        title: item.title, // 알림에 있는 제목을 사용
+        date: sessionInfo.sessionDate || "날짜 정보 없음",
+        time: sessionInfo.sessionTime || "시간 정보 없음",
+        location: sessionInfo.location || "장소 정보 없음",
+        amount: sessionInfo.price || 0,
+        somoimId: sessionInfo.somoimId || roomId, // somoimId가 없으면 roomId 사용
+        sessionId: sessionInfo.sessionNumber,
+      });
+      setModalVisible(true);
+    } catch (error) {
+      console.error(`❌ 세션 정보 조회 실패 (roomId: ${item.postId}):`, error);
+
+      setAlertMessage("세션 정보를 불러오지 못했습니다");
+      setAlertVisible(true);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotifications();
+      markAllAsRead();
+      onReadAll?.();
+    }, [])
+  );
 
   const handlePress = (item) => {
     switch (item.type) {
@@ -52,17 +115,24 @@ const Notification = () => {
       case "FORM_APPLY":
         console.log("PostId from Notification item:", item.postId);
         if (!item.postId) {
-          Alert.alert("오류", "신청서 postId가 없습니다.");
+          setAlertMessage("신청서 postId가 없습니다");
+          setAlertVisible(true);
           return;
         }
         navigation.navigate("신청서 목록", { postId: item.postId });
         break;
-      case "PAYMENT_COMPLETE":
-        Alert.alert("결제완료", "모아모아와 함께 모임에 참여해주세요!");
+      case "PAYMENT_COMPLETED":
+        setAlertMessage("잊지 말고 꼭 참여해주세요!");
+        setAlertVisible(true);
         break;
       case "PAYMENT_REQUESTED":
-        setModalData({ title: item.title, date: "2025/05/26", amount: 10000 }); //날짜, 금액 전달 수정 필요
-        setModalVisible(true);
+        // postId를 roomId로 가정하고 세션 정보를 조회합니다.
+        if (item.postId) {
+          fetchSessionInfo(item);
+        } else {
+          setAlertMessage("모임 정보를 찾을 수 없습니다");
+          setAlertVisible(true);
+        }
         break;
       default:
         console.warn("알 수 없는 알림 타입:", item.type);
@@ -85,6 +155,14 @@ const Notification = () => {
             <Feather name="chevron-right" size={20} color="#999" />
           </TouchableOpacity>
         )}
+        ListEmptyComponent={
+          !loading && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>알림이 존재하지 않습니다</Text>
+            </View>
+          )
+        }
+        contentContainerStyle={notifications.length === 0 ? styles.emptyWrapper : null}
       />
 
       {/* 결제 정보 확인 모달 */}
@@ -92,16 +170,22 @@ const Notification = () => {
         <View style={styles.overlay}>
           <View style={styles.modalBox}>
             <Text style={styles.title}>{modalData.title}</Text>
-            <Text style={styles.date}>{modalData.date}</Text>
+            <Text style={styles.date}>{formatDate(modalData.date)}</Text>
+            <Text style={styles.time}>{formatTime(modalData.time)}</Text>
+            <Text style={styles.location}>{modalData.location}</Text>
             <Text style={styles.amount}>{modalData.amount.toLocaleString()}원</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.confirmButton}
                 onPress={() => {
                   setModalVisible(false);
+                  console.log("진짜 직전에 결제페이지로 넘길 데이터", modalData.amount, modalData.title, modalData.somoimId, modalData.sessionId);
+                  // 모달에 저장된 roomId를 결제 페이지로 넘겨줍니다.
                   navigation.navigate("결제", {
                     amount: modalData.amount,
                     title: modalData.title,
+                    somoimId: modalData.somoimId, // somoimId로 값을 전달
+                    sessionId: modalData.sessionId,
                   });
                 }}
               >
@@ -114,6 +198,13 @@ const Notification = () => {
           </View>
         </View>
       </Modal>
+      <AlertModal
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => {
+          setAlertVisible(false);
+        }}
+      />
     </View>
   );
 };
@@ -162,8 +253,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: theme.fonts.bold,
-    fontSize: 16,
-    marginBottom: 6,
+    fontSize: 20,
+    marginBottom: 15,
     textAlign: "center",
   },
   date: {
@@ -172,11 +263,23 @@ const styles = StyleSheet.create({
     color: "gray",
     marginBottom: 6,
   },
+  time: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 14,
+    color: "gray",
+    marginBottom: 6,
+  },
+  location: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 14,
+    color: "gray",
+    marginBottom: 20,
+  },
   amount: {
     fontFamily: theme.fonts.bold,
-    fontSize: 16,
+    fontSize: 17,
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 30,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -206,6 +309,22 @@ const styles = StyleSheet.create({
   cancelText: {
     fontFamily: theme.fonts.bold,
     color: theme.colors.mainBlue,
+  },
+  emptyWrapper: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 30,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: theme.colors.grey,
+    fontFamily: theme.fonts.bold,
   },
 });
 
