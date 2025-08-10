@@ -436,7 +436,7 @@ const Chat = () => {
   /* ──────────────────────── UI 컴포넌트 */
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-      <ChatHeader>
+      <ChatHeader insets={insets}>
         <HeaderButton onPress={() => navigation.goBack()}>
           <MaterialIcons name="keyboard-arrow-left" size={38} />
         </HeaderButton>
@@ -477,7 +477,7 @@ const Chat = () => {
       </ChatArea>
       <Modal visible={sideMenuVisible} animationType="slide" transparent>
         <Overlay>
-          <SideMenuContainer>
+          <SideMenuContainer insets={insets}>
             <HeaderButton style={{ alignSelf: "flex-end" }} onPress={() => setSideMenuVisible(false)}>
               <MaterialIcons name="close" size={30} />
             </HeaderButton>
@@ -594,6 +594,7 @@ const ChatHeader = styled.View`
   border-bottom-width: 1px;
   border-bottom-color: #eee;
   background-color: white;
+  padding-top: ${({ insets: { top } }) => top}px;
 `;
 
 const HeaderTitleWrapper = styled.View`
@@ -717,6 +718,7 @@ const SideMenuContainer = styled.View`
   border-left-color: #ddd;
   padding: 20px;
   flex-direction: column;
+  padding-top: ${({ insets: { top } }) => top}px;
 `;
 
 const SideMenuTitle = styled.Text`

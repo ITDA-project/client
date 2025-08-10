@@ -7,9 +7,12 @@ import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { formatTime, formatDate } from "../utils/utils";
 import { AlertModal } from "../components";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Notification = ({ onReadAll }) => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -142,7 +145,7 @@ const Notification = ({ onReadAll }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>알림</Text>
+      <Text style={[styles.header, { paddingTop: insets.top }]}>알림</Text>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id.toString()}
@@ -212,11 +215,10 @@ const Notification = ({ onReadAll }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "white", padding: 5 },
   header: {
-    fontSize: 18,
+    fontSize: 16,
     textAlign: "center",
     fontFamily: theme.fonts.extraBold,
     padding: 5,
-    marginTop: 40,
     marginBottom: 10,
   },
   notificationItem: {
