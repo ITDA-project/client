@@ -14,6 +14,7 @@ import SockJS from "sockjs-client";
 import { Client as StompClient } from "@stomp/stompjs";
 import { v4 as uuid } from "uuid";
 import theme from "../theme";
+import { WEBSOCKET_URL } from "../config/apiConfig";
 
 const Chat = () => {
   /* ──────────────────────── 기본 훅 및 파라미터 */
@@ -213,7 +214,7 @@ const Chat = () => {
     const token = await EncryptedStorage.getItem("accessToken");
 
     const client = new StompClient({
-      webSocketFactory: () => new SockJS("http://10.0.2.2:8080/ws"),
+      webSocketFactory: () => new SockJS(WEBSOCKET_URL),
       connectHeaders: { access: token },
       debug: (str) => console.log("[STOMP]", str),
       onConnect: () => {
