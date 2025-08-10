@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#000",
-    fontSize: 15,
+    fontSize: 12,
     marginBottom: 0,
     fontWeight: "bold",
     lineHeight: 14,
@@ -101,12 +101,12 @@ const styles = StyleSheet.create({
   sender: {
     fontWeight: "bold",
     color: "#000",
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 18,
   },
   message: {
     color: "#000",
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 18,
   },
 });
