@@ -4,7 +4,7 @@ import { styled, ThemeContext } from "styled-components/native";
 import { AlertModal } from "../components";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -86,7 +86,7 @@ const Search = () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
       console.log("🔑 accessToken:", token);
-      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+      const response = await api.get("/mypage/me", {
         headers: {
           access: `${token}`,
         },
@@ -108,7 +108,7 @@ const Search = () => {
       const trimmedQuery = query.trim();
       console.log("🔍 검색어 확인:", trimmedQuery);
 
-      const response = await axios.get("http://10.0.2.2:8080/api/posts/search", {
+      const response = await api.get("/posts/search", {
         params: { keyword: trimmedQuery },
       });
 

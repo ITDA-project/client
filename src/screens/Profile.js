@@ -7,7 +7,7 @@ import { ThemeContext } from "styled-components/native";
 import Button from "../components/Button";
 import Review from "../components/Review";
 import { useAuth } from "../contexts/AuthContext";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 // 스타일
@@ -139,14 +139,14 @@ const Profile = ({ navigation, route }) => {
           const token = await EncryptedStorage.getItem("accessToken");
           if (!token) throw new Error("토큰 없음");
 
-          const res = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+          const res = await api.get("/mypage/me", {
             headers: { access: token },
           });
 
           const userId = res.data.data;
           if (!userId) throw new Error("userId 없음");
 
-          const profileRes = await axios.get(`http://10.0.2.2:8080/api/profile/${userId}`, {
+          const profileRes = await api.get(`/profile/${userId}`, {
             headers: { access: token },
           });
 
@@ -158,7 +158,7 @@ const Profile = ({ navigation, route }) => {
             totalStar: ratingAverage?.toFixed(1) ?? "0.0",
           });
 
-          const reviewRes = await axios.get(`http://10.0.2.2:8080/api/review/${userId}`, {
+          const reviewRes = await api.get(`/review/${userId}`, {
             headers: { access: token },
           });
 

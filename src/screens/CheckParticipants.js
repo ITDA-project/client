@@ -6,7 +6,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { Button } from "../components";
 import EncryptedStorage from "react-native-encrypted-storage";
-import axios from "axios";
+import api from "../api/api";
 
 const Wrapper = styled.View`
   flex: 1;
@@ -152,8 +152,8 @@ const CheckParticipants = () => {
         await Promise.all(
           refundTargets.map(async (p) => {
             // 불참자의 결제 정보(impUid, amount)를 가져오는 API 호출
-            const refundInfoResponse = await axios.post(
-              "http://10.0.2.2:8080/api/payments/info",
+            const refundInfoResponse = await api.post(
+              "/payments/info",
               {
                 userId: p.userId,
                 sessionId,
@@ -168,8 +168,8 @@ const CheckParticipants = () => {
             console.log(`- ${p.name}의 환불 정보: amount=${amount}, impUid=${impUid}`);
 
             // 가져온 환불 정보를 포함하여 환불 API 호출
-            return axios.post(
-              "http://10.0.2.2:8080/api/payments/refund",
+            return api.post(
+              "/payments/refund",
               {
                 amount,
                 impUid,
@@ -183,8 +183,8 @@ const CheckParticipants = () => {
       }
 
       // 모든 환불 처리가 완료된 후에 모임 종료 API를 호출합니다.
-      await axios.post(
-        "http://10.0.2.2:8080/api/sessions/end",
+      await api.post(
+        "/sessions/end",
         { roomId, sessionId },
         {
           headers: { access: token, "Content-Type": "application/json" },

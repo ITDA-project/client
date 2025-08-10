@@ -10,4 +10,20 @@ export const submitApplicationAPI = (postId, applicationData) => {
   return api.post(`/posts/${postId}/form`, applicationData);
 };
 
-// ... 다른 신청 관련 API 함수들 ...
+/**
+ * 특정 포스트의 신청서 목록 조회
+ * @param {string|number} postId
+ * @returns {Promise}
+ */
+export const listApplicationsAPI = (postId, config = {}) => api.get(`/posts/${postId}/form/list`, config);
+
+/**
+ * 특정 신청서 상세 조회
+ */
+export const getApplicationAPI = (postId, formId, config = {}) => api.get(`/posts/${postId}/form/${formId}`, config);
+
+/**
+ * 신청서 상태 변경 (accept/refuse)
+ */
+export const updateApplicationStatusAPI = (postId, formId, status, config = {}) =>
+  api.patch(`/posts/${postId}/form/${formId}/status/${status}`, {}, config);

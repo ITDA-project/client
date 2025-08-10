@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { WebView } from "react-native-webview";
 import { Alert, Linking, Platform } from "react-native";
 import { AlertModal } from "../components";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const PaymentScreen = ({ route, navigation }) => {
@@ -92,7 +92,7 @@ const PaymentScreen = ({ route, navigation }) => {
       console.log("📤 결제 정보 전송:", payload);
 
       // 백엔드 API 요청 시 somoimId를 body에 포함
-      const response = await axios.post("http://10.0.2.2:8080/api/payments/verify", payload, {
+      const response = await api.post("/payments/verify", payload, {
         headers: {
           access: accessToken,
         },

@@ -17,3 +17,21 @@ export const getRefundInfoAPI = (data) => {
 export const refundPaymentAPI = (data) => {
   return api.post("/payments/refund", data);
 };
+
+/**
+ * 결제 완료 검증 API
+ * @param {object} data - { impUid, merchantUid, somoimId, sessionId }
+ * @returns {Promise}
+ */
+export const verifyPaymentAPI = (data) => {
+  return api.post("/payments/verify", data);
+};
+
+/**
+ * 세션별 결제 상태 조회 API
+ * @param {object} data - { roomId, sessionId }
+ * @returns {Promise}
+ */
+export const getPaymentStatusAPI = (data) => {
+  return api.post("/payments/status", data);
+};
