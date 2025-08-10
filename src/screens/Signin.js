@@ -131,8 +131,10 @@ const Signin = ({ navigation }) => {
       }
 
       setUser(response.data);
-      // 6. 메인 화면 이동
-      navigation.navigate("Home");
+      navigation.reset({
+        index: 0, // routes 배열에서 현재 활성화할 화면의 인덱스 (0번째)
+        routes: [{ name: "Home" }], // 새로 설정할 화면 목록. 여기서는 '로그인' 화면 하나만 존재.
+      });
     } catch (err) {
       if (err?.response?.status === 409) {
         setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
@@ -214,8 +216,10 @@ const Signin = ({ navigation }) => {
       }
 
       setUser(response.data);
-      // 6. 메인 화면 이동
-      navigation.navigate("Home");
+      navigation.reset({
+        index: 0, // routes 배열에서 현재 활성화할 화면의 인덱스 (0번째)
+        routes: [{ name: "Home" }], // 새로 설정할 화면 목록. 여기서는 '로그인' 화면 하나만 존재.
+      });
     } catch (err) {
       if (err?.response?.status === 409) {
         setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
