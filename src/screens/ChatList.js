@@ -2,8 +2,9 @@ import { useState, useCallback } from "react";
 import { FlatList } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import styled from "styled-components/native";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Container = styled.View`
   flex: 1;
@@ -12,12 +13,12 @@ const Container = styled.View`
 `;
 
 const Header = styled.Text`
-  font-size: 18px;
+  font-size: 16px;
   text-align: center;
   font-family: ${({ theme }) => theme.fonts.extraBold};
   padding: 5px;
-  margin-top: 40px;
   margin-bottom: 10px;
+  padding-top: ${({ insets: { top } }) => top}px;
 `;
 
 const ChatItem = styled.TouchableOpacity`
@@ -99,6 +100,7 @@ const RightColumn = styled.View`
 `;
 
 const ChatList = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [chatRooms, setChatRooms] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -115,7 +117,7 @@ const ChatList = () => {
         return;
       }
 
-      const res = await axios.get("http://10.0.2.2:8080/api/chatroom", {
+      const res = await api.get("/chatroom", {
         headers: { access: accessToken },
       });
 
@@ -195,7 +197,7 @@ const ChatList = () => {
 
   return (
     <Container>
-      <Header>채팅목록</Header>
+      <Header insets={insets}>채팅목록</Header>
 
       {chatRooms.length === 0 ? (
         <EmptyContainer>

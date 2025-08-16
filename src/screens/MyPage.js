@@ -3,7 +3,7 @@ import styled from "styled-components/native";
 import { FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { jwtDecode } from "jwt-decode";
 import theme from "../theme";
@@ -129,7 +129,7 @@ const MyPage = () => {
           const token = await EncryptedStorage.getItem("accessToken");
           if (!token) throw new Error("토큰 없음");
 
-          const userInfoRes = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+          const userInfoRes = await api.get("/mypage/me", {
             headers: { access: token },
           });
 
@@ -139,7 +139,7 @@ const MyPage = () => {
           console.log("🧑 currentUser.userId:", userId);
           setCurrentUserId({ userId });
 
-          const profileRes = await axios.get("http://10.0.2.2:8080/api/mypage/full", {
+          const profileRes = await api.get("/mypage/full", {
             headers: { access: token },
           });
 

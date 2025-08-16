@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { Review, Button, AlertModal } from "../components";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import theme from "../theme";
 import { useNavigation } from "@react-navigation/native";
@@ -132,7 +132,7 @@ const PublicProfile = ({ route }) => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
       if (!accessToken) return;
 
-      const res = await axios.get(`http://10.0.2.2:8080/api/profile/${userId}`, {
+      const res = await api.get(`/profile/${userId}`, {
         headers: { access: accessToken },
       });
 
@@ -156,7 +156,7 @@ const PublicProfile = ({ route }) => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
       if (!accessToken) return;
 
-      const res = await axios.get(`http://10.0.2.2:8080/api/review/${userId}`, {
+      const res = await api.get(`/review/${userId}`, {
         headers: { access: accessToken },
       });
 
@@ -179,7 +179,7 @@ const PublicProfile = ({ route }) => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
       if (!accessToken) return null;
 
-      const res = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+      const res = await api.get("/mypage/me", {
         headers: { access: accessToken },
       });
 
@@ -221,7 +221,7 @@ const PublicProfile = ({ route }) => {
 
       console.log("🔍 리뷰 권한 확인 요청 데이터:", requestData);
 
-      const res = await axios.post("http://10.0.2.2:8080/api/payments/review/eligibility", requestData, {
+      const res = await api.post("/payments/review/eligibility", requestData, {
         headers: { access: accessToken },
       });
 
