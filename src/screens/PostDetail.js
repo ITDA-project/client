@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useRoute, useNavigation, useIsFocused } from "@react-navigation/native";
 import { Feather, AntDesign, Ionicons } from "@expo/vector-icons";
 import { styled, ThemeContext } from "styled-components/native";
-import { Button, AlertModal } from "../components";
+import { Button, AlertModal, LoginModal } from "../components";
 import { TouchableOpacity, Text } from "react-native";
 import useRequireLogin from "../hooks/useRequireLogin";
 import axios from "axios";
@@ -133,7 +133,8 @@ const LikeText = styled.Text`
 
 // 모임 상세 페이지
 const PostDetail = () => {
-  const { checkLogin, LoginAlert } = useRequireLogin();
+  // useRequireLogin 훅에서 모달 상태와 함수를 가져옴
+  const { checkLogin, loginModalVisible, setLoginModalVisible } = useRequireLogin();
   const theme = useContext(ThemeContext);
   const route = useRoute();
   const isFocused = useIsFocused();
@@ -203,8 +204,7 @@ const PostDetail = () => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
 
       if (!accessToken) {
-        setAlertMessage("로그인이 필요합니다");
-        setAlertVisible(true);
+        setLoginModalVisible(true);
         return;
       }
 
@@ -309,7 +309,11 @@ const PostDetail = () => {
 
       {/* 작성자 정보 섹션 */}
 
-      <TouchableOpacity onPress={() => navigation.navigate("공개프로필", { userId: user.userId })}>
+      <TouchableOpacity
+        onPress={() => {
+          checkLogin("공개프로필", { userId: user.userId });
+        }}
+      >
         <ProfileContainer>
           <ProfileHeader>
             <ProfileImageContainer>
@@ -343,6 +347,8 @@ const PostDetail = () => {
           title={isRecruitmentClosed ? "모집마감" : isApplied ? "신청완료" : "신청하기"}
           onPress={() => {
             if (!isRecruitmentClosed) {
+              // checkLogin을 호출하여 로그인 상태를 확인하고,
+              // 로그인되어 있으면 '신청서 작성' 화면으로 이동
               checkLogin("신청서 작성", {
                 postId,
                 onComplete: () => {
@@ -360,8 +366,13 @@ const PostDetail = () => {
           textStyle={{ marginLeft: 0 }}
           style={{ height: 50, width: 280 }}
         />
-        <LoginAlert />
       </Footer>
+
+      {/* useRequireLogin 훅에서 관리하는 상태를 사용하여 LoginModal을 직접 렌더링
+        - visible: 모달의 보이기/숨기기 상태
+        - onClose: 모달을 닫을 때 호출되는 함수
+      */}
+      <LoginModal visible={loginModalVisible} onClose={() => setLoginModalVisible(false)} />
       <AlertModal
         visible={alertVisible}
         message={alertMessage}

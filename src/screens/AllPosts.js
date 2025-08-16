@@ -3,13 +3,14 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator }
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
-import Button from "../components/Button";
+import { Button, LoginModal } from "../components";
 import useRequireLogin from "../hooks/useRequireLogin";
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const AllPosts = ({ route }) => {
-  const { checkLogin, LoginAlert } = useRequireLogin();
+  // useRequireLogin 훅에서 모달 상태와 함수를 가져옴
+  const { checkLogin, loginModalVisible, setLoginModalVisible } = useRequireLogin();
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
 
@@ -245,8 +246,10 @@ const AllPosts = ({ route }) => {
           textStyle={{ fontSize: 16, marginLeft: 0 }}
           style={{ height: 40, width: 95 }}
         />
-        <LoginAlert />
       </View>
+
+      {/* useRequireLogin 훅에서 관리하는 상태를 사용하여 LoginModal을 직접 렌더링 */}
+      <LoginModal visible={loginModalVisible} onClose={() => setLoginModalVisible(false)} />
     </View>
   );
 };

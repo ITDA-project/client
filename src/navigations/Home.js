@@ -8,6 +8,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { MainPage, Search, ChatList, Notifications, MyPage } from "../screens";
 import useRequireLogin from "../hooks/useRequireLogin";
+import { LoginModal } from "../components"; // LoginModal 컴포넌트 임포트
 import homeIcon from "../../assets/icons/homeIcon.png";
 import searchIcon from "../../assets/icons/searchIcon.png";
 import chatIcon from "../../assets/icons/chatIcon.png";
@@ -27,7 +28,7 @@ const Stack = createStackNavigator();
 const TabStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ChatMain" component={Chat} />
+      <Stack.Screen name="ChatMain" component={ChatList} />
       <Stack.Screen name="NotiMain" component={Notifications} />
       <Stack.Screen name="MyPageMain" component={MyPage} />
     </Stack.Navigator>
@@ -36,7 +37,8 @@ const TabStack = () => {
 
 const Home = () => {
   const theme = useContext(ThemeContext);
-  const { checkLogin, LoginAlert } = useRequireLogin();
+  // useRequireLogin 훅에서 모달 상태와 함수를 가져옴
+  const { checkLogin, loginModalVisible, setLoginModalVisible } = useRequireLogin();
 
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -80,7 +82,7 @@ const Home = () => {
           options={{
             tabBarIcon: ({ focused }) => (
               <Image
-                source={focused ? homeIconActive : homeIcon} // 클릭되었을 때 이미지 변경
+                source={focused ? homeIconActive : homeIcon}
                 style={{
                   width: 20,
                   height: 22,
@@ -96,7 +98,7 @@ const Home = () => {
           options={{
             tabBarIcon: ({ focused }) => (
               <Image
-                source={focused ? searchIconActive : searchIcon} // 클릭되었을 때 이미지 변경
+                source={focused ? searchIconActive : searchIcon}
                 style={{
                   width: 22,
                   height: 22,
@@ -112,7 +114,7 @@ const Home = () => {
           options={{
             tabBarIcon: ({ focused }) => (
               <Image
-                source={focused ? chatIconActive : chatIcon} // 클릭되었을 때 이미지 변경
+                source={focused ? chatIconActive : chatIcon}
                 style={{
                   width: 22,
                   height: 22,
@@ -124,8 +126,7 @@ const Home = () => {
               <TouchableOpacity
                 {...props}
                 onPress={() => {
-                  const isLoggedIn = checkLogin("Chat"); // 로그인 확인
-                  if (isLoggedIn) props.onPress(); // 로그인 되어 있으면 기본 동작 수행
+                  checkLogin("ChatList"); // 로그인 확인, 로그인 되어 있으면 다음 로직은 자동으로 실행됨
                 }}
               />
             ),
@@ -168,8 +169,7 @@ const Home = () => {
               <TouchableOpacity
                 {...props}
                 onPress={() => {
-                  const isLoggedIn = checkLogin("Notifications"); // 로그인 확인
-                  if (isLoggedIn) props.onPress(); // 로그인 되어 있으면 기본 동작 수행
+                  checkLogin("Notifications"); // 로그인 확인, 로그인 되어 있으면 다음 로직은 자동으로 실행됨
                 }}
               />
             ),
@@ -181,7 +181,7 @@ const Home = () => {
           options={{
             tabBarIcon: ({ focused }) => (
               <Image
-                source={focused ? profileIconActive : profileIcon} // 클릭되었을 때 이미지 변경
+                source={focused ? profileIconActive : profileIcon}
                 style={{
                   width: 20,
                   height: 22,
@@ -193,15 +193,15 @@ const Home = () => {
               <TouchableOpacity
                 {...props}
                 onPress={() => {
-                  const isLoggedIn = checkLogin("MyPage"); // 로그인 확인
-                  if (isLoggedIn) props.onPress(); // 로그인 되어 있으면 기본 동작 수행
+                  checkLogin("MyPage"); // 로그인 확인, 로그인 되어 있으면 다음 로직은 자동으로 실행됨
                 }}
               />
             ),
           }}
         />
       </Tab.Navigator>
-      <LoginAlert />
+      {/* useRequireLogin 훅에서 관리하는 상태를 사용하여 LoginModal을 직접 렌더링 */}
+      <LoginModal visible={loginModalVisible} onClose={() => setLoginModalVisible(false)} />
     </>
   );
 };
