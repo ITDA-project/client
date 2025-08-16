@@ -1,13 +1,12 @@
 import "react-native-get-random-values";
 import React, { useState, useEffect, useCallback, useContext, useRef, useMemo } from "react";
-import { View, Text, FlatList, KeyboardAvoidingView, Platform, Modal } from "react-native";
+import { View, Text, FlatList, KeyboardAvoidingView, TouchableOpacity, Platform, Modal } from "react-native";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import styled, { ThemeContext } from "styled-components/native";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
 import { Button, AlertModal } from "../components";
 import ChatModal from "../components/ChatModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import TouchableOpacity from "react-native/Libraries/Components/Touchable/TouchableOpacity";
 import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import SockJS from "sockjs-client";
@@ -15,7 +14,6 @@ import { Client as StompClient } from "@stomp/stompjs";
 import { v4 as uuid } from "uuid";
 import throttle from "lodash.throttle";
 import { useIsFocused } from "@react-navigation/native";
-import theme from "../theme";
 import { WEBSOCKET_URL } from "../config/apiConfig";
 
 const Chat = () => {
@@ -299,14 +297,23 @@ const Chat = () => {
   }, [roomId]);
 
   /* ─────────  읽음 보고 (throttle 적용) */
-  const postRead = useCallback(async () => {
-    const accessToken = await EncryptedStorage.getItem("accessToken");
-    await axios.post(
-      `http://10.0.2.2:8080/api/chatroom/${roomId}/read`,
-      {}, // 서버가 lastMessageId를 받는다면 { lastMessageId } 로 바꾸세요.
-      { headers: { access: accessToken } }
-    );
-  }, [roomId]);
+  // latestId를 받아서 서버에 전달
+  const postRead = useCallback(
+    async (latestId) => {
+      if (!latestId) return;
+      const accessToken = await EncryptedStorage.getItem("accessToken");
+      try {
+        await api.post(
+          `/chatroom/${roomId}/read`,
+          { lastMessageId: latestId }, // ← 서버가 기대하는 키 이름에 맞추세요
+          { headers: { access: accessToken } }
+        );
+      } catch (e) {
+        console.warn("read 보고 실패:", e.response?.data ?? e.message);
+      }
+    },
+    [roomId]
+  );
 
   const throttledPostRead = useMemo(
     () =>
@@ -314,10 +321,10 @@ const Chat = () => {
         async (latestId) => {
           if (!latestId) return;
           if (lastSentReadIdRef.current === latestId) return; // 같은 ID면 생략
-          await postRead();
+          await postRead(latestId);
           lastSentReadIdRef.current = latestId;
         },
-        1500,
+        1200,
         { leading: true, trailing: true }
       ),
     [postRead]
