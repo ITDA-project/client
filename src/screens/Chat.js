@@ -13,6 +13,8 @@ import EncryptedStorage from "react-native-encrypted-storage";
 import SockJS from "sockjs-client";
 import { Client as StompClient } from "@stomp/stompjs";
 import { v4 as uuid } from "uuid";
+import throttle from "lodash.throttle";
+import { useIsFocused } from "@react-navigation/native";
 import theme from "../theme";
 
 const Chat = () => {
@@ -21,6 +23,7 @@ const Chat = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused(); //화면 포커스 여부
 
   const { roomId } = route.params;
 
@@ -65,6 +68,9 @@ const Chat = () => {
   const [endMeetingModalVisible, setEndMeetingModalVisible] = useState(false);
 
   const stompRef = useRef(null);
+
+  // throttle 중복 전송 방지용
+  const lastSentReadIdRef = useRef(null);
 
   /* ──────────────────────── Utils */
   const ensureId = (msg) => ({ ...msg, id: msg.id ?? uuid() });
@@ -234,7 +240,14 @@ const Chat = () => {
               if (prev.find((msg) => msg.id === mapped.id)) {
                 return prev;
               }
-              return [mapped, ...prev];
+              const next = [mapped, ...prev];
+
+              //새 메시지 도착 시, 화면이 포커스된 상태라면 최신 ID로 읽음 보고 (throttle)
+              if (isFocused) {
+                const newestId = next[0]?.id || null;
+                throttledPostRead(newestId);
+              }
+              return next;
             });
           } catch (e) {
             console.error("메시지 파싱 실패:", e);
@@ -275,13 +288,63 @@ const Chat = () => {
     }, [roomId])
   );
 
+  /* ───────── 초기 한번 읽음 표시(안전빵) */
   useEffect(() => {
     const markAsRead = async () => {
       const accessToken = await EncryptedStorage.getItem("accessToken");
-      await axios.post(`http://10.0.2.2:8080/api/chatroom/${roomId}/read`, {}, { headers: { access: accessToken } });
+      try {
+        await axios.post(`http://10.0.2.2:8080/api/chatroom/${roomId}/read`, {}, { headers: { access: accessToken } });
+      } catch {}
     };
-    markAsRead();
+    if (roomId) markAsRead();
   }, [roomId]);
+
+  /* ─────────  읽음 보고 (throttle 적용) */
+  const postRead = useCallback(async () => {
+    const accessToken = await EncryptedStorage.getItem("accessToken");
+    await axios.post(
+      `http://10.0.2.2:8080/api/chatroom/${roomId}/read`,
+      {}, // 서버가 lastMessageId를 받는다면 { lastMessageId } 로 바꾸세요.
+      { headers: { access: accessToken } }
+    );
+  }, [roomId]);
+
+  const throttledPostRead = useMemo(
+    () =>
+      throttle(
+        async (latestId) => {
+          if (!latestId) return;
+          if (lastSentReadIdRef.current === latestId) return; // 같은 ID면 생략
+          await postRead();
+          lastSentReadIdRef.current = latestId;
+        },
+        1500,
+        { leading: true, trailing: true }
+      ),
+    [postRead]
+  );
+
+  // 방이 바뀌면 마지막 전송 ID 초기화
+  useEffect(() => {
+    lastSentReadIdRef.current = null;
+  }, [roomId]);
+
+  // 언마운트 시 throttle 큐 정리
+  useEffect(() => {
+    return () => throttledPostRead.cancel();
+  }, [throttledPostRead]);
+
+  const getLatestMessageId = useCallback(() => {
+    // inverted FlatList → index 0이 가장 최신
+    return messages?.[0]?.id ?? null;
+  }, [messages]);
+
+  // 메시지 목록이 바뀌고 화면이 포커스면 throttle로 읽음 보고
+  useEffect(() => {
+    if (!isFocused) return;
+    const latestId = getLatestMessageId();
+    throttledPostRead(latestId);
+  }, [messages, isFocused, getLatestMessageId, throttledPostRead]);
 
   /* ──────────────────────── 메시지 전송 */
   const handleSend = () => {
@@ -297,6 +360,10 @@ const Chat = () => {
       body: JSON.stringify({ content: input, roomId }),
     });
     setInput("");
+
+    // 내가 보낸 직후에도 최신 ID 기준으로 읽음 보고 트리거
+    const latestId = getLatestMessageId();
+    throttledPostRead(latestId);
   };
 
   // 채팅방 나가기 버튼
