@@ -3,7 +3,7 @@ import { Button, Input, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -93,8 +93,8 @@ const ReviewForm = ({ route, navigation }) => {
     try {
       const accessToken = await EncryptedStorage.getItem("accessToken");
 
-      await axios.post(
-        "http://10.0.2.2:8080/api/review",
+      await api.post(
+        "/review",
         {
           targetUserId: userId,
           star: rating,

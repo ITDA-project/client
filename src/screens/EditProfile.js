@@ -5,7 +5,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Button, Input, AlertModal } from "../components";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -69,7 +69,7 @@ const EditProfile = ({ navigation, route }) => {
     const fetchCareer = async () => {
       try {
         const token = await EncryptedStorage.getItem("accessToken");
-        const res = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+        const res = await api.get("/mypage/me", {
           headers: {
             access: token,
           },
@@ -77,7 +77,7 @@ const EditProfile = ({ navigation, route }) => {
 
         const userId = res.data.data;
 
-        const profileRes = await axios.get(`http://10.0.2.2:8080/api/profile/${userId}`, {
+        const profileRes = await api.get(`/profile/${userId}`, {
           headers: {
             access: token,
           },
@@ -149,7 +149,7 @@ const EditProfile = ({ navigation, route }) => {
         });
       }
 
-      const res = await axios.patch("http://10.0.2.2:8080/api/mypage/edit", formData, {
+      const res = await api.patch("/mypage/edit", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           access: `${token}`,

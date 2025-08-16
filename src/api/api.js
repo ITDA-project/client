@@ -1,12 +1,10 @@
 import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 import * as Keychain from "react-native-keychain";
-import { Platform } from "react-native";
-
-const API_BASE_URL = Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://127.0.0.1:8080";
+import API_BASE_URL from "../config/apiConfig";
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE_URL, // 가져온 변수를 사용합니다.
   headers: {
     "Content-Type": "application/json",
   },
@@ -16,14 +14,15 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const accessToken = await EncryptedStorage.getItem("accessToken");
   if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
+    // ✅ 헤더 이름을 'access'로 변경
+    config.headers.access = accessToken;
   }
   return config;
 });
 
 // 🔁 응답에서 401이 오면 → refresh로 재발급
 api.interceptors.response.use(
-  (res) => res, // 성공 응답은 그대로
+  (res) => res,
   async (error) => {
     const originalRequest = error.config;
 
@@ -46,7 +45,7 @@ api.interceptors.response.use(
         await EncryptedStorage.setItem("accessToken", newAccessToken);
         await Keychain.setGenericPassword("refreshToken", newRefreshToken);
 
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        originalRequest.headers.access = newAccessToken;
         return api(originalRequest);
       } catch (refreshError) {
         console.error("토큰 재발급 실패:", refreshError);
