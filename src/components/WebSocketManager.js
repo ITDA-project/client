@@ -4,6 +4,7 @@ import { useNotificationOverlay } from "./NotificationOverlay";
 import SockJS from "sockjs-client";
 import { Client as StompClient } from "@stomp/stompjs";
 import { navigationRef } from "../navigations/navigationRef";
+import { WEBSOCKET_URL } from "../config/apiConfig";
 
 export default function WebSocketManager() {
   const { accessToken, loading } = useAuth();
@@ -19,7 +20,7 @@ export default function WebSocketManager() {
     }
 
     const client = new StompClient({
-      webSocketFactory: () => new SockJS(`http://10.0.2.2:8080/ws?token=${accessToken}`),
+      webSocketFactory: () => new SockJS(`${WEBSOCKET_URL}?token=${accessToken}`),
       connectHeaders: {
         access: accessToken,
       },

@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils/utils";
 import { Keyboard } from "react-native";
-import axios from "axios";
+import api from "../api/api";
 import { useAuth } from "../contexts/AuthContext";
 import EncryptedStorage from "react-native-encrypted-storage";
 import * as Keychain from "react-native-keychain";
@@ -98,8 +98,8 @@ const SigninWithEmail = ({ navigation }) => {
     setErrorMessage("");
 
     try {
-      const response = await axios.post(
-        "http://10.0.2.2:8080/auth/login",
+      const response = await api.post(
+        "/auth/login",
         { username: email, password },
         {
           headers: {
@@ -137,7 +137,10 @@ const SigninWithEmail = ({ navigation }) => {
       }
 
       setUser(response.data);
-      navigation.pop(2);
+      navigation.reset({
+        index: 0, // routes 배열에서 현재 활성화할 화면의 인덱스 (0번째)
+        routes: [{ name: "Home" }], // 새로 설정할 화면 목록. 여기서는 '로그인' 화면 하나만 존재.
+      });
     } catch (error) {
       if (error.response) {
         console.error("서버 응답 상태 코드:", error.response.status);

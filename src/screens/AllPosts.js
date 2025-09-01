@@ -5,7 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components/native";
 import { Button, LoginModal } from "../components";
 import useRequireLogin from "../hooks/useRequireLogin";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const AllPosts = ({ route }) => {
@@ -35,7 +35,7 @@ const AllPosts = ({ route }) => {
         return;
       }
 
-      const response = await axios.get("http://10.0.2.2:8080/api/mypage/me", {
+      const response = await api.get("/mypage/me", {
         headers: {
           access: `${token}`,
         },
@@ -64,7 +64,7 @@ const AllPosts = ({ route }) => {
 
       console.log("📡 axios 요청 파라미터:", params); // 디버깅용
       console.log("✅ 요청에 사용되는 category:", category);
-      const response = await axios.get("http://10.0.2.2:8080/api/posts/list", {
+      const response = await api.get("/posts/list", {
         params,
       });
 

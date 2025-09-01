@@ -5,6 +5,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { validateEmail, removeWhitespace } from "../utils/utils";
+import api from "../api/api";
 
 const Container = styled.View`
   flex: 1;
@@ -105,26 +106,16 @@ const FindPw = () => {
             title={resendTimer > 0 ? `${resendTimer}초` : "전송"}
             onPress={async () => {
               try {
-                const response = await fetch("http://10.0.2.2:8080/api/auth/password/find", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ email }),
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                  setAlertMessage(result.message);
-                  setAlertVisible(true);
-                  setResendTimer(180);
-                } else {
-                  setAlertMessage("이메일 전송에 실패했습니다.");
-                  setAlertVisible(true);
-                }
+                const { data: result } = await api.post(
+                  "/auth/password/find",
+                  { email },
+                  { headers: { "Content-Type": "application/json" } }
+                );
+                setAlertMessage(result.message);
+                setAlertVisible(true);
+                setResendTimer(180);
               } catch (error) {
-                setAlertMessage(error.message);
+                setAlertMessage(error?.response?.data?.message || "이메일 전송에 실패했습니다.");
                 setAlertVisible(true);
               }
             }}
@@ -164,17 +155,12 @@ const FindPw = () => {
             title="확인"
             onPress={async () => {
               try {
-                const response = await fetch("http://10.0.2.2:8080/api/auth/password/otp", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ email, otp: authNum }),
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.data === true) {
+                const { data: result } = await api.post(
+                  "/auth/password/otp",
+                  { email, otp: authNum },
+                  { headers: { "Content-Type": "application/json" } }
+                );
+                if (result.data === true) {
                   setIsAuthVerified(true);
                   setAlertMessage(result.message);
                   setAlertVisible(true);
@@ -183,7 +169,7 @@ const FindPw = () => {
                   setAlertVisible(true);
                 }
               } catch (error) {
-                setAlertMessage(error.message);
+                setAlertMessage(error?.response?.data?.message || "인증 실패");
                 setAlertVisible(true);
               }
             }}
@@ -239,24 +225,16 @@ const FindPw = () => {
           title="변경"
           onPress={async () => {
             try {
-              const response = await fetch("http://10.0.2.2:8080/api/auth/password/find", {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-              });
-
-              if (response.ok) {
-                setIsPwChanged(true);
-                setAlertMessage("비밀번호 변경 성공");
-                setAlertVisible(true);
-              } else {
-                setAlertMessage("비밀번호 변경 실패");
-                setAlertVisible(true);
-              }
+              await api.patch(
+                "/auth/password/find",
+                { email, password },
+                { headers: { "Content-Type": "application/json" } }
+              );
+              setIsPwChanged(true);
+              setAlertMessage("비밀번호 변경 성공");
+              setAlertVisible(true);
             } catch (error) {
-              setAlertMessage(error.message);
+              setAlertMessage(error?.response?.data?.message || "비밀번호 변경 실패");
               setAlertVisible(true);
             }
           }}

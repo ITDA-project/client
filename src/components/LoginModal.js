@@ -8,7 +8,10 @@ const LoginModal = ({ visible, onClose }) => {
 
   const handleLoginPress = () => {
     onClose(); // 모달 닫기
-    navigation.navigate("로그인"); // 로그인 화면으로 이동
+    navigation.reset({
+      index: 0, // routes 배열에서 현재 활성화할 화면의 인덱스 (0번째)
+      routes: [{ name: "로그인" }], // 새로 설정할 화면 목록. 여기서는 '로그인' 화면 하나만 존재.
+    });
   };
 
   return (

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TouchableOpacity, ActivityIndicator, FlatList, Alert } from "react-native";
 import { AlertModal } from "../components";
 import { AntDesign } from "@expo/vector-icons";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import { useRoute, useFocusEffect } from "@react-navigation/native"; // useFocusEffect 추가
 
@@ -73,7 +73,7 @@ const ApplicationList = ({ navigation }) => {
         return;
       }
 
-      const response = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}/form/list`, {
+      const response = await api.get(`/posts/${postId}/form/list`, {
         headers: { access: accessToken },
       });
 

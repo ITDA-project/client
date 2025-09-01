@@ -5,7 +5,7 @@ import styled, { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateEmail, removeWhitespace } from "../utils/utils";
-import axios from "axios";
+import api from "../api/api";
 
 const Container = styled.View`
   flex: 1;
@@ -93,7 +93,7 @@ const Signup = ({ navigation }) => {
 
   const checkEmailDuplicate = async () => {
     try {
-      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/email/checkemail", {
+      const response = await api.post("/auth/signup/email/checkemail", {
         email: email,
       });
 
@@ -149,7 +149,7 @@ const Signup = ({ navigation }) => {
 
   const _handleSignup = async () => {
     try {
-      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/email", {
+      const response = await api.post("/auth/signup/email", {
         email,
         name,
         //추후 휴대폰번호 추가 가능성

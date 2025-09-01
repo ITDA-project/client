@@ -6,7 +6,7 @@ import Logo from "../../assets/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { login, getProfile as getKakaoProfile } from "@react-native-seoul/kakao-login";
 import NaverLogin from "@react-native-seoul/naver-login";
-import axios from "axios";
+import api from "../api/api";
 import { useAuth } from "../contexts/AuthContext";
 import EncryptedStorage from "react-native-encrypted-storage";
 import * as Keychain from "react-native-keychain";
@@ -95,7 +95,7 @@ const Signin = ({ navigation }) => {
       console.log("백엔드로 보낼 카카오 데이터", userData);
 
       //4. 백엔드로 전달 (axios 사용)
-      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/kakao", userData, {
+      const response = await api.post("/auth/signup/kakao", userData, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -131,10 +131,12 @@ const Signin = ({ navigation }) => {
       }
 
       setUser(response.data);
-      // 6. 메인 화면 이동
-      navigation.navigate("Home");
+      navigation.reset({
+        index: 0, // routes 배열에서 현재 활성화할 화면의 인덱스 (0번째)
+        routes: [{ name: "Home" }], // 새로 설정할 화면 목록. 여기서는 '로그인' 화면 하나만 존재.
+      });
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 409) {
+      if (err?.response?.status === 409) {
         setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
         setModalVisible(true);
       }
@@ -187,7 +189,7 @@ const Signin = ({ navigation }) => {
       console.log("백엔드로 보낼 네이버 데이터", userData);
 
       // 4. 백엔드로 전달 (axios 사용)
-      const response = await axios.post("http://10.0.2.2:8080/api/auth/signup/naver", userData, {
+      const response = await api.post("/auth/signup/naver", userData, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -214,10 +216,12 @@ const Signin = ({ navigation }) => {
       }
 
       setUser(response.data);
-      // 6. 메인 화면 이동
-      navigation.navigate("Home");
+      navigation.reset({
+        index: 0, // routes 배열에서 현재 활성화할 화면의 인덱스 (0번째)
+        routes: [{ name: "Home" }], // 새로 설정할 화면 목록. 여기서는 '로그인' 화면 하나만 존재.
+      });
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 409) {
+      if (err?.response?.status === 409) {
         setModalMessage("이미 가입된 이메일입니다.\n기존 계정으로 로그인해주세요.");
         setModalVisible(true);
       }

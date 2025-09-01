@@ -8,13 +8,15 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { ThemeContext } from "styled-components/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Container = styled.View`
   flex: 1;
   padding: 0 20px;
   background-color: ${({ theme }) => theme.colors.white};
+  padding-bottom: ${({ insets: { bottom } }) => bottom}px;
 `;
 
 const RowContainer = styled.View`
@@ -309,6 +311,7 @@ export const districtData = {
 };
 
 const CreatePost = () => {
+  const insets = useSafeAreaInsets();
   const theme = useContext(ThemeContext);
   const navigation = useNavigation();
 
@@ -376,7 +379,7 @@ const CreatePost = () => {
         tags: tags.trim().split(" "),
       };
 
-      const response = await axios.post("http://10.0.2.2:8080/api/posts/create", requestBody, {
+      const response = await api.post("/posts/create", requestBody, {
         headers: {
           access: `${accessToken}`,
           "Content-Type": "application/json",
@@ -440,7 +443,7 @@ const CreatePost = () => {
       enableOnAndroid={true} // Android에서도 동작하도록 설정
       keyboardShouldPersistTaps="handled"
     >
-      <Container>
+      <Container insets={insets}>
         {/* 카테고리 선택 */}
         <Label>카테고리</Label>
         <View style={{ width: "45%", zIndex: 3000 }}>

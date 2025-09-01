@@ -3,7 +3,7 @@ import { Alert } from "react-native";
 import { Button, AlertModal } from "../components";
 import styled, { ThemeContext } from "styled-components/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Container = styled.View`
@@ -63,7 +63,7 @@ const ApplicationDecision = ({ route, navigation }) => {
   const fetchForm = async () => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
-      const response = await axios.get(`http://10.0.2.2:8080/api/posts/${postId}/form/${formId}`, {
+      const response = await api.get(`/posts/${postId}/form/${formId}`, {
         headers: { access: token },
       });
 
@@ -78,8 +78,8 @@ const ApplicationDecision = ({ route, navigation }) => {
     try {
       const token = await EncryptedStorage.getItem("accessToken");
 
-      await axios.patch(
-        `http://10.0.2.2:8080/api/posts/${postId}/form/${formId}/status/${status}`,
+      await api.patch(
+        `/posts/${postId}/form/${formId}/status/${status}`,
         {},
         {
           headers: { access: token },
@@ -89,8 +89,8 @@ const ApplicationDecision = ({ route, navigation }) => {
       //수락일 경우 채팅방 초대
       if (status === "accept") {
         try {
-          await axios.post(
-            "http://10.0.2.2:8080/api/chatroom/invite",
+          await api.post(
+            "/chatroom/invite",
             {
               postId,
               username: formData.username,

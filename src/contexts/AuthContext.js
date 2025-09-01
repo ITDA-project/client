@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api/api";
 import EncryptedStorage from "react-native-encrypted-storage";
 import * as Keychain from "react-native-keychain";
 import { isTokenExpired } from "../utils/auth";
@@ -69,47 +69,59 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signout = async () => {
-    await clearTokens(); // 토큰 삭제 안됐을때 살려서 실행
+    //await clearTokens(); // 토큰 삭제 안됐을때 살려서 실행
 
     try {
-      // 1. 저장된 accessToken과 refreshToken 불러오기
+      // 1. 웹소켓 연결 해제
+      if (stompClient && stompClient.connected) {
+        await new Promise((resolve) => {
+          stompClient.disconnect(() => {
+            console.log("✅ 1단계: 웹소켓 연결 해제 완료");
+            resolve();
+          });
+        });
+      }
+
+      // 2. 저장된 토큰 불러오기
       const storedAccessToken = await EncryptedStorage.getItem("accessToken");
       const credentials = await Keychain.getGenericPassword();
       const refreshToken = credentials ? credentials.password : null;
 
-      console.log("🔐 accessToken:", storedAccessToken);
-      console.log("🔐 refreshToken:", refreshToken);
-
-      // 2. access와 refresh가 모두 있을 경우에만 로그아웃 요청
+      // 3. 백엔드 로그아웃 요청 (api 인스턴스 사용)
       if (storedAccessToken && refreshToken) {
-        await axios.post(
-          "http://10.0.2.2:8080/auth/logout",
-          { refresh_token: refreshToken },
-          {
-            headers: {
-              Authorization: `Bearer ${storedAccessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("✅ 백엔드 로그아웃 요청 완료");
-      } else {
-        console.warn("⚠️ 토큰 정보가 부족해 백엔드에 로그아웃 요청하지 않음");
+        // ❌ 기존: axios.post("http://...")
+        // ✅ 변경: 중앙 api 인스턴스를 사용합니다. baseURL과 헤더가 자동으로 관리됩니다.
+        await api.post("/auth/logout", {
+          refresh_token: refreshToken,
+        });
+        console.log("✅ 2단계: 백엔드 로그아웃 요청 완료");
       }
 
-      // 3. 로컬 토큰 삭제 및 상태 초기화
+      // 4. 로컬 토큰 삭제
+      await EncryptedStorage.removeItem("accessToken");
+      await Keychain.resetGenericPassword();
+      console.log("✅ 3단계: 로컬 토큰 삭제 완료");
+
+      // 5. 앱 상태 변경
+      setAccessToken(null);
+      setUser(null);
+      console.log("✅ 4단계: 로그아웃 절차 최종 완료");
+    } catch (error) {
+      console.error("❌ 로그아웃 처리 중 에러 발생:", error);
+      // 실패 시에도 안전하게 로컬 데이터 정리
       await EncryptedStorage.removeItem("accessToken");
       await Keychain.resetGenericPassword();
       setAccessToken(null);
       setUser(null);
-      console.log("🧹 로컬 토큰 삭제 및 상태 초기화 완료");
-    } catch (error) {
-      console.error("❌ 로그아웃 실패:", error);
-      throw error; // 호출하는 쪽에서 예외 처리할 수 있도록 throw 유지
+      throw error;
     }
   };
 
-  return <AuthContext.Provider value={{ user, setUser, accessToken, setAccessToken, signout, loading }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, setUser, accessToken, setAccessToken, signout, loading, stompClient, setStompClient }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);
