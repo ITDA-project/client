@@ -38,6 +38,7 @@ const FindPw = () => {
   const [alertMessage, setAlertMessage] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const [isPwChanged, setIsPwChanged] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
 
   useEffect(() => {
     setDisabled(!(email && authNum && password && passwordConfirm && !emailErrorMessage && !passwordConfirmErrorMessage && isAuthVerified));
@@ -76,8 +77,14 @@ const FindPw = () => {
 
   const _handlePasswordChange = (password) => {
     const changePassword = removeWhitespace(password);
-
     setPassword(changePassword);
+
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/;
+    if (!passwordRegex.test(changePassword)) {
+      setPasswordErrorMessage("비밀번호는 영어와 숫자 8자 이상이어야 합니다");
+    } else {
+      setPasswordErrorMessage("");
+    }
   };
 
   const _handlePasswordConfirmChange = (passwordConfirm) => {
@@ -106,11 +113,7 @@ const FindPw = () => {
             title={resendTimer > 0 ? `${resendTimer}초` : "전송"}
             onPress={async () => {
               try {
-                const { data: result } = await api.post(
-                  "/auth/password/find",
-                  { email },
-                  { headers: { "Content-Type": "application/json" } }
-                );
+                const { data: result } = await api.post("/auth/password/find", { email }, { headers: { "Content-Type": "application/json" } });
                 setAlertMessage(result.message);
                 setAlertVisible(true);
                 setResendTimer(180);
@@ -155,11 +158,7 @@ const FindPw = () => {
             title="확인"
             onPress={async () => {
               try {
-                const { data: result } = await api.post(
-                  "/auth/password/otp",
-                  { email, otp: authNum },
-                  { headers: { "Content-Type": "application/json" } }
-                );
+                const { data: result } = await api.post("/auth/password/otp", { email, otp: authNum }, { headers: { "Content-Type": "application/json" } });
                 if (result.data === true) {
                   setIsAuthVerified(true);
                   setAlertMessage(result.message);
@@ -201,9 +200,10 @@ const FindPw = () => {
           isPassword={true}
           containerStyle={{
             width: "100%",
-            paddingBottom: 17,
+            paddingBottom: 5,
           }}
         />
+        <ErrorMessage message={passwordErrorMessage} containerStyle={{ position: "absolute", left: 40 }} />
         <Input
           label="비밀번호 확인"
           returnKeyType="next"
@@ -212,6 +212,8 @@ const FindPw = () => {
           isPassword={true}
           containerStyle={{
             width: "100%",
+            marginTop: 10,
+            paddingBottom: 5,
           }}
         />
         <ErrorMessage
@@ -225,11 +227,7 @@ const FindPw = () => {
           title="변경"
           onPress={async () => {
             try {
-              await api.patch(
-                "/auth/password/find",
-                { email, password },
-                { headers: { "Content-Type": "application/json" } }
-              );
+              await api.patch("/auth/password/find", { email, password }, { headers: { "Content-Type": "application/json" } });
               setIsPwChanged(true);
               setAlertMessage("비밀번호 변경 성공");
               setAlertVisible(true);
