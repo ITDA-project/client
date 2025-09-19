@@ -68,7 +68,7 @@ export const useNotificationOverlay = () => useContext(NotificationOverlayContex
 const styles = StyleSheet.create({
   banner: {
     position: "absolute",
-    top: 36,
+    top: 55,
     left: 20,
     right: 20,
     backgroundColor: "#d7d6d6ff",
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#000",
-    fontSize: 14,
+    fontSize: 12,
     marginBottom: 0,
     fontWeight: "bold",
     lineHeight: 14,
@@ -101,12 +101,12 @@ const styles = StyleSheet.create({
   sender: {
     fontWeight: "bold",
     color: "#000",
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 14,
   },
   message: {
     color: "#000",
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 14,
   },
 });
