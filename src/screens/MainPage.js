@@ -136,7 +136,7 @@ const MainPage = () => {
 
   //Section 컴포넌트
   const Section = ({ title, showViewAll, onViewAllPress, children }) => (
-    <View style={{ marginBottom: 40 }}>
+    <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
         {showViewAll && (

@@ -28,15 +28,14 @@ export default function WebSocketManager() {
         console.log("✅알림 Websocket 연결됨");
         client.subscribe("/user/queue/chat-notifications", (message) => {
           const payload = JSON.parse(message.body);
-          const formatted = `${payload.username} : ${payload.message}`;
           showNotification(
             {
-              roomName: payload.roomName,
-              senderName: payload.username,
-              message: payload.message,
+              roomName: payload.chatRoomName,
+              senderName: payload.sender,
+              message: payload.content,
             },
             () => {
-              navigationRef.current?.navigate("채팅방", { roomId: payload.roomId });
+              navigationRef.current?.navigate("채팅방", { roomId: payload.id });
               console.log("[WS] navigationRef:", navigationRef.current);
             }
           );

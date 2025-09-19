@@ -75,6 +75,7 @@ const Signup = ({ navigation }) => {
   const [disabled, setDisabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
 
   useEffect(() => {
     setDisabled(!(email && name && password && passwordConfirm && phone && gender && !emailErrorMessage && !passwordConfirmErrorMessage));
@@ -123,6 +124,13 @@ const Signup = ({ navigation }) => {
   const _handlePasswordChange = (password) => {
     const changePassword = removeWhitespace(password);
     setPassword(changePassword);
+
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/;
+    if (!passwordRegex.test(changePassword)) {
+      setPasswordErrorMessage("영어와 숫자를 혼합한 8자 이상이어야 합니다");
+    } else {
+      setPasswordErrorMessage("");
+    }
   };
 
   const _handlePasswordConfirmChange = (passwordConfirm) => {
@@ -226,6 +234,7 @@ const Signup = ({ navigation }) => {
           containerStyle={{
             width: "100%",
             paddingBottom: 17,
+            paddingTop: 5,
           }}
         />
         <Input
@@ -236,9 +245,11 @@ const Signup = ({ navigation }) => {
           isPassword={true}
           containerStyle={{
             width: "100%",
-            paddingBottom: 17,
+            paddingTop: 5,
+            marginBottom: 8,
           }}
         />
+        <ErrorMessage message={passwordErrorMessage} />
         <Input
           label="비밀번호 확인"
           returnKeyType="next"
@@ -247,6 +258,8 @@ const Signup = ({ navigation }) => {
           isPassword={true}
           containerStyle={{
             width: "100%",
+            paddingTop: 5,
+            marginBottom: 8,
           }}
         />
         <ErrorMessage
@@ -265,6 +278,7 @@ const Signup = ({ navigation }) => {
           containerStyle={{
             width: "100%",
             paddingBottom: 17,
+            paddingTop: 5,
           }}
         />
         <Gender>
