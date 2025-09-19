@@ -15,7 +15,7 @@
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | 백엔드 | 백엔드 | 백엔드 | 디자인, 프론트엔드 | 디자인, 프론트엔드 | 백엔드 |
 | [@skdudnayoung](https://github.com/skdudnayoung) | [@pcochoco](https://github.com/pcochoco) | [@LeeDyol](https://github.com/LeeDyol) | [@Yhyun31](https://github.com/Yhyun31) | [@syuzzzi](https://github.com/syuzzzi) | [@Sjin618](https://github.com/Sjin618) |
-
+</div>
 </br>
 
 ## 👩🏻‍💻 사용 기술 구성도
@@ -52,4 +52,4 @@
 
 
 
-</div>
+
