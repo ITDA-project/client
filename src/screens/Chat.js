@@ -566,6 +566,7 @@ const Chat = () => {
                     <TouchableOpacity
                       key={p.userId}
                       onPress={() => {
+                        setSideMenuVisible(false);
                         navigation.navigate("공개프로필", {
                           userId: p.userId,
                         });
