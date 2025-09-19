@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
-import { Button } from "../components";
+import { Button, AlertModal } from "../components";
 import EncryptedStorage from "react-native-encrypted-storage";
 import api from "../api/api";
 
@@ -108,6 +108,9 @@ const CheckParticipants = () => {
   const route = useRoute();
   const { participants, participantStatus, currentRound, sessionDate, roomId, sessionId } = route.params ?? {};
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
   const paidParticipants = useMemo(() => {
     return participants.filter((p) => participantStatus[p.userId] === "참여");
   }, [participants, participantStatus]);
@@ -192,7 +195,9 @@ const CheckParticipants = () => {
       );
 
       console.log("모든 환불 처리와 세션 종료가 완료되었습니다.");
-      navigation.goBack();
+
+      setModalMessage("참가자들에 대한\n환불 처리가 완료 되었습니다");
+      setModalVisible(true);
     } catch (e) {
       console.error("세션 종료 처리 실패:", e.response?.data ?? e.message);
     }
@@ -241,6 +246,14 @@ const CheckParticipants = () => {
           textStyle={{ marginLeft: 0, color: "white" }}
         />
       </FooterContainer>
+      <AlertModal
+        visible={modalVisible}
+        message={modalMessage}
+        onConfirm={() => {
+          setModalVisible(false);
+          navigation.goBack();
+        }}
+      />
     </Wrapper>
   );
 };
