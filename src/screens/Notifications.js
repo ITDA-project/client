@@ -53,8 +53,9 @@ const Notification = ({ onReadAll }) => {
   const fetchSessionInfo = async (item) => {
     // roomId 대신 item 전체를 받도록 변경
     try {
+      console.log("🔔 세션 정보 요청 시작 (item):", item);
       const token = await EncryptedStorage.getItem("accessToken");
-      const roomId = item.postId; // postId를 roomId로 가정
+      const roomId = item.roomId; // postId를 roomId로 가정
 
       // !!! 이 부분을 수정해야 합니다 !!!
       // 백엔드 컨트롤러에 정의된 올바른 API URL로 수정
